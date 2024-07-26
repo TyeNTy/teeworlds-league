@@ -1,0 +1,34 @@
+{
+    "name": "hom",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "dev": "nodemon --inspect ./src/index.js",
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "start": "node ./src/index.js"
+    },
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "@sentry/node": "^7.64.0",
+        "@sentry/tracing": "^7.64.0",
+        "bcryptjs": "^2.4.3",
+        "cookie-parser": "^1.4.6",
+        "cors": "^2.8.5",
+        "dotenv": "^16.3.1",
+        "express": "^4.18.2",
+        "express-handlebars": "^7.1.2",
+        "moment": "^2.29.4",
+        "mongoose": "^8.4.1",
+        "morgan": "^1.10.0",
+        "nodemailer": "^6.9.7",
+        "passport": "^0.6.0",
+        "passport-custom": "^1.1.1",
+        "passport-jwt": "^4.0.1"
+    },
+    "devDependencies": {
+        "nodemon": "^2.0.15",
+        "prettier": "3.0.3"
+    }
+}
