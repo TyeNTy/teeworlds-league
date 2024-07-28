@@ -165,7 +165,7 @@ const List = () => {
           />
           <label className="text-sm font-bold mt-4">Discord message</label>
           <textarea
-            className="form-input mt-1 block w-full border border-gray-300 rounded-md p-2"
+            className="form-input mt-1 block w-full border border-gray-300 rounded-md p-2 h-64"
             value={newPost.content}
             placeholder="Discord message, leave blank if no message"
             onChange={(e) =>
