@@ -18,7 +18,10 @@ const TopBar = () => {
       if (!res.ok) return;
       API.setToken(null);
       dispatch(setUser(null));
-      navigate(window.location.pathname);
+      const redirect = window.location.pathname.includes("/profile")
+        ? "/"
+        : window.location.pathname;
+      navigate(redirect);
     } catch (error) {
       console.log(error);
     }

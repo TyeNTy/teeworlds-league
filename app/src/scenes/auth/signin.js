@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { setUser } from "../../redux/auth/actions";
 import api from "../../services/api";
 import { ENVIRONMENT } from "../../config";
+import { FaArrowLeft } from "react-icons/fa";
 
 const Signin = () => {
   const [values, setValues] = useState(
@@ -87,9 +88,17 @@ const Signin = () => {
           className="w-full p-3 rounded-md hover:bg-blue-600 bg-blue-500 text-white font-bold"
           type="submit"
         >
-          Login
+          Log in
         </button>
         <hr className="my-5" />
+        <p className="text-center text-sm text-gray-600">
+          <Link
+            className="text-primary hover:underline flex items-center"
+            to="/"
+          >
+            <FaArrowLeft className="mr-2" /> Back to website
+          </Link>
+        </p>
         <div className="flex justify-center">
           {/* <div className="mr-6">
                         <div className="text-center text-sm text-gray-600">
