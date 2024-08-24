@@ -93,14 +93,8 @@ const List = () => {
             {stats.map((stat) => (
               <tr
                 key={stat._id}
-                // onClick={() =>
-                //   realUser?.role === "ADMIN" && navigate(`/stats/${stat._id}`)
-                // }
-                className={
-                  realUser?.role === "ADMIN"
-                    ? "cursor-pointer hover:bg-gray-100"
-                    : "hover:bg-gray-100"
-                }
+                onClick={() => navigate(`/stats/${stat._id}`)}
+                className={"cursor-pointer hover:bg-gray-100"}
               >
                 <td className="border px-2 py-2">
                   <Player

@@ -87,8 +87,9 @@ async function updateStatClan(clan) {
 async function updateStatPlayer(player) {
   const redResults = await ResultModel.find({ redPlayers: { $elemMatch: { userId: player._id } }, freezed: true });
   const blueResults = await ResultModel.find({ bluePlayers: { $elemMatch: { userId: player._id } }, freezed: true });
+  const allResults = [...redResults, ...blueResults];
 
-  const numberGames = redResults.length + blueResults.length;
+  const numberGames = allResults.length;
   const redTotalScore = redResults.reduce((acc, result) => {
     const playerResult = result.redPlayers.find((p) => p.userId.toString() === player._id.toString());
     return acc + playerResult.score;
@@ -137,28 +138,35 @@ async function updateStatPlayer(player) {
   let blueKdRatio = blueTotalKills / blueTotalDeaths;
   let kdRatio = totalKills / totalDeaths;
 
-  const losses = redResults.filter((result) => result.winnerSide !== "red");
-  const wins = redResults.filter((result) => result.winnerSide === "red");
+  const redWins = redResults.filter((result) => result.winnerSide === "red");
+  const blueWins = blueResults.filter((result) => result.winnerSide === "blue");
+  const allWins = [...redWins, ...blueWins];
 
-  const numberRedWins = redResults.filter((result) => result.winnerSide === "red").length;
-  const numberBlueWins = blueResults.filter((result) => result.winnerSide === "blue").length;
+  const numberRedWins = redWins.length;
+  const numberBlueWins = blueWins.length;
   const numberWins = numberRedWins + numberBlueWins;
 
   const numberRedLosses = redResults.filter((result) => result.winnerSide === "blue").length;
   const numberBlueLosses = blueResults.filter((result) => result.winnerSide === "red").length;
   const numberLosses = numberRedLosses + numberBlueLosses;
 
-  const averageRedTeamScore = redTotalScore / redResults.length;
-  const averageBlueTeamScore = blueTotalScore / blueResults.length;
+  let averageRedTeamScore = redTotalScore / redResults.length;
+  let averageBlueTeamScore = blueTotalScore / blueResults.length;
 
-  const averageWinningScore = (redTotalScore + blueTotalScore) / numberWins;
-  const averageLosingScore = (redTotalScore + blueTotalScore) / numberLosses;
+  const winningTotalScore = allWins.reduce((acc, result) => {
+    if (result.winnerSide === "red") return acc + result.redScore;
+    return acc + result.blueScore;
+  }, 0);
+  const losingTotalScore = allWins.reduce((acc, result) => {
+    if (result.winnerSide === "red") return acc + result.blueScore;
+    return acc + result.redScore;
+  }, 0);
+  let averageWinningScore = winningTotalScore / numberWins;
+  let averageLosingScore = losingTotalScore / numberLosses;
 
   let redWinRate = numberRedWins / redResults.length;
   let blueWinRate = numberBlueWins / blueResults.length;
   let winRate = numberWins / numberGames;
-
-  const allResults = [...redResults, ...blueResults];
 
   let highestScore = 0;
   let highestScoreResultId = null;
@@ -237,6 +245,10 @@ async function updateStatPlayer(player) {
   if (isNaN(averageFlags)) averageFlags = 0;
   if (isNaN(highestKdRatio)) highestKdRatio = 0;
   if (highestKdRatio === Infinity) highestKdRatio = 0;
+  if (isNaN(averageRedTeamScore)) averageRedTeamScore = 0;
+  if (isNaN(averageBlueTeamScore)) averageBlueTeamScore = 0;
+  if (isNaN(averageWinningScore)) averageWinningScore = 0;
+  if (isNaN(averageLosingScore)) averageLosingScore = 0;
 
   stat.set({
     clanId: player.clanId,
@@ -278,9 +290,19 @@ async function updateStatPlayer(player) {
     highestFlagResultId,
     highestKdRatio,
     highestKdRatioResultId,
+    averageRedTeamScore,
+    highestRedTeamScore,
+    highestRedTeamScoreResultId,
+    averageBlueTeamScore,
+    highestBlueTeamScore,
+    highestBlueTeamScoreResultId,
+    averageWinningScore,
+    averageLosingScore,
   });
 
   await stat.save();
+
+  return stat;
 }
 
 function detectMap(mapString) {

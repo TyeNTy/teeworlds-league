@@ -90,9 +90,9 @@ const List = () => {
               <th className="px-4 py-2">Date</th>
               <th className="px-4 py-2">Mode</th>
               <th className="px-4 py-2">Map</th>
-              <th className="px-4 py-2">Red clan</th>
+              <th className="px-4 py-2">Red clan (elo)</th>
               <th className="px-4 py-2">Score</th>
-              <th className="px-4 py-2">Blue clan</th>
+              <th className="px-4 py-2">Blue clan (elo)</th>
               <th className="px-4 py-2">Winner</th>
               {realUser?.role === "ADMIN" && (
                 <th className="px-4 py-2">Status</th>
