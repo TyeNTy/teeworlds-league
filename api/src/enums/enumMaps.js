@@ -4,6 +4,7 @@ const enumMaps = [
   { value: "ctf4_old", label: "ctf4_old" },
   { value: "ctf_5", label: "ctf5" },
   { value: "ctf_5", label: "ctf5_spikes" },
+  { value: "ctf_5_limited", label: "ctf_5_limited" },
   { value: "ctf_duskwood", label: "ctf_duskwood" },
   { value: "ctf_tantum", label: "ctf_tantum" },
   { value: "ctf_mine", label: "ctf_mine" },
@@ -13,6 +14,7 @@ const enumMaps = [
   { value: "ctf_2", label: "ctf2" },
   // { value: "ctf5", label: "ctf5" },
   // { value: "ctf_duskwood", label: "ctf_duskwood" },
+  // { value: "ctf_5_limited", label: "ctf_5_limited" },
   { value: "ctf_mars", label: "ctf_mars" },
   { value: "ctf_moon", label: "ctf_moon" },
 ];

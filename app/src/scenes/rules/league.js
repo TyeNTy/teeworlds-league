@@ -255,8 +255,8 @@ const League = () => (
     <ul className="pl-6">
       <li>ctf3</li>
       <li>ctf4_old</li>
-      <li>ctf5</li>
-      <li>ctf_duskwood</li>
+      <li>ctf5_limited</li>
+      <li>ctf_duskwood_limited</li>
       <li>ctf_tantum</li>
       <li>ctf_mine</li>
       <li>ctf_planet</li>
@@ -270,8 +270,8 @@ const League = () => (
     </p>
     <ul className="pl-6">
       <li>ctf2</li>
-      <li>ctf5</li>
-      <li>ctf_duskwood</li>
+      <li>ctf5_limited</li>
+      <li>ctf_duskwood_limited</li>
       <li>ctf_mars</li>
       <li>ctf_moon</li>
     </ul>

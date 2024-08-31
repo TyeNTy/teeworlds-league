@@ -665,7 +665,7 @@ const computeEloResult = async (result) => {
   return result;
 };
 
-// see : https://www.youtube.com/watch?v=9oRDksmH0zM
+// see : https://www.youtube.com/watch?v=9oRDksmH0zM (sry, it's in French :/)
 const computeElo = (eloWinner, eloLooser) => {
   const k = 10;
   const power = 2;
@@ -686,6 +686,7 @@ const mapServerMapping = {
   ctf5_spikes: "ctf_5",
   ctf_tantum: "ctf_tantum",
   ctf_duskwood: "ctf_duskwood",
+  ctf_5_limited: "ctf_5_limited",
 };
 
 module.exports = {
