@@ -682,6 +682,7 @@ const computeElo = (eloWinner, eloLooser) => {
 };
 
 const mapServerMapping = {
+  ctf3: "ctf_3",
   ctf4_old: "ctf4_old",
   ctf5_spikes: "ctf_5",
   ctf_tantum: "ctf_tantum",
