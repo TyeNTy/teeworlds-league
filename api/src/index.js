@@ -33,6 +33,7 @@ app.get("/", async (req, res) => {
 
 app.use("/user", require("./controllers/user"));
 app.use("/clan", require("./controllers/clan"));
+app.use("/announcement", require("./controllers/announcement"));
 app.use("/result", require("./controllers/result"));
 app.use("/stat", require("./controllers/stat"));
 app.use("/webhook", require("./controllers/webhook"));

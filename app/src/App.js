@@ -21,6 +21,7 @@ import Rules from "./scenes/rules";
 import Clans from "./scenes/clans";
 import Results from "./scenes/results";
 import Stats from "./scenes/stats";
+import Announcements from "./scenes/announcements";
 
 const ProtectedLayout = () => {
   const dispatch = useDispatch();
@@ -79,6 +80,7 @@ const App = () => {
           <Route path="/users/*" element={<Users />} />
           <Route path="/results/*" element={<Results />} />
           <Route path="/stats/*" element={<Stats />} />
+          <Route path="/announcements/*" element={<Announcements />} />
           <Route path="/*" index element={<Users />} />
         </Route>
 

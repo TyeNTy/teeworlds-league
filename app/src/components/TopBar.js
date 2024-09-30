@@ -64,6 +64,11 @@ const TopBar = () => {
                 Stats
               </Link>
             </div>
+            <div className="flex items-center pr-4">
+              <Link to="/announcements" className="ml-2">
+                Next Matches
+              </Link>
+            </div>
             <div className="border-r border-gray-600 h-6 mx-4" />
             <ul className="flex flex-col items-center">
               <li className="flex items-center pr-4">
