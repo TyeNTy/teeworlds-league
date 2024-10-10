@@ -12,6 +12,42 @@ const League = () => (
       Rules that do not directly affect you may also be important to you.
     </p>
 
+    <p className="text-2xl font-bold mt-6 mb-2 text-red-600">
+      This is the list of official client to use :
+    </p>
+    <ul className="pl-6">
+      <li>
+        <a
+          href="/clients/ddnet-gctfleague-windows.zip"
+          className="text-blue-500 underline"
+          target="_blank"
+          rel="noreferrer noopener"
+        >
+          Windows client
+        </a>
+      </li>
+      <li>
+        <a
+          href="/clients/ddnet-gctfleague-linux.xz"
+          className="text-blue-500 underline"
+          target="_blank"
+          rel="noreferrer noopener"
+        >
+          Linux client
+        </a>
+      </li>
+      <li>
+        <a
+          href="/clients/ddnet-gctfleague-macos.dmg"
+          className="text-blue-500 underline"
+          target="_blank"
+          rel="noreferrer noopener"
+        >
+          Mac OS client
+        </a>
+      </li>
+    </ul>
+
     <h2 className="text-2xl font-bold mt-6 mb-2">
       <i>
         <b>§1 General League Info</b>
