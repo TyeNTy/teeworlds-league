@@ -15,6 +15,7 @@ const League = () => (
     <p className="text-2xl font-bold mt-6 mb-2 text-red-600">
       This is the list of official client to use :
     </p>
+    <p className="text-2xl font-bold mt-6 mb-2">0.6 based on DDNet</p>
     <ul className="pl-6">
       <li>
         <a
@@ -47,6 +48,56 @@ const League = () => (
         </a>
       </li>
     </ul>
+
+    <p className="font-bold text-red-600 mt-6 mb-2">
+      Attention, if you use the Mac client, then executes this command once the
+      client is installed : <br />
+      <p className="bg-gray-200 p-2 rounded-md text-gray-800 font-mono font-normal">
+        xattr -d com.apple.quarantine /Applications/DDNet.app
+      </p>
+    </p>
+
+    <p className="text-2xl font-bold mt-6 mb-2">0.7 based on f-client</p>
+    <ul className="pl-6">
+      <li>
+        <a
+          href="/clients/f-client-gctfleague-windows.zip"
+          className="text-blue-500 underline"
+          target="_blank"
+          rel="noreferrer noopener"
+        >
+          Windows client
+        </a>
+      </li>
+      <li>
+        <a
+          href="/clients/f-client-gctfleague-linux.tar.xz"
+          className="text-blue-500 underline"
+          target="_blank"
+          rel="noreferrer noopener"
+        >
+          Linux client
+        </a>
+      </li>
+      <li>
+        <a
+          href="/clients/f-client-gctfleague-macos.dmg"
+          className="text-blue-500 underline"
+          target="_blank"
+          rel="noreferrer noopener"
+        >
+          Mac OS client
+        </a>
+      </li>
+    </ul>
+
+    <p className="font-bold text-red-600 mt-6 mb-2">
+      Attention, if you use the Mac client, then executes this command once the
+      client is installed : <br />
+      <p className="bg-gray-200 p-2 rounded-md text-gray-800 font-mono font-normal">
+        xattr -d com.apple.quarantine /Applications/F-Client.app
+      </p>
+    </p>
 
     <h2 className="text-2xl font-bold mt-6 mb-2">
       <i>
