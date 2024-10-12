@@ -45,14 +45,16 @@ const League = () => (
     <p className="font-bold text-red-600 mt-6 mb-2">
       <p className="font-bold text-2xl">Attention</p>
       <p className="text-red-600">
-        If you use the macOS client, then execute this command, once the client is installed : <br />
+        If you use the macOS client, then execute this command in the Terminal app, once the client is installed :{" "}
+        <br />
         <p className="bg-gray-200 p-2 rounded-md text-gray-800 font-mono font-normal">
           xattr -d com.apple.quarantine /Applications/DDNet.app
         </p>
       </p>
       <br />
       <p className="text-red-600">
-        If you use the Linux client, then you might be missing dependencies. Install them with these commands : <br />
+        If you use the Linux client, then you might be missing dependencies. Install them with these commands in the
+        terminal : <br />
         <p className="bg-gray-200 p-2 rounded-md text-gray-800 font-mono font-normal">
           # Debian/Ubuntu
           <br />
