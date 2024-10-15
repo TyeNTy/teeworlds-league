@@ -24,7 +24,7 @@ const League = () => (
       </li>
       <li>
         <a
-          href="/clients/ddnet-gctfleague-linux.xz"
+          href="/clients/ddnet-gctfleague-linux.tar.xz"
           className="text-blue-500 underline"
           target="_blank"
           rel="noreferrer noopener">
