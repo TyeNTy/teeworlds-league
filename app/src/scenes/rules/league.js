@@ -24,7 +24,7 @@ const League = () => (
       </li>
       <li>
         <a
-          href="/clients/ddnet-gctfleague-linux.xz"
+          href="/clients/ddnet-gctfleague-linux.tar.xz"
           className="text-blue-500 underline"
           target="_blank"
           rel="noreferrer noopener">
@@ -58,22 +58,23 @@ const League = () => (
         <p className="bg-gray-200 p-2 rounded-md text-gray-800 font-mono font-normal">
           # Debian/Ubuntu
           <br />
-          sudo apt install libcurl4-openssl-dev libfreetype6-dev libglew-dev libsdl2-dev libvulkan-dev
+          sudo apt install libavcodec-extra libavdevice-dev libavfilter-dev libavformat-dev libavutil-dev
+          libcurl4-openssl-dev libfreetype6-dev libglew-dev libsdl2-dev libvulkan-dev
           <br />
           <br />
           # CentOS, RedHat and AlmaLinux
           <br />
-          sudo yum install libcurl-devel freetype-devel glew-devel SDL2-devel vulkan-devel
+          sudo yum install libcurl-devel ffmpeg-devel freetype-devel glew-devel SDL2-devel vulkan-devel
           <br />
           <br />
           # Fedora
           <br />
-          sudo dnf install libcurl-devel freetype-devel glew-devel SDL2-devel vulkan-devel
+          sudo dnf install libcurl-devel ffmpeg-devel freetype-devel glew-devel SDL2-devel vulkan-devel
           <br />
           <br />
           # Arch Linux
           <br />
-          sudo pacman -S --needed curl freetype2 glew sdl2 vulkan-icd-loader
+          sudo pacman -S --needed curl ffmpeg freetype2 glew sdl2 vulkan-icd-loader
           <br />
         </p>
         <br />
