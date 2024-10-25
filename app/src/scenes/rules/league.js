@@ -10,7 +10,7 @@ const League = () => (
       rules! Rules that do not directly affect you may also be important to you.
     </p>
 
-    <p className="text-2xl font-bold mt-6 mb-2 text-red-600">This is the list of official client to use :</p>
+    <p className="text-2xl font-bold mt-6 mb-2 text-red-600">This is the list of official clients to use:</p>
     <p className="text-2xl font-bold mt-6 mb-2">0.6 based on DDNet</p>
     <ul className="pl-6">
       <li>
