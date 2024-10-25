@@ -9,6 +9,8 @@ const enumMaps = [
   { value: "ctf_tantum", label: "ctf_tantum" },
   { value: "ctf_mine", label: "ctf_mine" },
   { value: "ctf_planet", label: "ctf_planet" },
+  { value: "ctf_ambiance", label: "ctf_ambiance" },
+  { value: "ctf_ambiance", label: "ctf_ambiance_limited" },
 
   // 3 vs 3
   { value: "ctf_2", label: "ctf2" },
