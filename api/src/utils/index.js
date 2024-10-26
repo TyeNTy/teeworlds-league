@@ -210,10 +210,16 @@ async function updateStatPlayer(player) {
       highestKdRatio = playerResult.kills / playerResult.deaths;
       highestKdRatioResultId = result._id;
     }
+  }
+
+  for (const result of redResults) {
     if (result.redScore > highestRedTeamScore) {
       highestRedTeamScore = result.redScore;
       highestRedTeamScoreResultId = result._id;
     }
+  }
+
+  for (const result of blueResults) {
     if (result.blueScore > highestBlueTeamScore) {
       highestBlueTeamScore = result.blueScore;
       highestBlueTeamScoreResultId = result._id;
