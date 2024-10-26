@@ -73,6 +73,7 @@ const List = () => {
                 { label: "Win rate", key: "winRate" },
                 { label: "Points", key: "points" },
                 { label: "Difference", key: "difference" },
+                { label: "Avg. Elo", key: "averageElo" },
               ].map(({ label, key }) => (
                 <th
                   key={key}
@@ -109,6 +110,13 @@ const List = () => {
                 </td>
                 <td className="border px-4 py-2">{clan.points}</td>
                 <td className="border px-4 py-2">{clan.difference}</td>
+                <td className="border px-4 py-2">
+                  <StatColored
+                    value={clan.averageElo.toFixed(2)}
+                    min={500}
+                    max={1500}
+                  />
+                </td>
               </tr>
             ))}
           </tbody>

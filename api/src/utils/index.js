@@ -79,7 +79,15 @@ async function updateStatClan(clan) {
 
   clan.winRate = clan.numberWins / clan.numberGames;
 
+  const players = await UserModel.find({ clanId: clan._id });
+  const totalElo = players.reduce((acc, player) => {
+    return acc + player.elo;
+  }, 0);
+  const averageElo = totalElo / players.length;
+  clan.averageElo = averageElo;
+
   if (isNaN(clan.winRate)) clan.winRate = 0;
+  if (isNaN(clan.averageElo)) clan.averageElo = 0;
 
   await clan.save();
 }

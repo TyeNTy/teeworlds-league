@@ -26,6 +26,7 @@ const Schema = new mongoose.Schema(
     difference: { type: Number, default: 0 },
 
     winRate: { type: Number, default: 0 },
+    averageElo: { type: Number, default: 0 },
   },
   {
     timestamps: true,
@@ -43,6 +44,7 @@ Schema.methods.responseModel = function () {
     numberLosses: this.numberLosses,
     difference: this.difference,
     winRate: this.winRate,
+    averageElo: this.averageElo,
   };
 };
 
