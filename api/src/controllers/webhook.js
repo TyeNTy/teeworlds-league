@@ -16,6 +16,7 @@ router.post(
 
     res.status(200).send();
     const resMessage = await parseWebhookMessage(body);
+    console.log(resMessage);
     if (!resMessage.ok) {
       console.error(resMessage);
       return;

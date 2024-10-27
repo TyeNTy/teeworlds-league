@@ -366,7 +366,7 @@ const parseWebhookMessage = async (content) => {
   if (gameType !== "gctf") return { ok: false, errorCode: "INVALID_GAME_TYPE" };
 
   const server = content.server;
-  if (server !== "gCTF League Test Server") return { ok: false, errorCode: "INVALID_SERVER" };
+  if (server === "gCTF League Test Server") return { ok: false, errorCode: "INVALID_SERVER" };
 
   const obj = {};
 
@@ -432,7 +432,8 @@ const parseWebhookMessage = async (content) => {
     objPlayer.score = player.score;
     objPlayer.kills = player.kills;
     objPlayer.deaths = player.deaths;
-    objPlayer.flags = 0; // TODO: add flags
+    objPlayer.flags = player.flag_captures;
+    objPlayer.flagsTouches = player.flag_grabs;
 
     bluePlayers.push(objPlayer);
   }
