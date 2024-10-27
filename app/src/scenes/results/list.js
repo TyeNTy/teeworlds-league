@@ -120,7 +120,13 @@ const List = () => {
                 <td className="border px-4 py-2">
                   {maps.find((m) => m.value === result.map)?.label ?? "Unknown"}
                 </td>
-                <td className="border px-4 py-2">{`${result.redClanName} ${
+                <td
+                  className={
+                    result.winnerSide === "red"
+                      ? "border px-4 py-2 text-green-500"
+                      : "border px-4 py-2 text-red-500"
+                  }
+                >{`${result.redClanName} ${
                   result.freezed
                     ? `: ${result.redEloBefore.toFixed(2)} (${
                         result.winnerSide === "red"
@@ -130,14 +136,38 @@ const List = () => {
                     : ""
                 }`}</td>
                 <td className="border px-4 py-2">
-                  {result.redScore} - {result.blueScore}
+                  <span
+                    className={
+                      result.winnerSide === "red"
+                        ? "text-green-500"
+                        : "text-red-500"
+                    }
+                  >
+                    {Number(result.redScore)}
+                  </span>{" "}
+                  -{" "}
+                  <span
+                    className={
+                      result.winnerSide === "blue"
+                        ? "text-green-500"
+                        : "text-red-500"
+                    }
+                  >
+                    {Number(result.blueScore)}
+                  </span>
                 </td>
-                <td className="border px-4 py-2">{`${result.blueClanName} ${
+                <td
+                  className={
+                    result.winnerSide === "blue"
+                      ? "border px-4 py-2 text-green-500"
+                      : "border px-4 py-2 text-red-500"
+                  }
+                >{`${result.blueClanName} ${
                   result.freezed
                     ? `: ${result.blueEloBefore.toFixed(2)} (${
                         result.winnerSide === "blue"
                           ? "+" + result.blueEloGain.toFixed(2)
-                          : result.blueEloGain.toFixed(2)
+                          : result.redEloGain.toFixed(2)
                       })`
                     : ""
                 }`}</td>
