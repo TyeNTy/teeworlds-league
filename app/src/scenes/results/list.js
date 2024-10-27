@@ -122,9 +122,11 @@ const List = () => {
                 </td>
                 <td className="border px-4 py-2">{`${result.redClanName} ${
                   result.freezed
-                    ? `: ${result.redEloBefore.toFixed(
-                        2
-                      )} (${result.redEloGain.toFixed(2)})`
+                    ? `: ${result.redEloBefore.toFixed(2)} (${
+                        result.winnerSide === "red"
+                          ? "+" + result.redEloGain.toFixed(2)
+                          : result.redEloGain.toFixed(2)
+                      })`
                     : ""
                 }`}</td>
                 <td className="border px-4 py-2">
@@ -132,9 +134,11 @@ const List = () => {
                 </td>
                 <td className="border px-4 py-2">{`${result.blueClanName} ${
                   result.freezed
-                    ? `: ${result.blueEloBefore.toFixed(
-                        2
-                      )} (${result.blueEloGain.toFixed(2)})`
+                    ? `: ${result.blueEloBefore.toFixed(2)} (${
+                        result.winnerSide === "blue"
+                          ? "+" + result.blueEloGain.toFixed(2)
+                          : result.blueEloGain.toFixed(2)
+                      })`
                     : ""
                 }`}</td>
                 <td className="border px-4 py-2">{result.winnerName}</td>
