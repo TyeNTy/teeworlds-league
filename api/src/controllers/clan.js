@@ -92,6 +92,7 @@ router.put(
     await clan.save();
 
     await updateStatPlayer(user);
+    await updateStatClan(clan);
 
     return res.status(200).send({ ok: true, data: clan.responseModel() });
   }),
@@ -114,6 +115,7 @@ router.delete(
     user.clanName = null;
 
     await updateStatPlayer(user);
+    await updateStatClan(clan);
 
     await user.save();
     await clan.save();
