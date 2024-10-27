@@ -10,7 +10,7 @@ import { FaArrowLeft } from "react-icons/fa";
 const Signin = () => {
   const [values, setValues] = useState(
     ENVIRONMENT === "development"
-      ? { email: "admin@email.com", password: "admin" }
+      ? { email: "tnt@email.com", password: "tnt" }
       : { email: "", password: "" }
   );
   const [loading, setLoading] = useState(false);

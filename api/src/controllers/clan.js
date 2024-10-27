@@ -7,7 +7,7 @@ const UserModel = require("../models/user");
 const config = require("../config");
 const enumUserRole = require("../enums/enumUserRole");
 const enumErrorCode = require("../enums/enumErrorCode");
-const { catchErrors, updateStatPlayer } = require("../utils");
+const { catchErrors, updateStatPlayer, updateAllStatsResult, updateStatClan } = require("../utils");
 
 router.post(
   "/",
@@ -53,6 +53,19 @@ router.put(
     if (body.name) obj.name = body.name;
 
     const clan = await ClanModel.findByIdAndUpdate(req.params.id, obj, { new: true });
+    return res.status(200).send({ ok: true, data: clan.responseModel() });
+  }),
+);
+
+router.post(
+  "/:id/updateStat",
+  passport.authenticate(enumUserRole.ADMIN, { session: false }),
+  catchErrors(async (req, res) => {
+    const { id } = req.params;
+
+    const clan = await ClanModel.findById(id);
+    await updateStatClan(clan);
+
     return res.status(200).send({ ok: true, data: clan.responseModel() });
   }),
 );

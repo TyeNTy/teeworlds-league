@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from "react";
-import api from "../../services/api";
+import API from "../../services/api";
 import Loader from "../../components/Loader";
 import { useParams } from "react-router";
 import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { useSelector } from "react-redux";
-import API from "../../services/api";
 
 const Details = () => {
   const [loading, setLoading] = useState(true);
@@ -17,7 +16,7 @@ const Details = () => {
   const id = useParams().id;
 
   const get = async () => {
-    const { ok, data } = await api.get(`/stat/${id}`);
+    const { ok, data } = await API.get(`/stat/${id}`);
     if (!ok) return toast.error("Erreur while fetching stat");
 
     setStat(data);

@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import api from "../../services/api";
 import Loader from "../../components/Loader";
 import { useParams } from "react-router";
 import { Link } from "react-router-dom";
@@ -9,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { MdDelete } from "react-icons/md";
 import Player from "../../components/Player";
 import { useSelector } from "react-redux";
+import API from "../../services/api";
 
 const Details = () => {
   const [clan, setClan] = useState(null);
@@ -24,12 +24,12 @@ const Details = () => {
   const realUser = useSelector((state) => state.Auth.user);
 
   const get = async () => {
-    const { ok, data } = await api.post(`/clan/search`, { _id: clanId });
+    const { ok, data } = await API.post(`/clan/search`, { _id: clanId });
     if (!ok) toast.error("Erreur while fetching clan");
 
     setClan(data[0]);
 
-    const { ok: okPlayers, data: dataPlayers } = await api.post(
+    const { ok: okPlayers, data: dataPlayers } = await API.post(
       `/user/search`,
       {}
     );
@@ -63,7 +63,7 @@ const Details = () => {
   const handleAddPlayer = async () => {
     if (playerSelected === null) return setOpen(false);
 
-    const { ok, data } = await api.put(`/clan/${clanId}/addPlayer`, {
+    const { ok, data } = await API.put(`/clan/${clanId}/addPlayer`, {
       userId: playerSelected._id,
     });
     if (!ok) return toast.error("Erreur while adding player to clan");
@@ -78,7 +78,7 @@ const Details = () => {
   };
 
   const handleSubmit = async () => {
-    const { ok, data } = await api.put(`/clan/${clanId}`, clan);
+    const { ok, data } = await API.put(`/clan/${clanId}`, clan);
     if (!ok) return toast.error("Erreur while updating clan");
 
     setClan(data);
@@ -91,7 +91,7 @@ const Details = () => {
     );
     if (!confirm) return;
 
-    const { ok } = await api.remove(`/clan/${clanId}`);
+    const { ok } = await API.remove(`/clan/${clanId}`);
     if (!ok) return toast.error("Erreur while deleting clan");
 
     toast.success("Clan deleted successfully");
@@ -104,7 +104,7 @@ const Details = () => {
     );
     if (!confirm) return;
 
-    const { ok, data } = await api.remove(`/clan/${clanId}/removePlayer`, {
+    const { ok, data } = await API.remove(`/clan/${clanId}/removePlayer`, {
       userId: player._id,
     });
     if (!ok) return toast.error("Erreur while removing player from clan");
@@ -119,6 +119,22 @@ const Details = () => {
   return (
     <div className="p-4">
       <h1 className="text-2xl font-bold text-center">Clan details</h1>
+
+      {realUser?.role === "ADMIN" && (
+        <button
+          className="ml-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+          onClick={async () => {
+            const res = await API.post(`/clan/${clanId}/updateStat`);
+            if (res.ok) {
+              toast.success("Clan updated");
+              return setClan(res.data);
+            }
+            return toast.error("Error while updating stat");
+          }}
+        >
+          Sync
+        </button>
+      )}
 
       <div className="mb-4">
         <label
