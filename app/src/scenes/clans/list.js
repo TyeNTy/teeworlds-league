@@ -106,7 +106,11 @@ const List = () => {
                 <td className="border px-4 py-2">{clan.numberWins}</td>
                 <td className="border px-4 py-2">{clan.numberLosses}</td>
                 <td className="border px-4 py-2">
-                  <StatColored value={clan.winRate} min={0} max={1} />
+                  <StatColored
+                    value={clan.winRate.toFixed(2)}
+                    min={0}
+                    max={1}
+                  />
                 </td>
                 <td className="border px-4 py-2">{clan.points}</td>
                 <td className="border px-4 py-2">{clan.difference}</td>
