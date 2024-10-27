@@ -167,7 +167,7 @@ const List = () => {
                     ? `: ${result.blueEloBefore.toFixed(2)} (${
                         result.winnerSide === "blue"
                           ? "+" + result.blueEloGain.toFixed(2)
-                          : result.redEloGain.toFixed(2)
+                          : result.blueEloGain.toFixed(2)
                       })`
                     : ""
                 }`}</td>
