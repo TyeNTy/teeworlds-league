@@ -17,6 +17,46 @@ function catchErrors(fn) {
   };
 }
 
+async function forfeitResult(result, side) {
+  result.isForfeit = true;
+
+  if (side === "red") {
+    result.winnerId = result.blueClanId;
+    result.winnerName = result.blueClanName;
+    result.winnerSide = "blue";
+
+    result.looserId = result.redClanId;
+    result.looserName = result.redClanName;
+    result.looserSide = "red";
+  }
+
+  if (side === "blue") {
+    result.winnerId = result.redClanId;
+    result.winnerName = result.redClanName;
+    result.winnerSide = "red";
+
+    result.looserId = result.blueClanId;
+    result.looserName = result.blueClanName;
+    result.looserSide = "blue";
+  }
+
+  await result.save();
+}
+
+async function unforfeitResult(result) {
+  result.isForfeit = false;
+
+  result.winnerId = null;
+  result.winnerName = null;
+  result.winnerSide = null;
+
+  result.looserId = null;
+  result.looserName = null;
+  result.looserSide = null;
+
+  await result.save();
+}
+
 async function updateAllStatsResult(result) {
   await updateStatResult(result);
 
@@ -32,6 +72,11 @@ async function updateAllStatsResult(result) {
 
 async function updateStatResult(result) {
   result.totalTime = result.totalTimeMinutes * 60 + result.totalTimeSeconds;
+
+  if (result.isForfeit) {
+    await result.save();
+    return;
+  }
 
   if (result.redScore > result.blueScore) {
     result.winnerId = result.redClanId;
@@ -622,10 +667,17 @@ const computeEloResult = async (result) => {
     looserPlayers.push(realPlayer);
   }
 
-  const eloWinnerBefore = winnerElo / winnerResultPlayers.length;
-  const eloLooserBefore = looserElo / looserResultPlayers.length;
+  let eloWinnerBefore = winnerElo / winnerResultPlayers.length;
+  let eloLooserBefore = looserElo / looserResultPlayers.length;
 
-  const { eloGain, eloLoss } = computeElo(eloWinnerBefore, eloLooserBefore);
+  let { eloGain, eloLoss } = computeElo(eloWinnerBefore, eloLooserBefore);
+
+  if (isNaN(eloGain) || isNaN(eloLoss)) {
+    eloGain = 0;
+    eloLoss = 0;
+    eloWinnerBefore = 0;
+    eloLooserBefore = 0;
+  }
 
   if (result.winnerSide === "red") {
     result.redEloBefore = eloWinnerBefore;
@@ -706,6 +758,8 @@ const mapServerMapping = {
 };
 
 module.exports = {
+  forfeitResult,
+  unforfeitResult,
   generateEmailcodeValidation,
   catchErrors,
   updateStatResult,

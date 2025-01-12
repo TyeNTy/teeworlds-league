@@ -22,7 +22,6 @@ const Details = () => {
   const [canEdit, setCanEdit] = useState(false);
 
   const [result, setResult] = useState(null);
-  const [oldResult, setOldResult] = useState(null);
   const [canUpdate, setCanUpdate] = useState(false);
 
   const resultId = useParams().id;
@@ -53,7 +52,6 @@ const Details = () => {
 
     if (data.length !== 1) return toast.error("Result not found");
     setResult(data[0]);
-    setOldResult(data[0]);
 
     const { ok: okClans, data: dataClans } = await api.post(`/clan/search`, {});
     if (!okClans) return toast.error("Erreur while fetching clans");
@@ -185,6 +183,36 @@ const Details = () => {
 
     toast.success("Result frozen");
     await get();
+  };
+
+  const handleForfeit = async (side) => {
+    const approved = window.confirm(
+      `Are you sure you want to declare forfeit for the ${side} side ?`
+    );
+
+    if (!approved) return;
+
+    const { ok, data } = await api.post(`/result/${resultId}/forfeit`, {
+      side,
+    });
+    if (!ok) return toast.error("Erreur while declaring forfeit");
+
+    setResult(data);
+    toast.success(`Forfeit declared for ${side} side`);
+  };
+
+  const handleUnforfeit = async (side) => {
+    const approved = window.confirm(
+      `Are you sure you want to remove forfeit for the ${side} side ?`
+    );
+
+    if (!approved) return;
+
+    const { ok, data } = await api.post(`/result/${resultId}/unforfeit`);
+    if (!ok) return toast.error("Erreur while removing forfeit");
+
+    setResult(data);
+    toast.success(`Forfeit removed for ${side} side`);
   };
 
   if (loading) return <Loader />;
@@ -330,6 +358,25 @@ const Details = () => {
                 disabled={!canEdit}
               />
             </label>
+            {canEdit ? (
+              result.isForfeit ? (
+                result.winnerSide === "blue" ? (
+                  <button
+                    className="ml-2 bg-green-500 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                    onClick={() => handleUnforfeit("red")}
+                  >
+                    Unforfeit
+                  </button>
+                ) : null
+              ) : (
+                <button
+                  className="ml-2 bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                  onClick={() => handleForfeit("red")}
+                >
+                  Forfeit
+                </button>
+              )
+            ) : null}
           </div>
           <div className="flex flex-col items-center">
             {result.redPlayers.length > 0 && (
@@ -481,6 +528,25 @@ const Details = () => {
                 disabled={!canEdit}
               />
             </label>
+            {canEdit ? (
+              result.isForfeit ? (
+                result.winnerSide === "red" ? (
+                  <button
+                    className="ml-2 bg-green-500 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                    onClick={() => handleUnforfeit("blue")}
+                  >
+                    Unforfeit
+                  </button>
+                ) : null
+              ) : (
+                <button
+                  className="ml-2 bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                  onClick={() => handleForfeit("blue")}
+                >
+                  Forfeit
+                </button>
+              )
+            ) : null}
           </div>
           <div className="flex flex-col items-center">
             {result.bluePlayers.length > 0 && (

@@ -7,7 +7,16 @@ const UserModel = require("../models/user");
 const ClanModel = require("../models/clan");
 const enumUserRole = require("../enums/enumUserRole");
 const enumErrorCode = require("../enums/enumErrorCode");
-const { catchErrors, updateStatResult, parseDiscordMessage, updateStatPlayer, updateStatClan, updateAllStatsResult } = require("../utils");
+const {
+  catchErrors,
+  updateStatResult,
+  parseDiscordMessage,
+  updateStatPlayer,
+  updateStatClan,
+  updateAllStatsResult,
+  forfeitResult,
+  unforfeitResult,
+} = require("../utils");
 
 router.post(
   "/",
@@ -59,6 +68,42 @@ router.post(
     if (result.freezed) return res.status(400).send({ ok: false, code: enumErrorCode.RESULT_ELO_ALREADY_COMPUTED });
 
     await updateAllStatsResult(result);
+
+    return res.status(200).send({ ok: true, data: result.responseModel() });
+  }),
+);
+
+router.post(
+  "/:resultId/forfeit",
+  passport.authenticate(enumUserRole.ADMIN, { session: false }),
+  catchErrors(async (req, res) => {
+    const resultId = req.params.resultId;
+
+    const result = await ResultModel.findById(resultId);
+    if (!result) return res.status(400).send({ ok: false, code: enumErrorCode.RESULT_NOT_FOUND });
+    if (result.freezed) return res.status(400).send({ ok: false, code: enumErrorCode.RESULT_ELO_ALREADY_COMPUTED });
+
+    const body = req.body;
+    const side = body.side;
+
+    await forfeitResult(result, side);
+
+    return res.status(200).send({ ok: true, data: result.responseModel() });
+  }),
+);
+
+router.post(
+  "/:resultId/unforfeit",
+  passport.authenticate(enumUserRole.ADMIN, { session: false }),
+  catchErrors(async (req, res) => {
+    const resultId = req.params.resultId;
+
+    const result = await ResultModel.findById(resultId);
+    if (!result) return res.status(400).send({ ok: false, code: enumErrorCode.RESULT_NOT_FOUND });
+    if (result.freezed) return res.status(400).send({ ok: false, code: enumErrorCode.RESULT_ELO_ALREADY_COMPUTED });
+
+    await unforfeitResult(result);
+    await updateStatResult(result);
 
     return res.status(200).send({ ok: true, data: result.responseModel() });
   }),
@@ -167,9 +212,6 @@ router.put(
     const result = await ResultModel.findById(req.params.id);
     if (!result) return res.status(400).send({ ok: false, code: enumErrorCode.RESULT_NOT_FOUND });
     if (result.freezed) return res.status(400).send({ ok: false, code: enumErrorCode.RESULT_ELO_ALREADY_COMPUTED });
-
-    const oldRedClanId = result.redClanId;
-    const oldBlueClanId = result.blueClanId;
 
     if (body.date) result.date = body.date;
     if (body.mode) result.mode = body.mode;

@@ -9,7 +9,7 @@ import StatColored from "../../components/StatColored";
 const List = () => {
   const [clans, setClans] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filters, setFilters] = useState({ sort: "winRate", asc: false });
+  const [filters, setFilters] = useState({ sort: "points", asc: false });
   const [open, setOpen] = useState(false);
   const [newClan, setNewClan] = useState({ name: "" });
 
