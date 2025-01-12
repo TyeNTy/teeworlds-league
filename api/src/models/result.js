@@ -12,7 +12,7 @@ const PlayerSchema = new mongoose.Schema({
   kills: { type: Number, default: 0 },
   deaths: { type: Number, default: 0 },
   flags: { type: Number, default: 0 },
-  flagsTouches: { type: Number, default: 0 }, 
+  flagsTouches: { type: Number, default: 0 },
 
   eloBefore: { type: Number, default: 1000 },
   eloAfter: { type: Number, default: 1000 },
@@ -25,6 +25,7 @@ const Schema = new mongoose.Schema(
     map: { type: String, trim: true, default: "ctf_5" },
     scoreLimit: { type: Number, default: 1000 },
     timeLimit: { type: Number, default: 0 },
+    isForfeit: { type: Boolean, default: false },
 
     totalTimeSeconds: { type: Number, default: 0 },
     totalTimeMinutes: { type: Number, default: 0 },
@@ -72,6 +73,7 @@ Schema.methods.responseModel = function () {
     map: this.map,
     scoreLimit: this.scoreLimit,
     timeLimit: this.timeLimit,
+    isForfeit: this.isForfeit,
     blueClanId: this.blueClanId,
     blueClanName: this.blueClanName,
     redClanId: this.redClanId,
