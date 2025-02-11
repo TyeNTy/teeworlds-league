@@ -128,11 +128,12 @@ async function updateStatClan(clan) {
   const totalElo = players.reduce((acc, player) => {
     return acc + player.elo;
   }, 0);
-  const averageElo = totalElo / players.length;
+
+  let averageElo = totalElo / players.length;
+  if (isNaN(averageElo)) averageElo = 0;
   clan.averageElo = averageElo;
 
   if (isNaN(clan.winRate)) clan.winRate = 0;
-  if (isNaN(clan.averageElo)) clan.averageElo = 0;
 
   await clan.save();
 }
