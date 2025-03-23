@@ -5,7 +5,6 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import Modal from "../../components/Modal";
 import { useSelector } from "react-redux";
-import StatColored from "../../components/StatColored";
 
 const List = () => {
   const [users, setUsers] = useState([]);
@@ -21,6 +20,7 @@ const List = () => {
   const [showCreatePlayer, setShowCreatePlayer] = useState(false);
 
   const realUser = useSelector((state) => state.Auth.user);
+  const currentSeason = useSelector((state) => state.Season.currentSeason);
 
   const navigate = useNavigate();
 
@@ -64,7 +64,7 @@ const List = () => {
     <div className="p-4">
       <h1 className="text-2xl font-bold text-center">Players</h1>
 
-      {realUser?.role === "ADMIN" && (
+      {realUser?.role === "ADMIN" && currentSeason?.isActive && (
         <button
           className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
           onClick={() => setShowCreatePlayer(true)}

@@ -14,7 +14,13 @@ const List = () => {
 
   const navigate = useNavigate();
 
-  const realUser = useSelector((state) => state.Auth.user);
+  const currentSeason = useSelector((state) => state.Season.currentSeason);
+
+  useEffect(() => {
+    if (currentSeason) {
+      setFilters((prev) => ({ ...prev, seasonId: currentSeason._id }));
+    }
+  }, [currentSeason]);
 
   const get = async () => {
     const { ok, data } = await api.post(`/stat/search`, filters);

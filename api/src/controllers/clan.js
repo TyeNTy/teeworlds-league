@@ -15,7 +15,15 @@ router.post(
   catchErrors(async (req, res) => {
     const body = req.body;
 
-    const obj = {};
+    const currentSeason = await SeasonModel.findOne({ isActive: true });
+    if (!currentSeason) return res.status(400).send({ ok: false, message: "No active season" });
+
+    const obj = {
+      seasonId: currentSeason._id,
+      seasonName: currentSeason.name,
+      seasonStartDate: currentSeason.startDate,
+      seasonEndDate: currentSeason.endDate,
+    };
     if (body.name) obj.name = body.name;
 
     const clan = await ClanModel.create(obj);
@@ -31,7 +39,8 @@ router.post(
     const obj = {};
     if (body._id) obj._id = body._id;
     if (body.name) obj.name = body.name;
-
+    if (body.seasonName) obj.seasonName = body.seasonName;
+    if (body.seasonId) obj.seasonId = body.seasonId;
     let order = -1;
     if (body.asc) order = 1;
 
@@ -119,7 +128,7 @@ router.delete(
 
     await user.save();
     await clan.save();
-    return res.status(200).send({ ok: true, data: clan.responseModel() });
+    return res.status(200).send({ ok: true, data: { clan: clan.responseModel(), player: user.responseModel() } });
   }),
 );
 

@@ -5,6 +5,7 @@ const passport = require("passport");
 const ResultModel = require("../models/result");
 const UserModel = require("../models/user");
 const ClanModel = require("../models/clan");
+const SeasonModel = require("../models/season");
 const enumUserRole = require("../enums/enumUserRole");
 const enumErrorCode = require("../enums/enumErrorCode");
 const {
@@ -12,7 +13,6 @@ const {
   updateStatResult,
   parseDiscordMessage,
   updateStatPlayer,
-  updateStatClan,
   updateAllStatsResult,
   forfeitResult,
   unforfeitResult,
@@ -24,7 +24,16 @@ router.post(
   catchErrors(async (req, res) => {
     const body = req.body;
 
-    const obj = {};
+    const currentSeason = await SeasonModel.findOne({ isActive: true });
+    if (!currentSeason) return res.status(400).send({ ok: false, message: "No active season" });
+
+    const obj = {
+      seasonId: currentSeason._id,
+      seasonName: currentSeason.name,
+      seasonStartDate: currentSeason.startDate,
+      seasonEndDate: currentSeason.endDate,
+    };
+
     if (body.date) obj.date = body.date;
 
     const result = await ResultModel.create(obj);
@@ -45,7 +54,15 @@ router.post(
       if (!response.ok) return res.status(400).send(response);
       result = response.data.result;
     } else {
-      const obj = {};
+      const currentSeason = await SeasonModel.findOne({ isActive: true });
+      if (!currentSeason) return res.status(400).send({ ok: false, message: "No active season" });
+
+      const obj = {
+        seasonId: currentSeason._id,
+        seasonName: currentSeason.name,
+        seasonStartDate: currentSeason.startDate,
+        seasonEndDate: currentSeason.endDate,
+      };
       result = await ResultModel.create(obj);
     }
 
@@ -116,6 +133,7 @@ router.post(
 
     const obj = {};
     if (body._id) obj._id = body._id;
+    if (body.seasonName) obj.seasonName = body.seasonName;
 
     const results = await ResultModel.find(obj, null, { sort: { date: -1 } });
     return res.status(200).send({ ok: true, data: results.map((result) => result.responseModel()) });

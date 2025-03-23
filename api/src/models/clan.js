@@ -13,6 +13,11 @@ const PlayerSchema = new mongoose.Schema({
 
 const Schema = new mongoose.Schema(
   {
+    seasonId: { type: ObjectId },
+    seasonStartDate: { type: Date },
+    seasonEndDate: { type: Date },
+    seasonName: { type: String },
+
     name: { type: String, trim: true },
 
     players: { type: [PlayerSchema], default: [] },
@@ -36,6 +41,10 @@ const Schema = new mongoose.Schema(
 Schema.methods.responseModel = function () {
   return {
     _id: this._id,
+    seasonId: this.seasonId,
+    seasonName: this.seasonName,
+    seasonStartDate: this.seasonStartDate,
+    seasonEndDate: this.seasonEndDate,
     name: this.name,
     players: this.players,
     points: this.points,

@@ -14,7 +14,6 @@ const Details = () => {
   const [clan, setClan] = useState(null);
   const [loading, setLoading] = useState(true);
   const [allPlayers, setAllPlayers] = useState([]);
-  const [allPlayersSelected, setAllPlayersSelected] = useState([]);
   const [playerSelected, setPlayerSelected] = useState(null);
   const [open, setOpen] = useState(false);
 
@@ -23,8 +22,13 @@ const Details = () => {
 
   const realUser = useSelector((state) => state.Auth.user);
 
+  const currentSeason = useSelector((state) => state.Season.currentSeason);
+
   const get = async () => {
-    const { ok, data } = await API.post(`/clan/search`, { _id: clanId });
+    const { ok, data } = await API.post(`/clan/search`, {
+      _id: clanId,
+      seasonId: currentSeason._id,
+    });
     if (!ok) toast.error("Erreur while fetching clan");
 
     setClan(data[0]);
@@ -42,18 +46,12 @@ const Details = () => {
       )
     );
 
-    if (data[0].players)
-      setAllPlayersSelected(
-        dataPlayers.filter((player) =>
-          data[0].players.find((p) => p.userId === player._id)
-        )
-      );
     setLoading(false);
   };
 
   useEffect(() => {
-    get();
-  }, [clanId]);
+    if (currentSeason) get();
+  }, [clanId, currentSeason]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -68,7 +66,7 @@ const Details = () => {
     });
     if (!ok) return toast.error("Erreur while adding player to clan");
 
-    setAllPlayersSelected([...data.players]);
+    setClan(data);
     setAllPlayers(
       allPlayers.filter((player) => player._id !== playerSelected._id)
     );
@@ -98,29 +96,29 @@ const Details = () => {
     navigate("/clans");
   };
 
-  const handleDeletePlayer = async (player) => {
+  const handleDeletePlayer = async (playerId) => {
     const confirm = window.confirm(
       "Are you sure you want to remove this player from the clan ?"
     );
     if (!confirm) return;
 
     const { ok, data } = await API.remove(`/clan/${clanId}/removePlayer`, {
-      userId: player._id,
+      userId: playerId,
     });
     if (!ok) return toast.error("Erreur while removing player from clan");
 
-    setAllPlayersSelected(data.players);
-    setAllPlayers([...allPlayers, player]);
+    setClan(data.clan);
+    setAllPlayers([...allPlayers, data.player]);
     toast.success("Player removed from clan successfully");
   };
 
-  if (loading) return <Loader />;
+  if (loading || !currentSeason) return <Loader />;
 
   return (
     <div className="p-4">
       <h1 className="text-2xl font-bold text-center">Clan details</h1>
 
-      {realUser?.role === "ADMIN" && (
+      {realUser?.role === "ADMIN" && currentSeason?.isActive && (
         <button
           className="ml-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
           onClick={async () => {
@@ -151,7 +149,7 @@ const Details = () => {
           onChange={handleChange}
           className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
           placeholder="Name of the clan"
-          disabled={realUser?.role !== "ADMIN"}
+          disabled={realUser?.role !== "ADMIN" || !currentSeason?.isActive}
         />
       </div>
       <div className="mb-4">
@@ -162,22 +160,24 @@ const Details = () => {
           Players
         </label>
         <div>
-          {allPlayersSelected.map((player, index) => (
+          {clan.players.map((player, index) => (
             <div key={index} className="flex items-center">
-              {realUser?.role === "ADMIN" && (
+              {realUser?.role === "ADMIN" && currentSeason?.isActive && (
                 <MdDelete
                   size={20}
                   color="red"
                   className="cursor-pointer"
-                  onClick={() => handleDeletePlayer(player)}
+                  onClick={() => handleDeletePlayer(player.userId)}
                 />
               )}
-              <Player key={index} player={player} />
+              <Player
+                player={{ _id: player.userId, userName: player.userName }}
+              />
             </div>
           ))}
         </div>
 
-        {realUser?.role === "ADMIN" && (
+        {realUser?.role === "ADMIN" && currentSeason?.isActive && (
           <div className="flex items-center justify-center">
             <button
               className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
@@ -191,7 +191,7 @@ const Details = () => {
           </div>
         )}
       </div>
-      {realUser?.role === "ADMIN" && (
+      {realUser?.role === "ADMIN" && currentSeason?.isActive && (
         <div className="flex items-center justify-between">
           <button
             className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"

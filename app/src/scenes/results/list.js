@@ -8,18 +8,25 @@ import { maps, modes } from "../../components/utils";
 import { useSelector } from "react-redux";
 
 const List = () => {
+  const currentSeason = useSelector((state) => state.Season.currentSeason);
+  const realUser = useSelector((state) => state.Auth.user);
+
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filters, setFilters] = useState({});
+  const [filters, setFilters] = useState({ seasonId: currentSeason._id });
   const [open, setOpen] = useState(false);
   const [newPost, setNewPost] = useState({
     date: new Date().toISOString().split("T")[0],
     discordMessage: "",
   });
 
-  const navigate = useNavigate();
+  useEffect(() => {
+    if (currentSeason) {
+      setFilters((prev) => ({ ...prev, seasonName: currentSeason.name }));
+    }
+  }, [currentSeason]);
 
-  const realUser = useSelector((state) => state.Auth.user);
+  const navigate = useNavigate();
 
   const get = async () => {
     const { ok, data } = await api.post(`/result/search`, { ...filters });
@@ -35,8 +42,8 @@ const List = () => {
   };
 
   useEffect(() => {
-    get();
-  }, [filters]);
+    if (currentSeason) get();
+  }, [filters, currentSeason]);
 
   const handleCreateResult = async () => {
     const { ok, data, errorCode, errorData } = await api.post(
@@ -74,7 +81,7 @@ const List = () => {
     <div className="p-4">
       <h1 className="text-2xl font-bold text-center">Results</h1>
 
-      {realUser?.role === "ADMIN" && (
+      {realUser?.role === "ADMIN" && currentSeason?.isActive && (
         <button
           className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
           onClick={() => setOpen(true)}
@@ -196,7 +203,7 @@ const List = () => {
                   </>
                 )}
                 <td className="border px-4 py-2">{result.winnerName}</td>
-                {realUser?.role === "ADMIN" && (
+                {realUser?.role === "ADMIN" && currentSeason?.isActive && (
                   <td className="border px-4 py-2">
                     <span
                       className={

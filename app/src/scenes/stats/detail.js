@@ -12,6 +12,7 @@ const Details = () => {
 
   const navigate = useNavigate();
   const realUser = useSelector((state) => state.Auth.user);
+  const currentSeason = useSelector((state) => state.Season.currentSeason);
 
   const id = useParams().id;
 
@@ -35,7 +36,7 @@ const Details = () => {
         Stat of {stat.userName}
       </h1>
 
-      {realUser?.role === "ADMIN" && (
+      {realUser?.role === "ADMIN" && currentSeason?.isActive && (
         <button
           className="ml-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
           onClick={async () => {

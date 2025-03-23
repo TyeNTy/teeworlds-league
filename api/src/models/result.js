@@ -20,6 +20,11 @@ const PlayerSchema = new mongoose.Schema({
 
 const Schema = new mongoose.Schema(
   {
+    seasonId: { type: ObjectId },
+    seasonStartDate: { type: Date },
+    seasonEndDate: { type: Date },
+    seasonName: { type: String },
+
     date: { type: Date, default: Date.now },
     mode: { type: String, trim: true, default: "2v2" },
     map: { type: String, trim: true, default: "ctf_5" },
@@ -68,6 +73,10 @@ const Schema = new mongoose.Schema(
 Schema.methods.responseModel = function () {
   return {
     _id: this._id,
+    seasonId: this.seasonId,
+    seasonName: this.seasonName,
+    seasonStartDate: this.seasonStartDate,
+    seasonEndDate: this.seasonEndDate,
     date: this.date,
     mode: this.mode,
     map: this.map,

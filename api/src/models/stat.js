@@ -4,6 +4,11 @@ const ObjectId = mongoose.Types.ObjectId;
 const MODELNAME = "stat";
 const Schema = new mongoose.Schema(
   {
+    seasonId: { type: ObjectId },
+    seasonStartDate: { type: Date },
+    seasonEndDate: { type: Date },
+    seasonName: { type: String },
+
     userId: { type: ObjectId },
     userName: { type: String },
     avatar: { type: String },

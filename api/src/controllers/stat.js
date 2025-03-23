@@ -24,6 +24,8 @@ router.post(
     if (body._id) obj._id = body._id;
     if (body.userName) obj.userName = { $regex: body.userName, $options: "i" };
     if (body.clanName) obj.clanName = { $regex: body.clanName, $options: "i" };
+    if (body.seasonId) obj.seasonId = body.seasonId;
+    if (body.seasonName) obj.seasonName = { $regex: body.seasonName, $options: "i" };
 
     let order = -1;
     if (body.asc) order = 1;

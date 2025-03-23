@@ -28,6 +28,7 @@ const Details = () => {
   const navigate = useNavigate();
 
   const realUser = useSelector((state) => state.Auth.user);
+  const currentSeason = useSelector((state) => state.Season.currentSeason);
 
   const getRedClanPlayers = async () => {
     const { ok: okPlayers, data: dataPlayers } = await api.post(
@@ -53,12 +54,16 @@ const Details = () => {
     if (data.length !== 1) return toast.error("Result not found");
     setResult(data[0]);
 
-    const { ok: okClans, data: dataClans } = await api.post(`/clan/search`, {});
+    const { ok: okClans, data: dataClans } = await api.post(`/clan/search`, {
+      seasonId: data[0].seasonId,
+    });
     if (!okClans) return toast.error("Erreur while fetching clans");
 
     setClans(dataClans);
 
-    setCanEdit(realUser?.role === "ADMIN" && !data[0].freezed);
+    setCanEdit(
+      realUser?.role === "ADMIN" && !data[0].freezed && currentSeason?.isActive
+    );
 
     setCanUpdate(false);
     setLoading(false);

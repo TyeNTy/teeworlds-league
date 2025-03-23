@@ -2,6 +2,7 @@ const ResultModel = require("../models/result");
 const StatModel = require("../models/stat");
 const UserModel = require("../models/user");
 const ClanModel = require("../models/clan");
+const SeasonModel = require("../models/season");
 const { enumMaps } = require("../enums/enumMaps");
 
 // Generate a random number between 000000 and 999999 and return as string
@@ -112,8 +113,11 @@ async function updateStatResult(result) {
 async function updateStatClan(clan) {
   if (!clan) return;
 
-  const winnerResults = await ResultModel.find({ winnerId: clan._id, freezed: true });
-  const looserResults = await ResultModel.find({ looserId: clan._id, freezed: true });
+  const season = await SeasonModel.findOne({ _id: clan.seasonId });
+  if (!season) return;
+
+  const winnerResults = await ResultModel.find({ winnerId: clan._id, freezed: true, seasonId: season._id });
+  const looserResults = await ResultModel.find({ looserId: clan._id, freezed: true, seasonId: season._id });
 
   clan.numberGames = winnerResults.length + looserResults.length;
   clan.numberWins = winnerResults.length;
@@ -122,7 +126,9 @@ async function updateStatClan(clan) {
   clan.points = clan.numberWins;
   clan.difference = clan.numberWins - clan.numberLosses;
 
-  clan.winRate = clan.numberWins / clan.numberGames;
+  let winRate = clan.numberWins / clan.numberGames;
+  if (isNaN(winRate)) winRate = 0;
+  clan.winRate = winRate;
 
   const players = await UserModel.find({ clanId: clan._id });
   const totalElo = players.reduce((acc, player) => {
@@ -133,14 +139,15 @@ async function updateStatClan(clan) {
   if (isNaN(averageElo)) averageElo = 0;
   clan.averageElo = averageElo;
 
-  if (isNaN(clan.winRate)) clan.winRate = 0;
-
   await clan.save();
 }
 
 async function updateStatPlayer(player) {
-  const redResults = await ResultModel.find({ redPlayers: { $elemMatch: { userId: player._id } }, freezed: true });
-  const blueResults = await ResultModel.find({ bluePlayers: { $elemMatch: { userId: player._id } }, freezed: true });
+  const currentSeason = await SeasonModel.findOne({ isActive: true });
+  if (!currentSeason) return;
+
+  const redResults = await ResultModel.find({ redPlayers: { $elemMatch: { userId: player._id } }, freezed: true, seasonId: currentSeason._id });
+  const blueResults = await ResultModel.find({ bluePlayers: { $elemMatch: { userId: player._id } }, freezed: true, seasonId: currentSeason._id });
   const allResults = [...redResults, ...blueResults];
 
   const numberGames = allResults.length;
@@ -280,11 +287,16 @@ async function updateStatPlayer(player) {
     }
   }
 
-  let stat = await StatModel.findOne({ userId: player._id });
+  let stat = await StatModel.findOne({ userId: player._id, seasonId: currentSeason._id });
 
   if (!stat) {
     stat = new StatModel({
       userId: player._id,
+      elo: player.elo,
+      seasonId: currentSeason._id,
+      seasonName: currentSeason.name,
+      seasonStartDate: currentSeason.startDate,
+      seasonEndDate: currentSeason.endDate,
     });
   }
 
@@ -414,7 +426,16 @@ const parseWebhookMessage = async (content) => {
   const server = content.server;
   if (server === "gCTF League Test Server") return { ok: false, errorCode: "INVALID_SERVER" };
 
+  const currentSeason = await SeasonModel.findOne({ isActive: true });
+
+  if (!currentSeason) return { ok: false, errorCode: "NO_ACTIVE_SEASON" };
+
   const obj = {};
+
+  obj.seasonId = currentSeason._id;
+  obj.seasonName = currentSeason.name;
+  obj.seasonStartDate = currentSeason.startDate;
+  obj.seasonEndDate = currentSeason.endDate;
 
   obj.date = new Date();
   obj.map = detectMap(content.map);
@@ -505,6 +526,9 @@ const parseWebhookMessage = async (content) => {
 };
 
 const parseDiscordMessage = async (content) => {
+  const currentSeason = await SeasonModel.findOne({ isActive: true });
+  if (!currentSeason) return { ok: false, errorCode: "NO_ACTIVE_SEASON" };
+
   const lines = content.split("\n");
 
   const serverInfo = parseServerInfo(lines[0], lines[1]);
@@ -575,6 +599,10 @@ const parseDiscordMessage = async (content) => {
     redClanName,
     blueClanId: blueClan._id,
     blueClanName,
+    seasonId: currentSeason._id,
+    seasonName: currentSeason.name,
+    seasonStartDate: currentSeason.startDate,
+    seasonEndDate: currentSeason.endDate,
   };
 
   const result = await ResultModel.create(obj);
