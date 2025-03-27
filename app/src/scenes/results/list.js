@@ -20,29 +20,29 @@ const List = () => {
     discordMessage: "",
   });
 
-  useEffect(() => {
-    if (currentSeason) {
-      setFilters((prev) => ({ ...prev, seasonName: currentSeason.name }));
-    }
-  }, [currentSeason]);
-
   const navigate = useNavigate();
 
-  const get = async () => {
-    const { ok, data } = await api.post(`/result/search`, { ...filters });
-    if (!ok) toast.error("Erreur while fetching results");
-
-    let filteredData = data;
-    if (realUser?.role !== "ADMIN") {
-      filteredData = data.filter((result) => result.freezed);
-    }
-
-    setResults(filteredData);
-    setLoading(false);
-  };
-
   useEffect(() => {
-    if (currentSeason) get();
+    if (currentSeason) {
+      const fetchData = async () => {
+        const { ok, data } = await api.post(`/result/search`, {
+          ...filters,
+          seasonId: currentSeason._id,
+          seasonName: currentSeason.name,
+        });
+        if (!ok) toast.error("Erreur while fetching results");
+
+        let filteredData = data;
+        if (realUser?.role !== "ADMIN") {
+          filteredData = data.filter((result) => result.freezed);
+        }
+
+        setResults(filteredData);
+        setLoading(false);
+      };
+
+      fetchData();
+    }
   }, [filters, currentSeason]);
 
   const handleCreateResult = async () => {
@@ -75,7 +75,7 @@ const List = () => {
     navigate(`/results/${data._id}`);
   };
 
-  if (loading) return <Loader />;
+  if (loading || !currentSeason) return <Loader />;
 
   return (
     <div className="p-4">
