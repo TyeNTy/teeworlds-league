@@ -31,20 +31,19 @@ const List = () => {
 
   useEffect(() => {
     if (currentSeason) {
-      setFilters((prev) => ({ ...prev, seasonName: currentSeason.name }));
+      const fetchData = async () => {
+        const { ok, data } = await api.post(`/clan/search`, {
+          ...filters,
+          seasonName: currentSeason.name,
+        });
+        if (!ok) toast.error("Erreur while fetching users");
+
+        setClans(data);
+        setLoading(false);
+      };
+
+      fetchData();
     }
-  }, [currentSeason]);
-
-  const get = async () => {
-    const { ok, data } = await api.post(`/clan/search`, { ...filters });
-    if (!ok) toast.error("Erreur while fetching users");
-
-    setClans(data);
-    setLoading(false);
-  };
-
-  useEffect(() => {
-    if (currentSeason) get();
   }, [filters, currentSeason]);
 
   const handleChange = (e) => {
