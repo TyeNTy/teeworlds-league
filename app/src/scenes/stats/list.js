@@ -13,26 +13,24 @@ const List = () => {
   const [filters, setFilters] = useState({ sort: "winRate", asc: false });
 
   const navigate = useNavigate();
-
   const currentSeason = useSelector((state) => state.Season.currentSeason);
 
   useEffect(() => {
     if (currentSeason) {
-      setFilters((prev) => ({ ...prev, seasonId: currentSeason._id }));
+      const fetchData = async () => {
+        const { ok, data } = await api.post(`/stat/search`, {
+          ...filters,
+          seasonId: currentSeason._id,
+        });
+        if (!ok) return toast.error("Erreur while fetching stats");
+
+        setStats(data);
+        setLoading(false);
+      };
+
+      fetchData();
     }
-  }, [currentSeason]);
-
-  const get = async () => {
-    const { ok, data } = await api.post(`/stat/search`, filters);
-    if (!ok) return toast.error("Erreur while fetching stats");
-
-    setStats(data);
-    setLoading(false);
-  };
-
-  useEffect(() => {
-    get();
-  }, [filters]);
+  }, [filters, currentSeason]);
 
   if (loading) return <Loader />;
 
