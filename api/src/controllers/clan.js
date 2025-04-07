@@ -4,7 +4,7 @@ const passport = require("passport");
 
 const ClanModel = require("../models/clan");
 const UserModel = require("../models/user");
-const config = require("../config");
+const SeasonModel = require("../models/season");
 const enumUserRole = require("../enums/enumUserRole");
 const enumErrorCode = require("../enums/enumErrorCode");
 const { catchErrors, updateStatPlayer, updateAllStatsResult, updateStatClan } = require("../utils");
