@@ -19,6 +19,7 @@ import Auth from "./scenes/auth";
 import TopBar from "./components/TopBar";
 import Rules from "./scenes/rules";
 import Clans from "./scenes/clans";
+import Calendar from "./scenes/calendar";
 import Results from "./scenes/results";
 import Stats from "./scenes/stats";
 
@@ -77,6 +78,7 @@ const App = () => {
           <Route path="/rules/*" element={<Rules />} />
           <Route path="/clans/*" element={<Clans />} />
           <Route path="/users/*" element={<Users />} />
+          <Route path="/calendar/*" element={<Calendar />} />
           <Route path="/results/*" element={<Results />} />
           <Route path="/stats/*" element={<Stats />} />
           <Route path="/*" index element={<Users />} />
