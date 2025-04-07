@@ -3,9 +3,12 @@ const router = express.Router();
 const passport = require("passport");
 const jwt = require("jsonwebtoken");
 
+const SeasonModel = require("../models/season");
 const UserModel = require("../models/user");
 const ClanModel = require("../models/clan");
 const StatModel = require("../models/stat");
+const ResultModel = require("../models/result");
+
 const config = require("../config");
 const enumUserRole = require("../enums/enumUserRole");
 const enumErrorCode = require("../enums/enumErrorCode");
@@ -163,8 +166,48 @@ router.put(
 
     if (!user) return res.status(404).send({ ok: false, code: enumErrorCode.USER_NOT_EXISTS, message: "User not found" });
 
-    const body = req.body;
-    user.set(body);
+    const obj = req.body;
+
+    if (obj.userName && obj.userName !== user.userName) {
+      const currentSeason = await SeasonModel.findOne({ isActive: true });
+
+      if (currentSeason) {
+        const clan = await ClanModel.findOne({ _id: user.clanId, seasonId: currentSeason._id });
+        if (clan) {
+          clan.players = clan.players.map((player) => {
+            if (player.userId.toString() === user._id.toString()) player.userName = obj.userName;
+            return player;
+          });
+          await clan.save();
+        }
+
+        const blueResults = await ResultModel.find({ blueClanId: user.clanId, seasonId: currentSeason._id });
+        for (const result of blueResults) {
+          result.bluePlayers = result.bluePlayers.map((player) => {
+            if (player.userId.toString() === user._id.toString()) player.userName = obj.userName;
+            return player;
+          });
+          await result.save();
+        }
+
+        const redResults = await ResultModel.find({ redClanId: user.clanId, seasonId: currentSeason._id });
+        for (const result of redResults) {
+          result.redPlayers = result.redPlayers.map((player) => {
+            if (player.userId.toString() === user._id.toString()) player.userName = obj.userName;
+            return player;
+          });
+          await result.save();
+        }
+
+        const stats = await StatModel.find({ userId: user._id, seasonId: currentSeason._id });
+        for (const stat of stats) {
+          stat.userName = obj.userName;
+          await stat.save();
+        }
+      }
+    }
+
+    user.set(obj);
     await user.save();
 
     return res.status(200).send({ ok: true, data: user.responseModel() });
