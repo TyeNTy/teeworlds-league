@@ -2,6 +2,41 @@ import React from "react";
 
 const League = () => (
   <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-lg">
+    <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-8 rounded-r-lg">
+      <div className="flex items-start">
+        <div className="flex-shrink-0">
+          <svg
+            className="h-5 w-5 text-red-500"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path
+              fillRule="evenodd"
+              d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+              clipRule="evenodd"
+            />
+          </svg>
+        </div>
+        <div className="ml-3">
+          <h3 className="text-lg font-bold text-red-800">Important Notice</h3>
+          <div className="mt-2 text-red-700">
+            <p>
+              You must use the official League Client to participate in League
+              Games. Download it here:{" "}
+              <a
+                href="https://downloads.zcat.ch/league/"
+                className="font-bold underline hover:text-red-900"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                https://downloads.zcat.ch/league/
+              </a>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div className="text-center mb-8">
       <h1 className="text-4xl font-bold text-gray-800 mb-4">
         gCTF League Rules
@@ -63,7 +98,7 @@ const League = () => (
             "If both clans do not show up after 5 minutes, no clan will receive points for this match day.",
             "A clan is considered a no-show if less than 1 clan member is present.",
             "A clan that has not participated in more than 6 games at the end of a season will be banned for the next season.",
-            "Only an official League Client may be used in League Games. (Download on the website: https://gctfleague.org/)",
+            "Only an official League Client may be used in League Games. (Download here : https://downloads.zcat.ch/league/)",
           ].map((rule, index) => (
             <p key={index} className="flex items-start">
               <span className="text-blue-600 font-bold mr-2">
