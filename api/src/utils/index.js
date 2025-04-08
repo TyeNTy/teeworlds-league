@@ -583,9 +583,9 @@ const parseDiscordMessage = async (content) => {
 
   if (redClanName === blueClanName) return { ok: false, errorCode: "SAME_CLAN", errorData: { clanName: redClanName } };
 
-  const redClan = await ClanModel.findOne({ name: redClanName });
+  const redClan = await ClanModel.findOne({ name: redClanName, seasonId: currentSeason._id });
   if (!redClan) return { ok: false, errorCode: "CLAN_NOT_FOUND", errorData: { clanName: redClanName } };
-  const blueClan = await ClanModel.findOne({ name: blueClanName });
+  const blueClan = await ClanModel.findOne({ name: blueClanName, seasonId: currentSeason._id });
   if (!blueClan) return { ok: false, errorCode: "CLAN_NOT_FOUND", errorData: { clanName: blueClanName } };
 
   const obj = {
