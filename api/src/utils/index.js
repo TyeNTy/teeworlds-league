@@ -508,9 +508,9 @@ const parseWebhookMessage = async (content) => {
 
   if (redClanName === blueClanName) return { ok: false, errorCode: "SAME_CLAN", errorData: { clanName: redClanName } };
 
-  const redClan = await ClanModel.findOne({ name: redClanName });
+  const redClan = await ClanModel.findOne({ name: redClanName, seasonId: currentSeason._id });
   if (!redClan) return { ok: false, errorCode: "CLAN_NOT_FOUND", errorData: { clanName: redClanName } };
-  const blueClan = await ClanModel.findOne({ name: blueClanName });
+  const blueClan = await ClanModel.findOne({ name: blueClanName, seasonId: currentSeason._id });
   if (!blueClan) return { ok: false, errorCode: "CLAN_NOT_FOUND", errorData: { clanName: blueClanName } };
 
   obj.redClanId = redClan._id;
@@ -666,6 +666,9 @@ const parseServerInfo = (line1, line2) => {
 const computeEloResult = async (result) => {
   if (result.freezed) return { ok: false, errorCode: "ELO_ALREADY_COMPUTED" };
 
+  const currentSeason = await SeasonModel.findOne({ isActive: true });
+  if (!currentSeason) return { ok: false, errorCode: "NO_ACTIVE_SEASON" };
+
   let winnerResultPlayers = [];
   let looserResultPlayers = [];
   if (result.winnerSide === "red") {
@@ -747,13 +750,13 @@ const computeEloResult = async (result) => {
   await result.save();
 
   for (const player of winnerPlayers) {
-    const stat = await StatModel.findOne({ userId: player._id });
+    const stat = await StatModel.findOne({ userId: player._id, seasonId: currentSeason._id });
     stat.set({ elo: player.elo });
     await stat.save();
   }
 
   for (const player of looserPlayers) {
-    const stat = await StatModel.findOne({ userId: player._id });
+    const stat = await StatModel.findOne({ userId: player._id, seasonId: currentSeason._id });
     stat.set({ elo: player.elo });
     await stat.save();
   }
