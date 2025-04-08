@@ -113,6 +113,11 @@ const TopBar = () => {
               </Link>
             </div>
             <div className="flex items-center pr-4">
+              <Link to="/calendar" className="ml-2">
+                Calendar
+              </Link>
+            </div>
+            <div className="flex items-center pr-4">
               <Link to="/results" className="ml-2">
                 Results
               </Link>
