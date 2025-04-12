@@ -21,14 +21,33 @@ const CalendarDetail = (props) => {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [newEvent, setNewEvent] = useState({
-    title: "",
+    clanAId: "",
+    clanBId: "",
     startDate: "",
     endDate: "",
   });
+  const [clans, setClans] = useState([]);
+  const [isClansLoading, setIsClansLoading] = useState(true);
 
   const navigate = useNavigate();
 
   const realUser = useSelector((state) => state.Auth.user);
+  const currentSeason = useSelector((state) => state.Season.currentSeason);
+
+  const getClans = async () => {
+    setIsClansLoading(true);
+    const resClans = await API.post("/clan/search", {
+      seasonId: currentSeason._id,
+    });
+
+    if (!resClans.ok) {
+      toast.error(resClans.message);
+      return;
+    }
+
+    setClans(resClans.data);
+    setIsClansLoading(false);
+  };
 
   const getEvents = async () => {
     setIsCalendarLoading(true);
@@ -47,8 +66,11 @@ const CalendarDetail = (props) => {
   };
 
   useEffect(() => {
-    getEvents();
-  }, [filters.startDate, filters.endDate]);
+    if (currentSeason) {
+      getClans();
+      getEvents();
+    }
+  }, [filters.startDate, filters.endDate, currentSeason]);
 
   const handleCreateEvent = async (e) => {
     e.preventDefault();
@@ -73,7 +95,8 @@ const CalendarDetail = (props) => {
   const handleSlotSelect = (slotInfo) => {
     setSelectedSlot(slotInfo);
     setNewEvent({
-      title: "",
+      clanAId: "",
+      clanBId: "",
       startDate: moment(slotInfo.start).format("YYYY-MM-DDTHH:mm"),
       endDate: moment(slotInfo.end).format("YYYY-MM-DDTHH:mm"),
     });
@@ -87,7 +110,7 @@ const CalendarDetail = (props) => {
         <Calendar
           localizer={localizer}
           events={events.map((event) => ({
-            title: event.title,
+            title: `${event.clanAName} vs ${event.clanBName}`,
             start: new Date(event.startDate),
             end: new Date(event.endDate),
             event: event,
@@ -136,7 +159,7 @@ const CalendarDetail = (props) => {
           setIsModalOpen(false);
           setSelectedEvent(null);
         }}
-        title={selectedEvent?.title}
+        title={`${selectedEvent?.clanAName} vs ${selectedEvent?.clanBName}`}
       >
         {selectedEvent && (
           <div className="space-y-4">
@@ -197,58 +220,88 @@ const CalendarDetail = (props) => {
         }}
         title="Create New Event"
       >
-        <form onSubmit={handleCreateEvent}>
-          <div className="mb-4">
-            <label className="block text-gray-700 text-sm font-bold mb-2">
-              Title
-            </label>
-            <input
-              type="text"
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              value={newEvent.title}
-              onChange={(e) =>
-                setNewEvent({ ...newEvent, title: e.target.value })
-              }
-              required
-            />
-          </div>
-          <div className="mb-4">
-            <label className="block text-gray-700 text-sm font-bold mb-2">
-              Start Date
-            </label>
-            <input
-              type="datetime-local"
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              value={newEvent.startDate}
-              onChange={(e) =>
-                setNewEvent({ ...newEvent, startDate: e.target.value })
-              }
-              required
-            />
-          </div>
-          <div className="mb-4">
-            <label className="block text-gray-700 text-sm font-bold mb-2">
-              End Date
-            </label>
-            <input
-              type="datetime-local"
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              value={newEvent.endDate}
-              onChange={(e) =>
-                setNewEvent({ ...newEvent, endDate: e.target.value })
-              }
-              required
-            />
-          </div>
-          <div className="flex items-center justify-end">
-            <button
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-              type="submit"
-            >
-              Create
-            </button>
-          </div>
-        </form>
+        {isClansLoading ? (
+          <Loader />
+        ) : (
+          <form onSubmit={handleCreateEvent}>
+            <div className="mb-4">
+              <label className="block text-gray-700 text-sm font-bold mb-2">
+                Clan A
+              </label>
+              <select
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                value={newEvent.clanAId}
+                onChange={(e) =>
+                  setNewEvent({ ...newEvent, clanAId: e.target.value })
+                }
+                required
+              >
+                <option value="">Select Clan A</option>
+                {clans.map((clan) => (
+                  <option key={clan._id} value={clan._id}>
+                    {clan.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="mb-4">
+              <label className="block text-gray-700 text-sm font-bold mb-2">
+                Clan B
+              </label>
+              <select
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                value={newEvent.clanBId}
+                onChange={(e) =>
+                  setNewEvent({ ...newEvent, clanBId: e.target.value })
+                }
+                required
+              >
+                <option value="">Select Clan B</option>
+                {clans.map((clan) => (
+                  <option key={clan._id} value={clan._id}>
+                    {clan.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="mb-4">
+              <label className="block text-gray-700 text-sm font-bold mb-2">
+                Start Date
+              </label>
+              <input
+                type="datetime-local"
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                value={newEvent.startDate}
+                onChange={(e) =>
+                  setNewEvent({ ...newEvent, startDate: e.target.value })
+                }
+                required
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block text-gray-700 text-sm font-bold mb-2">
+                End Date
+              </label>
+              <input
+                type="datetime-local"
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                value={newEvent.endDate}
+                onChange={(e) =>
+                  setNewEvent({ ...newEvent, endDate: e.target.value })
+                }
+                required
+              />
+            </div>
+            <div className="flex items-center justify-end">
+              <button
+                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                type="submit"
+              >
+                Create
+              </button>
+            </div>
+          </form>
+        )}
       </Modal>
     </div>
   );

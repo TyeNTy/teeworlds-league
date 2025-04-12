@@ -20,6 +20,9 @@ router.post(
     if (body.startDate) obj.startDate = body.startDate;
     if (body.endDate) obj.endDate = body.endDate;
     if (body.title) obj.title = body.title;
+    if (body.description) obj.description = body.description;
+    if (body.clanAId) obj.clanAId = body.clanAId;
+    if (body.clanBId) obj.clanBId = body.clanBId;
 
     const currentSeason = await SeasonModel.findOne({ isActive: true });
     if (!currentSeason) return res.status(400).send({ ok: false, code: enumErrorCode.INVALID_PROPERTY });
