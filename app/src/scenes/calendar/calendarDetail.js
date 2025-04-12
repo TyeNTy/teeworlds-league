@@ -192,7 +192,7 @@ const CalendarDetail = (props) => {
                   className="flex items-center space-x-2 text-purple-600 hover:text-purple-800"
                 >
                   <img
-                    src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/26/Twitch_logo.svg/1200px-Twitch_logo.svg.png"
+                    src="https://assets.twitch.tv/assets/favicon-32-e29e246c157142c94346.png"
                     alt="Twitch"
                     className="w-6 h-6"
                   />
