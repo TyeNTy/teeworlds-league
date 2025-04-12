@@ -37,6 +37,7 @@ app.use("/result", require("./controllers/result"));
 app.use("/stat", require("./controllers/stat"));
 app.use("/webhook", require("./controllers/webhook"));
 app.use("/season", require("./controllers/season"));
+app.use("/event", require("./controllers/event"));
 
 if (ENVIRONMENT === "production") {
   var https = require("https");
