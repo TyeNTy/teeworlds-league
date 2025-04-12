@@ -17,6 +17,12 @@ const Details = () => {
   const realUser = useSelector((state) => state.Auth.user);
   const currentSeason = useSelector((state) => state.Season.currentSeason);
 
+  const formatDateForInput = (date) => {
+    if (!date) return "";
+    const d = new Date(date);
+    return d.toISOString().slice(0, 16);
+  };
+
   const get = async () => {
     const { ok, data } = await API.get(`/event/${eventId}`);
     if (!ok) toast.error("Error while fetching event");
@@ -162,7 +168,7 @@ const Details = () => {
           type="datetime-local"
           id="startDate"
           name="startDate"
-          value={event.startDate}
+          value={formatDateForInput(event.startDate)}
           onChange={handleChange}
           className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
           disabled={realUser?.role !== "ADMIN" || !currentSeason?.isActive}
@@ -180,7 +186,7 @@ const Details = () => {
           type="datetime-local"
           id="endDate"
           name="endDate"
-          value={event.endDate}
+          value={formatDateForInput(event.endDate)}
           onChange={handleChange}
           className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
           disabled={realUser?.role !== "ADMIN" || !currentSeason?.isActive}

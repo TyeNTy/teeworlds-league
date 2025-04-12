@@ -18,6 +18,7 @@ const CalendarDetail = (props) => {
   const [isCalendarLoading, setIsCalendarLoading] = useState(true);
   const [events, setEvents] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState(null);
   const [newEvent, setNewEvent] = useState({
     title: "",
     startDate: "",
@@ -63,6 +64,11 @@ const CalendarDetail = (props) => {
     navigate(`/calendar/${resEvent.data._id}`);
   };
 
+  const handleEventClick = (event) => {
+    setSelectedEvent(event.event);
+    setIsModalOpen(true);
+  };
+
   return (
     <div>
       <h1 className="text-2xl font-bold text-center">Calendar</h1>
@@ -90,9 +96,7 @@ const CalendarDetail = (props) => {
           endAccessor="end"
           min={new Date(1970, 1, 1, 12, 0)} // Start at 12 PM
           max={new Date(1970, 1, 1, 23, 0)} // End at 11 PM
-          onSelectEvent={(event) => {
-            navigate(`/calendar/${event.event._id}`);
-          }}
+          onSelectEvent={handleEventClick}
           onRangeChange={(range) => {
             if (Array.isArray(range)) {
               if (range.length > 0) {
@@ -123,8 +127,68 @@ const CalendarDetail = (props) => {
         )}
       </div>
 
+      {/* Event Details Modal */}
       <Modal
-        isOpen={isModalOpen}
+        isOpen={isModalOpen && selectedEvent}
+        onClose={() => {
+          setIsModalOpen(false);
+          setSelectedEvent(null);
+        }}
+        title={selectedEvent?.title}
+      >
+        {selectedEvent && (
+          <div className="space-y-4">
+            <div>
+              <h3 className="font-bold">Clans</h3>
+              <p>
+                {selectedEvent.clanAName} vs {selectedEvent.clanBName}
+              </p>
+            </div>
+            <div>
+              <h3 className="font-bold">Time</h3>
+              <p>
+                {moment(selectedEvent.startDate).format("MMMM Do YYYY, h:mm a")}{" "}
+                - {moment(selectedEvent.endDate).format("h:mm a")}
+              </p>
+            </div>
+            {selectedEvent.twitch && (
+              <div>
+                <h3 className="font-bold">Stream</h3>
+                <a
+                  href={selectedEvent.twitch}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center space-x-2 text-purple-600 hover:text-purple-800"
+                >
+                  <img
+                    src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/26/Twitch_logo.svg/1200px-Twitch_logo.svg.png"
+                    alt="Twitch"
+                    className="w-6 h-6"
+                  />
+                  <span>Watch on Twitch</span>
+                </a>
+              </div>
+            )}
+            {realUser?.role === "ADMIN" && (
+              <div className="flex justify-end mt-4">
+                <button
+                  className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                  onClick={() => {
+                    setIsModalOpen(false);
+                    navigate(`/calendar/${selectedEvent._id}`);
+                  }}
+                >
+                  Edit Event
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+      </Modal>
+
+      {/* Create Event Modal */}
+      <Modal
+        isOpen={isModalOpen && !selectedEvent}
         onClose={() => setIsModalOpen(false)}
         title="Create New Event"
       >
