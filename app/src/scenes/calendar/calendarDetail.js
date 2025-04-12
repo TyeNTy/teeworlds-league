@@ -25,6 +25,7 @@ const CalendarDetail = (props) => {
     clanBId: "",
     startDate: "",
     endDate: "",
+    title: "",
   });
   const [clans, setClans] = useState([]);
   const [isClansLoading, setIsClansLoading] = useState(true);
@@ -33,6 +34,11 @@ const CalendarDetail = (props) => {
 
   const realUser = useSelector((state) => state.Auth.user);
   const currentSeason = useSelector((state) => state.Season.currentSeason);
+
+  const getClanName = (clanId) => {
+    const clan = clans.find((c) => c._id === clanId);
+    return clan ? clan.name : "";
+  };
 
   const getClans = async () => {
     setIsClansLoading(true);
@@ -226,13 +232,27 @@ const CalendarDetail = (props) => {
           <form onSubmit={handleCreateEvent}>
             <div className="mb-4">
               <label className="block text-gray-700 text-sm font-bold mb-2">
+                Event Title
+              </label>
+              <div className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 bg-gray-100 leading-tight">
+                {newEvent.title}
+              </div>
+            </div>
+            <div className="mb-4">
+              <label className="block text-gray-700 text-sm font-bold mb-2">
                 Clan A
               </label>
               <select
                 className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                 value={newEvent.clanAId}
                 onChange={(e) =>
-                  setNewEvent({ ...newEvent, clanAId: e.target.value })
+                  setNewEvent({
+                    ...newEvent,
+                    clanAId: e.target.value,
+                    title: `${getClanName(e.target.value)} vs. ${getClanName(
+                      newEvent.clanBId
+                    )}`,
+                  })
                 }
                 required
               >
@@ -252,7 +272,13 @@ const CalendarDetail = (props) => {
                 className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                 value={newEvent.clanBId}
                 onChange={(e) =>
-                  setNewEvent({ ...newEvent, clanBId: e.target.value })
+                  setNewEvent({
+                    ...newEvent,
+                    clanBId: e.target.value,
+                    title: `${getClanName(newEvent.clanAId)} vs. ${getClanName(
+                      e.target.value
+                    )}`,
+                  })
                 }
                 required
               >

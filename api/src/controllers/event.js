@@ -21,9 +21,18 @@ router.post(
     if (body.endDate) obj.endDate = body.endDate;
     if (body.title) obj.title = body.title;
     if (body.description) obj.description = body.description;
-    if (body.clanAId) obj.clanAId = body.clanAId;
-    if (body.clanBId) obj.clanBId = body.clanBId;
-
+    if (body.clanAId) {
+      const clanA = await ClanModel.findById(body.clanAId);
+      if (!clanA) return res.status(400).send({ ok: false, code: enumErrorCode.CLAN_NOT_FOUND });
+      obj.clanAId = clanA._id;
+      obj.clanAName = clanA.name;
+    }
+    if (body.clanBId) {
+      const clanB = await ClanModel.findById(body.clanBId);
+      if (!clanB) return res.status(400).send({ ok: false, code: enumErrorCode.CLAN_NOT_FOUND });
+      obj.clanBId = clanB._id;
+      obj.clanBName = clanB.name;
+    }
     const currentSeason = await SeasonModel.findOne({ isActive: true });
     if (!currentSeason) return res.status(400).send({ ok: false, code: enumErrorCode.INVALID_PROPERTY });
 
