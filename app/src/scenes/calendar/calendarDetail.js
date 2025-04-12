@@ -19,6 +19,7 @@ const CalendarDetail = (props) => {
   const [events, setEvents] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
+  const [selectedSlot, setSelectedSlot] = useState(null);
   const [newEvent, setNewEvent] = useState({
     title: "",
     startDate: "",
@@ -69,20 +70,19 @@ const CalendarDetail = (props) => {
     setIsModalOpen(true);
   };
 
+  const handleSlotSelect = (slotInfo) => {
+    setSelectedSlot(slotInfo);
+    setNewEvent({
+      title: "",
+      startDate: moment(slotInfo.start).format("YYYY-MM-DDTHH:mm"),
+      endDate: moment(slotInfo.end).format("YYYY-MM-DDTHH:mm"),
+    });
+    setIsModalOpen(true);
+  };
+
   return (
     <div>
       <h1 className="text-2xl font-bold text-center">Calendar</h1>
-      <div className="space-x-2">
-        {realUser?.role === "ADMIN" && (
-          <button
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-            onClick={() => setIsModalOpen(true)}
-          >
-            Create Event
-          </button>
-        )}
-      </div>
-
       <div className="flex justify-center items-center relative w-full h-[600px]">
         <Calendar
           localizer={localizer}
@@ -97,6 +97,8 @@ const CalendarDetail = (props) => {
           min={new Date(1970, 1, 1, 12, 0)} // Start at 12 PM
           max={new Date(1970, 1, 1, 23, 0)} // End at 11 PM
           onSelectEvent={handleEventClick}
+          onSelectSlot={handleSlotSelect}
+          selectable={realUser?.role === "ADMIN"}
           onRangeChange={(range) => {
             if (Array.isArray(range)) {
               if (range.length > 0) {
@@ -189,7 +191,10 @@ const CalendarDetail = (props) => {
       {/* Create Event Modal */}
       <Modal
         isOpen={isModalOpen && !selectedEvent}
-        onClose={() => setIsModalOpen(false)}
+        onClose={() => {
+          setIsModalOpen(false);
+          setSelectedSlot(null);
+        }}
         title="Create New Event"
       >
         <form onSubmit={handleCreateEvent}>
