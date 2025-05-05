@@ -8,6 +8,13 @@ import { toast } from "react-hot-toast";
 import Modal from "../../components/Modal";
 import Loader from "../../components/Loader";
 import { useSelector } from "react-redux";
+
+moment.locale("ko", {
+  week: {
+    dow: 1,
+  },
+});
+
 const localizer = momentLocalizer(moment);
 
 const CalendarDetail = (props) => {
@@ -26,6 +33,7 @@ const CalendarDetail = (props) => {
     startDate: "",
     endDate: "",
     title: "",
+    description: "",
   });
   const [clans, setClans] = useState([]);
   const [isClansLoading, setIsClansLoading] = useState(true);
@@ -174,6 +182,9 @@ const CalendarDetail = (props) => {
               <p>
                 {selectedEvent.clanAName} vs {selectedEvent.clanBName}
               </p>
+              <span className="text-sm text-gray-500">
+                {selectedEvent.description}
+              </span>
             </div>
             <div>
               <h3 className="font-bold">Time</h3>
@@ -182,9 +193,9 @@ const CalendarDetail = (props) => {
                 - {moment(selectedEvent.endDate).format("h:mm a")}
               </p>
             </div>
-            {selectedEvent.twitch && (
-              <div>
-                <h3 className="font-bold">Stream</h3>
+            <div>
+              <h3 className="font-bold">Stream</h3>
+              {selectedEvent.twitch ? (
                 <a
                   href={selectedEvent.twitch}
                   target="_blank"
@@ -198,8 +209,17 @@ const CalendarDetail = (props) => {
                   />
                   <span>Watch on Twitch</span>
                 </a>
-              </div>
-            )}
+              ) : (
+                <div className="flex items-center space-x-2 text-gray-500">
+                  <img
+                    src="https://assets.twitch.tv/assets/favicon-32-e29e246c157142c94346.png"
+                    alt="Twitch"
+                    className="w-6 h-6 opacity-50"
+                  />
+                  <span>No stream specified!</span>
+                </div>
+              )}
+            </div>
             {realUser?.role === "ADMIN" && (
               <div className="flex justify-end mt-4">
                 <button

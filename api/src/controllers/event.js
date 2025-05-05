@@ -79,6 +79,7 @@ router.put(
     const obj = {};
     if (body.title) obj.title = body.title;
     if (body.description) obj.description = body.description;
+    if (body.description === "") obj.description = null;
     if (body.clanAId) {
       const clanA = await ClanModel.findById(body.clanAId);
       if (!clanA) return res.status(400).send({ ok: false, code: enumErrorCode.CLAN_NOT_FOUND });
