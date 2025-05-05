@@ -28,6 +28,7 @@ const maps = [
   // { value: "ctf5", label: "ctf5" },
   // { value: "ctf_duskwood", label: "ctf_duskwood" },
   // { value: "ctf_5_limited", label: "ctf_5_limited" },
+  { value: "ctf_cryochasm", label: "ctf_cryochasm" },
   { value: "ctf_mars", label: "ctf_mars" },
   { value: "ctf_moon", label: "ctf_moon" },
 ];

@@ -783,10 +783,19 @@ const computeElo = (eloWinner, eloLooser) => {
 const mapServerMapping = {
   ctf3: "ctf_3",
   ctf4_old: "ctf4_old",
+  ctf5: "ctf_5",
   ctf5_spikes: "ctf_5",
-  ctf_tantum: "ctf_tantum",
-  ctf_duskwood: "ctf_duskwood",
+  ctf_cryochasm: "ctf_cryochasm",
   ctf_5_limited: "ctf_5_limited",
+  ctf_duskwood: "ctf_duskwood",
+  ctf_tantum: "ctf_tantum",
+  ctf_mine: "ctf_mine",
+  ctf_planet: "ctf_planet",
+  ctf_ambiance: "ctf_ambiance",
+  ctf_ambiance_limited: "ctf_ambiance",
+  ctf2: "ctf_2",
+  ctf_mars: "ctf_mars",
+  ctf_moon: "ctf_moon",
 };
 
 module.exports = {
