@@ -244,6 +244,25 @@ const Detail = () => {
         <div className="mt-8 p-4 border rounded-lg bg-gray-50">
           <h3 className="text-lg font-semibold mb-4">Current Votes ({vote.votes.length} total votes)</h3>
           
+          {/* Show vote distribution */}
+          <div className="mb-4 pb-4 border-b">
+            <h4 className="font-medium mb-2">Vote Distribution:</h4>
+            <div className="space-y-1">
+              {Object.entries(
+                vote.votes.reduce((acc, v) => {
+                  const key = vote.type === enumVoteType.CLAN ? v.clanName : v.playerName;
+                  acc[key] = (acc[key] || 0) + 1;
+                  return acc;
+                }, {})
+              ).sort((a, b) => b[1] - a[1]).map(([name, count]) => (
+                <div key={name} className="flex justify-between text-sm">
+                  <span>{name}</span>
+                  <span className="font-medium">{count} vote{count !== 1 ? 's' : ''}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          
           {/* Group votes by voter */}
           <div className="space-y-3">
             {Object.entries(
@@ -271,25 +290,6 @@ const Detail = () => {
                 </div>
               </div>
             ))}
-          </div>
-          
-          {/* Show vote distribution */}
-          <div className="mt-4 pt-4 border-t">
-            <h4 className="font-medium mb-2">Vote Distribution:</h4>
-            <div className="space-y-1">
-              {Object.entries(
-                vote.votes.reduce((acc, v) => {
-                  const key = vote.type === enumVoteType.CLAN ? v.clanName : v.playerName;
-                  acc[key] = (acc[key] || 0) + 1;
-                  return acc;
-                }, {})
-              ).sort((a, b) => b[1] - a[1]).map(([name, count]) => (
-                <div key={name} className="flex justify-between text-sm">
-                  <span>{name}</span>
-                  <span className="font-medium">{count} vote{count !== 1 ? 's' : ''}</span>
-                </div>
-              ))}
-            </div>
           </div>
         </div>
       )}
