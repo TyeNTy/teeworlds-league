@@ -142,8 +142,8 @@ router.put(
     const obj = {};
     if (body.question) obj.question = body.question;
 
-    if (body.type && vote.votes.length > 0) return res.status(400).send({ ok: false, message: "Vote already has votes. You can't change the type." });
-    if (body.type && vote.votes.length === 0) obj.type = body.type;
+    if (body.type && body.type !== vote.type && vote.votes.length > 0) return res.status(400).send({ ok: false, message: "Vote already has votes. You can't change the type." });
+    if (body.type) obj.type = body.type;
 
     if (body.maxVotes) obj.maxVotes = body.maxVotes;
     if (body.startDate) obj.startDate = body.startDate;

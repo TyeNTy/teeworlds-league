@@ -170,13 +170,21 @@ const List = () => {
   };
 
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString();
+    const date = new Date(dateString);
+    // Use toLocaleDateString with consistent options to avoid timezone issues
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      timeZone: 'UTC'
+    });
   };
 
   const isVoteActive = (vote) => {
     const now = new Date();
-    const startDate = new Date(vote.startDate);
-    const endDate = new Date(vote.endDate);
+    // Parse dates as UTC to avoid timezone conversion issues
+    const startDate = new Date(vote.startDate + (vote.startDate.includes('T') ? '' : 'T00:00:00.000Z'));
+    const endDate = new Date(vote.endDate + (vote.endDate.includes('T') ? '' : 'T23:59:59.999Z'));
     return now >= startDate && now <= endDate;
   };
 

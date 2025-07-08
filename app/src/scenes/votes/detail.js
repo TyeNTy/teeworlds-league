@@ -22,6 +22,26 @@ const Detail = () => {
   const realUser = useSelector((state) => state.Auth.user);
   const currentSeason = useSelector((state) => state.Season.currentSeason);
 
+  // Helper function to convert UTC date to local datetime-local format
+  const formatDateForInput = (dateString) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    // Get the local timezone offset in minutes
+    const timezoneOffset = date.getTimezoneOffset();
+    // Adjust for local timezone
+    const localDate = new Date(date.getTime() - (timezoneOffset * 60 * 1000));
+    return localDate.toISOString().slice(0, 16);
+  };
+
+  // Helper function to convert local datetime-local to UTC
+  const formatDateForAPI = (dateString) => {
+    if (!dateString) return "";
+    // datetime-local input gives us local time, so we create a Date object
+    // and convert it to UTC
+    const date = new Date(dateString);
+    return date.toISOString();
+  };
+
   useEffect(() => {
     if (currentSeason) {
       fetchVote();
@@ -47,8 +67,8 @@ const Detail = () => {
       
       setVote({
         ...foundVote,
-        startDate: foundVote.startDate ? new Date(foundVote.startDate).toISOString().slice(0, 16) : "",
-        endDate: foundVote.endDate ? new Date(foundVote.endDate).toISOString().slice(0, 16) : "",
+        startDate: formatDateForInput(foundVote.startDate),
+        endDate: formatDateForInput(foundVote.endDate),
       });
     } catch (error) {
       toast.error("Error while fetching vote");
@@ -80,8 +100,8 @@ const Detail = () => {
         question: vote.question,
         type: vote.type,
         maxVotes: parseInt(vote.maxVotes),
-        startDate: new Date(vote.startDate).toISOString(),
-        endDate: new Date(vote.endDate).toISOString(),
+        startDate: formatDateForAPI(vote.startDate),
+        endDate: formatDateForAPI(vote.endDate),
       };
 
       const response = await API.put(`/vote/${id}`, voteData);
