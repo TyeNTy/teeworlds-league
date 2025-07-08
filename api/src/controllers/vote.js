@@ -10,8 +10,6 @@ const { catchErrors } = require("../utils");
 const enumVoteType = require("../enums/enumVote");
 const enumUserRole = require("../enums/enumUserRole");
 
-
-
 router.post(
   "/vote",
   passport.authenticate(enumUserRole.USER, { session: false }),
@@ -54,55 +52,6 @@ router.post(
     await vote.save();
 
     return res.status(200).send({ ok: true, data: { vote: vote.responseModel() } });
-  }),
-);
-
-router.put(
-  "/vote",
-  passport.authenticate(enumUserRole.USER, { session: false }),
-  catchErrors(async (req, res) => {
-    const body = req.body;
-
-    const vote = await VoteModel.findById(body.voteId);
-    if (!vote) return res.status(400).send({ ok: false, message: "Vote not found" });
-
-    if (vote.startDate > new Date()) return res.status(400).send({ ok: false, message: "Vote not started" });
-    if (vote.endDate < new Date()) return res.status(400).send({ ok: false, message: "Vote ended" });
-
-    if (vote.type === enumVoteType.CLAN && body.newClanId) {
-      const clan = await ClanModel.findById(body.newClanId);
-      if (!clan) return res.status(400).send({ ok: false, message: "Clan not found" });
-
-      vote.votes = vote.votes.filter((v) => v.voterId !== req.user._id && v.clanId !== body.oldClanId);
-      const numberOfVotes = vote.votes.filter((v) => v.voterId === req.user._id && v.clanId === body.newClanId).length;
-      if (numberOfVotes >= vote.maxVotes) return res.status(400).send({ ok: false, message: "Invalid old clan id" });
-
-      vote.votes.push({
-        voterId: req.user._id,
-        voterName: req.user.name,
-        clanId: body.newClanId,
-        clanName: clan.name,
-      });
-    }
-
-    if (vote.type === enumVoteType.PLAYER && body.newPlayerId) {
-      const player = await UserModel.findById(body.newPlayerId);
-      if (!player) return res.status(400).send({ ok: false, message: "Player not found" });
-
-      vote.votes = vote.votes.filter((v) => v.voterId !== req.user._id && v.playerId !== body.oldPlayerId);
-      const numberOfVotes = vote.votes.filter((v) => v.voterId === req.user._id && v.playerId === body.newPlayerId).length;
-      if (numberOfVotes >= vote.maxVotes) return res.status(400).send({ ok: false, message: "Invalid old player id" });
-
-
-      vote.votes.push({
-        voterId: req.user._id,
-        voterName: req.user.name,
-        playerId: body.playerId,
-        playerName: player.name,
-      });
-    }
-
-    await vote.save();
   }),
 );
 
