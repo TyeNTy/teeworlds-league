@@ -45,7 +45,7 @@ router.post(
         voterId: req.user._id,
         voterName: req.user.userName,
         playerId: body.playerId,
-        playerName: player.name,
+        playerName: player.userName,
       });
     }
 

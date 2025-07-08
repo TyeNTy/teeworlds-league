@@ -322,7 +322,9 @@ const List = () => {
                           acc[v.clanName] = (acc[v.clanName] || 0) + 1;
                           return acc;
                         }, {})
-                      ).map(([clanName, count]) => (
+                      ).sort((a, b) => b[1] - a[1])
+                      .filter(([clanName, count]) => count > 0)
+                      .map(([clanName, count]) => (
                         <div key={clanName} className="flex justify-between text-sm">
                           <span>{clanName}</span>
                           <span className="font-medium">{count} votes</span>
@@ -335,7 +337,9 @@ const List = () => {
                           acc[v.playerName] = (acc[v.playerName] || 0) + 1;
                           return acc;
                         }, {})
-                      ).map(([playerName, count]) => (
+                      ).sort((a, b) => b[1] - a[1])
+                      .filter(([playerName, count]) => count > 0)
+                      .map(([playerName, count]) => (
                         <div key={playerName} className="flex justify-between text-sm">
                           <span>{playerName}</span>
                           <span className="font-medium">{count} votes</span>
@@ -419,7 +423,7 @@ const List = () => {
                           : false;
                         return (
                           <option key={player._id} value={player._id} disabled={alreadyVoted}>
-                            {player.name} {alreadyVoted ? '(Already voted)' : ''}
+                            {player.userName} {alreadyVoted ? '(Already voted)' : ''}
                           </option>
                         );
                       })}
