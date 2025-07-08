@@ -171,12 +171,14 @@ const List = () => {
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
-    // Use toLocaleDateString with consistent options to avoid timezone issues
-    return date.toLocaleDateString('en-US', {
+    // Use toLocaleString to include time and use user's locale timezone
+    return date.toLocaleString('en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
-      timeZone: 'UTC'
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
     });
   };
 
