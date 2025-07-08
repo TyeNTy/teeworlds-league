@@ -34,6 +34,7 @@ router.post(
         voterName: req.user.userName,
         clanId: body.clanId,
         clanName: clan.name,
+        votedAt: new Date(),
       });
     }
 
@@ -46,6 +47,7 @@ router.post(
         voterName: req.user.userName,
         playerId: body.playerId,
         playerName: player.userName,
+        votedAt: new Date(),
       });
     }
 

@@ -14,6 +14,8 @@ const SingleVoteSchema = new mongoose.Schema({
 
   clanId: { type: ObjectId },
   clanName: { type: String },
+
+  votedAt: { type: Date },
 });
 
 SingleVoteSchema.methods.responseModel = function () {
