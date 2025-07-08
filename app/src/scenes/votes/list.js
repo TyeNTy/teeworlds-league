@@ -138,6 +138,36 @@ const List = () => {
     }
   };
 
+  const handleRemoveVote = async (voteId, clanId, playerId) => {
+    const confirm = window.confirm("Are you sure you want to remove this vote?");
+    if (!confirm) return;
+
+    try {
+      const removeData = {
+        voteId: voteId,
+      };
+
+      console.log("removeData", removeData);
+
+      if (clanId) {
+        removeData.clanId = clanId;
+      } else if (playerId) {
+        removeData.playerId = playerId;
+      }
+
+      const { ok } = await api.remove(`/vote/vote`, removeData);
+      if (!ok) {
+        toast.error("Error while removing vote");
+        return;
+      }
+      
+      toast.success("Vote removed successfully");
+      fetchVotes();
+    } catch (error) {
+      toast.error("Error while removing vote");
+    }
+  };
+
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString();
   };
@@ -332,15 +362,24 @@ const List = () => {
                   You have <strong>{getRemainingVotes(selectedVote)}</strong> votes remaining 
                   (voted {getUserVoteCount(selectedVote)} of {selectedVote.maxVotes})
                 </p>
-                {getUserVoteCount(selectedVote) > 0 && selectedVote.votes && (
+                                {getUserVoteCount(selectedVote) > 0 && selectedVote.votes && (
                   <div className="mt-2">
                     <p className="text-sm font-medium text-blue-800">Your previous votes:</p>
                     <ul className="text-sm text-blue-600 mt-1">
                       {selectedVote.votes
                         .filter(v => v.voterId === realUser._id)
                         .map((vote, index) => (
-                          <li key={index}>
-                            • {selectedVote.type === enumVoteType.CLAN ? vote.clanName : vote.playerName}
+                          <li key={index} className="flex items-center justify-between">
+                            <span>• {selectedVote.type === enumVoteType.CLAN ? vote.clanName : vote.playerName}</span>
+                            {isVoteActive(selectedVote) && (
+                              <button
+                                className="ml-2 text-red-500 hover:text-red-700 text-xs bg-red-50 hover:bg-red-100 px-2 py-1 rounded"
+                                onClick={() => handleRemoveVote(selectedVote._id, vote.clanId, vote.playerId)}
+                                title="Remove Vote"
+                              >
+                                Remove
+                              </button>
+                            )}
                           </li>
                         ))}
                     </ul>

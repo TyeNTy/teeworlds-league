@@ -64,11 +64,6 @@ const Detail = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (!vote.question || !vote.type || !vote.maxVotes || !vote.startDate || !vote.endDate) {
-      toast.error("Please fill in all required fields");
-      return;
-    }
 
     if (new Date(vote.startDate) >= new Date(vote.endDate)) {
       toast.error("End date must be after start date");
@@ -92,7 +87,6 @@ const Detail = () => {
       const response = await API.put(`/vote/${id}`, voteData);
 
       if (!response.ok) {
-        toast.error("Error while updating vote");
         return;
       }
 
