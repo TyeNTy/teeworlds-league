@@ -24,7 +24,7 @@ router.post(
 );
 
 router.post(
-  "/create",
+  "/",
   passport.authenticate(enumUserRole.ADMIN, { session: false }),
   catchErrors(async (req, res) => {
     const currentSeason = await SeasonModel.findOne({ isActive: true });

@@ -60,6 +60,17 @@ const List = () => {
     }
   };
 
+
+  const createNewVote = async () => {
+    const res = await api.post("/vote");
+    if (!res.ok) {
+      toast.error("Error while creating vote");
+      return;
+    }
+
+    navigate(`/votes/${res.data.vote._id}`);
+  };
+
   const handleDelete = async (voteId) => {
     const confirm = window.confirm("Are you sure you want to delete this vote?");
     if (!confirm) return;
@@ -170,7 +181,7 @@ const List = () => {
         {realUser?.role === "ADMIN" && (
           <button
             className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mb-4"
-            onClick={() => navigate("/votes/new")}
+            onClick={createNewVote}
           >
             Create New Vote
           </button>

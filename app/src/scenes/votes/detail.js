@@ -15,7 +15,6 @@ const Detail = () => {
     endDate: "",
   });
   const [loading, setLoading] = useState(true);
-  const [isNew, setIsNew] = useState(false);
 
   const { id } = useParams();
   const navigate = useNavigate();
@@ -25,12 +24,7 @@ const Detail = () => {
 
   useEffect(() => {
     if (currentSeason) {
-      if (id === "new") {
-        setIsNew(true);
-        setLoading(false);
-      } else {
-        fetchVote();
-      }
+      fetchVote();
     }
   }, [id, currentSeason]);
 
@@ -95,22 +89,17 @@ const Detail = () => {
         endDate: new Date(vote.endDate).toISOString(),
       };
 
-      let response;
-      if (isNew) {
-        response = await API.post("/vote/create", voteData);
-      } else {
-        response = await API.put(`/vote/${id}`, voteData);
-      }
+      const response = await API.put(`/vote/${id}`, voteData);
 
       if (!response.ok) {
-        toast.error(`Error while ${isNew ? "creating" : "updating"} vote`);
+        toast.error("Error while updating vote");
         return;
       }
 
-      toast.success(`Vote ${isNew ? "created" : "updated"} successfully`);
+      toast.success("Vote updated successfully");
       navigate("/votes");
     } catch (error) {
-      toast.error(`Error while ${isNew ? "creating" : "updating"} vote`);
+      toast.error("Error while updating vote");
     }
   };
 
@@ -148,16 +137,10 @@ const Detail = () => {
 
   return (
     <div className="p-4 max-w-2xl mx-auto">
-      <div className="flex justify-between items-center mb-6">
+      <div className="mb-6">
         <h1 className="text-2xl font-bold">
-          {isNew ? "Create New Vote" : "Edit Vote"}
+          Edit Vote
         </h1>
-        <button
-          className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
-          onClick={() => navigate("/votes")}
-        >
-          Back to Votes
-        </button>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -246,26 +229,24 @@ const Detail = () => {
 
         <div className="flex items-center justify-between">
           <button
+            type="button"
+            className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+            onClick={handleDelete}
+          >
+            Delete Vote
+          </button>
+          
+          <button
             type="submit"
             className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
           >
-            {isNew ? "Create Vote" : "Update Vote"}
+            Update Vote
           </button>
-          
-          {!isNew && (
-            <button
-              type="button"
-              className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-              onClick={handleDelete}
-            >
-              Delete Vote
-            </button>
-          )}
         </div>
       </form>
 
       {/* Show current votes if editing */}
-      {!isNew && vote.votes && vote.votes.length > 0 && (
+      {vote.votes && vote.votes.length > 0 && (
         <div className="mt-8 p-4 border rounded-lg bg-gray-50">
           <h3 className="text-lg font-semibold mb-4">Current Votes ({vote.votes.length} total votes)</h3>
           
