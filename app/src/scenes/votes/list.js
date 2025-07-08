@@ -122,7 +122,7 @@ const List = () => {
         voteData.playerId = selectedOption;
       }
 
-      const { ok } = await api.post(`/vote/vote`, voteData);
+      const { ok, data } = await api.post(`/vote/vote`, voteData);
       if (!ok) {
         toast.error("Error while casting vote");
         return;
@@ -132,7 +132,7 @@ const List = () => {
       setOpenVoteModal(false);
       setSelectedVote(null);
       setSelectedOption("");
-      fetchVotes();
+      setVotes(votes.map((v) => v._id === data.vote._id ? data.vote : v));
     } catch (error) {
       toast.error("Error while casting vote");
     }
@@ -155,14 +155,15 @@ const List = () => {
         removeData.playerId = playerId;
       }
 
-      const { ok } = await api.remove(`/vote/vote`, removeData);
+      const { ok, data } = await api.remove(`/vote/vote`, removeData);
       if (!ok) {
         toast.error("Error while removing vote");
         return;
       }
       
       toast.success("Vote removed successfully");
-      fetchVotes();
+      setVotes(votes.map((v) => v._id === data.vote._id ? data.vote : v));
+      setOpenVoteModal(false);
     } catch (error) {
       toast.error("Error while removing vote");
     }

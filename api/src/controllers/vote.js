@@ -110,7 +110,7 @@ router.delete(
   "/vote",
   passport.authenticate(enumUserRole.USER, { session: false }),
   catchErrors(async (req, res) => {
-    const body = req.body;
+    const body = req.query;
 
     const vote = await VoteModel.findById(body.voteId);
     if (!vote) return res.status(400).send({ ok: false, message: "Vote not found" });
@@ -123,11 +123,11 @@ router.delete(
     
     if (vote.type === enumVoteType.CLAN && body.clanId) {
       voteIndex = vote.votes.findIndex(v => 
-        v.voterId === req.user._id && v.clanId === body.clanId
+        v.voterId.toString() === req.user._id.toString() && v.clanId.toString() === body.clanId
       );
     } else if (vote.type === enumVoteType.PLAYER && body.playerId) {
       voteIndex = vote.votes.findIndex(v => 
-        v.voterId === req.user._id && v.playerId === body.playerId
+        v.voterId.toString() === req.user._id.toString() && v.playerId.toString() === body.playerId
       );
     }
 
@@ -166,6 +166,7 @@ router.post(
     const obj = {
       ...req.body,
       startDate: new Date(),
+      type: enumVoteType.PLAYER,
       seasonId: currentSeason._id,
       seasonName: currentSeason.name,
       seasonStartDate: currentSeason.startDate,
