@@ -31,7 +31,7 @@ router.post(
 
       vote.votes.push({
         voterId: req.user._id,
-        voterName: req.user.name,
+        voterName: req.user.userName,
         clanId: body.clanId,
         clanName: clan.name,
       });
@@ -43,7 +43,7 @@ router.post(
 
       vote.votes.push({
         voterId: req.user._id,
-        voterName: req.user.name,
+        voterName: req.user.userName,
         playerId: body.playerId,
         playerName: player.name,
       });

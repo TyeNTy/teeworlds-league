@@ -7,6 +7,7 @@ const MODELNAME = "vote";
 
 const SingleVoteSchema = new mongoose.Schema({
   voterId: { type: ObjectId },
+  voterName: { type: String },
 
   playerId: { type: ObjectId },
   playerName: { type: String },
@@ -18,6 +19,7 @@ const SingleVoteSchema = new mongoose.Schema({
 SingleVoteSchema.methods.responseModel = function () {
   return {
     voterId: this.voterId,
+    voterName: this.voterName,
     playerId: this.playerId,
     playerName: this.playerName,
     clanId: this.clanId,
