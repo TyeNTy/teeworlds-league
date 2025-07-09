@@ -1,0 +1,60 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug API",
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceFolder}/api/src/index.js",
+            "env": {
+                "NODE_ENV": "development"
+            },
+            "runtimeArgs": [
+                "--inspect"
+            ],
+            "restart": true,
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "cwd": "${workspaceFolder}/api"
+        },
+        {
+            "name": "Debug React App",
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceFolder}/app/node_modules/.bin/react-scripts",
+            "args": [
+                "start"
+            ],
+            "env": {
+                "NODE_ENV": "development"
+            },
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+            "cwd": "${workspaceFolder}/app"
+        },
+        {
+            "name": "Attach to API",
+            "type": "node",
+            "request": "attach",
+            "port": 9229,
+            "address": "127.0.0.1",
+            "localRoot": "${workspaceFolder}/api",
+            "remoteRoot": "${workspaceFolder}/api",
+            "skipFiles": [
+                "<node_internals>/**"
+            ]
+        }
+    ],
+    "compounds": [
+        {
+            "name": "Debug Both API & React",
+            "configurations": [
+                "Debug API",
+                "Debug React App"
+            ]
+        }
+    ]
+}

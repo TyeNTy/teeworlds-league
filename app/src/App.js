@@ -22,6 +22,7 @@ import Clans from "./scenes/clans";
 import Calendar from "./scenes/calendar";
 import Results from "./scenes/results";
 import Stats from "./scenes/stats";
+import Votes from "./scenes/votes";
 
 const ProtectedLayout = () => {
   const dispatch = useDispatch();
@@ -81,6 +82,7 @@ const App = () => {
           <Route path="/calendar/*" element={<Calendar />} />
           <Route path="/results/*" element={<Results />} />
           <Route path="/stats/*" element={<Stats />} />
+          <Route path="/votes/*" element={<Votes />} />
           <Route path="/*" index element={<Users />} />
         </Route>
 
