@@ -147,8 +147,6 @@ const List = () => {
         voteId: voteId,
       };
 
-      console.log("removeData", removeData);
-
       if (clanId) {
         removeData.clanId = clanId;
       } else if (playerId) {
