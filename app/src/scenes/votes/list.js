@@ -94,7 +94,6 @@ const List = () => {
       return;
     }
 
-    // Check if user has already voted for this option
     if (!selectedVote || !selectedVote.votes || !realUser) {
       toast.error("Invalid vote data");
       return;
@@ -169,7 +168,7 @@ const List = () => {
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
-    // Use toLocaleString to include time and use user's locale timezone
+    
     return date.toLocaleString('en-US', {
       year: 'numeric',
       month: 'short',
@@ -182,7 +181,6 @@ const List = () => {
 
   const isVoteActive = (vote) => {
     const now = new Date();
-    // Parse dates as UTC to avoid timezone conversion issues
     const startDate = new Date(vote.startDate + (vote.startDate.includes('T') ? '' : 'T00:00:00.000Z'));
     const endDate = new Date(vote.endDate + (vote.endDate.includes('T') ? '' : 'T23:59:59.999Z'));
     return now >= startDate && now <= endDate;

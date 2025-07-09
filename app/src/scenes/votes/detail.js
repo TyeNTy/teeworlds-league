@@ -22,22 +22,16 @@ const Detail = () => {
   const realUser = useSelector((state) => state.Auth.user);
   const currentSeason = useSelector((state) => state.Season.currentSeason);
 
-  // Helper function to convert UTC date to local datetime-local format
   const formatDateForInput = (dateString) => {
     if (!dateString) return "";
     const date = new Date(dateString);
-    // Get the local timezone offset in minutes
     const timezoneOffset = date.getTimezoneOffset();
-    // Adjust for local timezone
     const localDate = new Date(date.getTime() - (timezoneOffset * 60 * 1000));
     return localDate.toISOString().slice(0, 16);
   };
 
-  // Helper function to convert local datetime-local to UTC
   const formatDateForAPI = (dateString) => {
     if (!dateString) return "";
-    // datetime-local input gives us local time, so we create a Date object
-    // and convert it to UTC
     const date = new Date(dateString);
     return date.toISOString();
   };
@@ -137,7 +131,6 @@ const Detail = () => {
 
   if (loading || !currentSeason) return <Loader />;
 
-  // Check if user is admin
   if (realUser?.role !== "ADMIN") {
     return (
       <div className="p-4">
@@ -259,12 +252,9 @@ const Detail = () => {
         </div>
       </form>
 
-      {/* Show current votes if editing */}
       {vote.votes && vote.votes.length > 0 && (
         <div className="mt-8 p-4 border rounded-lg bg-gray-50">
           <h3 className="text-lg font-semibold mb-4">Current Votes ({vote.votes.length} total votes)</h3>
-          
-          {/* Show vote distribution */}
           <div className="mb-4 pb-4 border-b">
             <h4 className="font-medium mb-2">Vote Distribution:</h4>
             <div className="space-y-1">
@@ -282,8 +272,6 @@ const Detail = () => {
               ))}
             </div>
           </div>
-          
-          {/* Group votes by voter */}
           <div className="space-y-3">
             {Object.entries(
               vote.votes.reduce((acc, v) => {
