@@ -182,6 +182,11 @@ const List = () => {
 
   const isVoteActive = (vote) => {
     const now = new Date();
+    
+    if (!vote.startDate || !vote.endDate) {
+      return false;
+    }
+    
     const startDate = new Date(vote.startDate + (vote.startDate.includes('T') ? '' : 'T00:00:00.000Z'));
     const endDate = new Date(vote.endDate + (vote.endDate.includes('T') ? '' : 'T23:59:59.999Z'));
     return now >= startDate && now <= endDate;
