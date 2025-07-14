@@ -12,6 +12,7 @@ const List = () => {
   const [votes, setVotes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [openVoteModal, setOpenVoteModal] = useState(false);
+  const [openManageVotesModal, setOpenManageVotesModal] = useState(false);
   const [selectedVote, setSelectedVote] = useState(null);
   const [selectedOption, setSelectedOption] = useState("");
   const [allPlayers, setAllPlayers] = useState([]);
@@ -210,6 +211,11 @@ const List = () => {
     setOpenVoteModal(true);
   };
 
+  const openManageVotesDialog = (vote) => {
+    setSelectedVote(vote);
+    setOpenManageVotesModal(true);
+  };
+
   if (loading || !currentSeason) return <Loader />;
 
   return (
@@ -291,9 +297,19 @@ const List = () => {
                     </button>
                   )}
                   {realUser && hasUserVoted(vote) && !canUserVote(vote) && (
-                    <span className="text-green-600 font-medium">
-                      Voted ✓ ({getUserVoteCount(vote)}/{vote.maxVotes})
-                    </span>
+                    <div className="flex items-center space-x-2">
+                      <span className="text-green-600 font-medium">
+                        Voted ✓ ({getUserVoteCount(vote)}/{vote.maxVotes})
+                      </span>
+                      {isVoteActive(vote) && (
+                        <button
+                          className="bg-orange-500 hover:bg-orange-700 text-white font-bold py-1 px-2 rounded text-sm"
+                          onClick={() => openManageVotesDialog(vote)}
+                        >
+                          Manage Votes
+                        </button>
+                      )}
+                    </div>
                   )}
                   {realUser && hasUserVoted(vote) && canUserVote(vote) && (
                     <div className="flex flex-col items-end">
@@ -448,6 +464,66 @@ const List = () => {
                   onClick={handleVote}
                 >
                   Cast Vote
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      </Modal>
+
+      {/* Manage Votes Modal */}
+      <Modal isOpen={openManageVotesModal} onClose={() => setOpenManageVotesModal(false)}>
+        <div className="p-6">
+          <h2 className="text-xl font-bold mb-4">Manage Your Votes</h2>
+          <p className="mb-4">{selectedVote?.question}</p>
+          
+          {selectedVote && (
+            <>
+              <div className="mb-4 p-3 bg-orange-50 rounded">
+                <p className="text-sm text-orange-800">
+                  You have used all <strong>{selectedVote.maxVotes}</strong> votes. 
+                  You can remove votes below to free up slots for new votes.
+                </p>
+              </div>
+            
+              {selectedVote.votes && selectedVote.votes
+                .filter(v => v.voterId === realUser._id)
+                .length > 0 ? (
+                <div className="mb-4">
+                  <h3 className="font-medium mb-3">Your current votes:</h3>
+                  <div className="space-y-2">
+                    {selectedVote.votes
+                      .filter(v => v.voterId === realUser._id)
+                      .map((vote, index) => (
+                        <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded border">
+                          <span className="font-medium">
+                            {selectedVote.type === enumVoteType.CLAN ? vote.clanName : vote.playerName}
+                          </span>
+                          <button
+                            className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded text-sm"
+                            onClick={() => {
+                              handleRemoveVote(selectedVote._id, vote.clanId, vote.playerId);
+                              setOpenManageVotesModal(false);
+                            }}
+                          >
+                            Remove Vote
+                          </button>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="mb-4 p-3 bg-gray-100 rounded">
+                  <p className="text-gray-600">No votes found.</p>
+                </div>
+              )}
+              
+              <div className="flex justify-end">
+                <button
+                  className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
+                  onClick={() => setOpenManageVotesModal(false)}
+                >
+                  Close
                 </button>
               </div>
             </>
