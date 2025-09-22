@@ -1,0 +1,25 @@
+services:
+  api:
+    image: node:20
+    working_dir: /tw-league/api
+    volumes:
+      - ./:/tw-league
+    ports:
+      - "127.0.0.1:8080:8080"
+    command: sh -c "npm install && sleep infinity" # && npm run dev
+
+  app:
+    image: node:20
+    working_dir: /tw-league/app
+    volumes:
+      - ./:/tw-league
+    ports:
+      - "127.0.0.1:3000:3000"
+    command: sh -c "npm install && sleep infinity" # && npm run dev
+
+  mongodb:
+    image: mongo
+    ports:
+      - "127.0.0.1:27017:27017"
+    volumes:
+      - ./data/db:/data/db

@@ -170,3 +170,6 @@ bfg.jar
 # Ruby / CocoaPods
 /app/ios/Pods/
 /app/vendor/bundle/
+
+
+/data
