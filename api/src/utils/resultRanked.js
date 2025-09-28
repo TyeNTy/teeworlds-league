@@ -396,15 +396,21 @@ const computeEloResultRanked = async (resultRanked) => {
     await resultRanked.save();
   
     for (const player of winnerPlayers) {
-      const stat = await StatRankedModel.findOne({ userId: player._id });
-      stat.set({ elo: player.eloRanked });
-      await stat.save();
+      const statRanked = await StatRankedModel.findOne({ userId: player._id });
+
+      if (statRanked) {
+        statRanked.set({ elo: player.eloRanked });
+        await statRanked.save();
+      }
     }
   
     for (const player of looserPlayers) {
-      const stat = await StatRankedModel.findOne({ userId: player._id });
-      stat.set({ elo: player.eloRanked });
-      await stat.save();
+      const statRanked = await StatRankedModel.findOne({ userId: player._id });
+
+      if (statRanked) {
+        statRanked.set({ elo: player.eloRanked });
+        await statRanked.save();
+      }
     }
   
     return resultRanked;
@@ -415,4 +421,6 @@ module.exports = {
     unforfeitResultRanked,
     updateAllStatsResultRanked,
     updateStatResultRanked,
+    updateStatPlayerRanked,
+    computeEloResultRanked,
 };

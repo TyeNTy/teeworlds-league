@@ -5,6 +5,7 @@ import TopBarRanked from "../../components/TopBarRanked";
 import Footer from "../../components/Footer";
 import Queues from "./queues";
 import ResultsRanked from "./resultsRanked";
+import StatsRanked from "./statsRanked";
 
 const Ranked = () => {
   return (
@@ -15,7 +16,8 @@ const Ranked = () => {
         <Routes>
           <Route path="/users/*" element={<Users />} />
           <Route path="/queues/*" element={<Queues />} />
-          <Route path="/resultsRanked/*" element={<ResultsRanked />} />
+          <Route path="/results/*" element={<ResultsRanked />} />
+          <Route path="/stats/*" element={<StatsRanked />} />
           <Route path="" element={<Users />} />
         </Routes>
       </div>
