@@ -1,12 +1,12 @@
 import { Calendar, momentLocalizer, Views } from "react-big-calendar";
 import moment from "moment";
 import "react-big-calendar/lib/css/react-big-calendar.css";
-import API from "../../services/api";
+import API from "../../../services/api";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
-import Modal from "../../components/Modal";
-import Loader from "../../components/Loader";
+import Modal from "../../../components/Modal";
+import Loader from "../../../components/Loader";
 import { useSelector } from "react-redux";
 
 moment.locale("ko", {

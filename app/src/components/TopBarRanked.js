@@ -5,8 +5,9 @@ import API from "../services/api";
 import { setUser } from "../redux/auth/actions";
 import { setCurrentSeason, setSeasons } from "../redux/season/actions";
 import GCTFLogo from "../assets/gctfLeagueLogo.png";
+import { FaAngleRight } from 'react-icons/fa';
 
-const TopBar = () => {
+const TopBarRanked = () => {
   const [isOpen, setIsOpen] = React.useState(false);
   const [isLoadingSeasons, setIsLoadingSeasons] = React.useState(false);
 
@@ -66,10 +67,13 @@ const TopBar = () => {
   return (
     <div className="bg-gray-800 text-white">
       <div className="container mx-auto flex justify-between items-center py-4">
-        <div className="pl-4">
+        <div className="pl-4 flex items-center">
           <Link to="/users" className="flex text-lg font-bold items-center">
             <img src={GCTFLogo} alt="GCTF League" className="w-12 h-12" />
             gCTF League
+          </Link>
+          <Link to="/ranked" className="ml-4 text-base font-medium flex items-center">
+            Ranked <FaAngleRight className="w-4 h-4 ml-1" />
           </Link>
         </div>
 
@@ -183,4 +187,4 @@ const TopBar = () => {
   );
 };
 
-export default TopBar;
+export default TopBarRanked;

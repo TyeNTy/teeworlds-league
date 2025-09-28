@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
-import Loader from "../../components/Loader";
+import Loader from "../../../components/Loader";
 import { useParams } from "react-router";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { useSelector } from "react-redux";
-import API from "../../services/api";
+import API from "../../../services/api";
 
 const Details = () => {
   const [event, setEvent] = useState(null);

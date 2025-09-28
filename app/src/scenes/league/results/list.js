@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
-import api from "../../services/api";
-import Loader from "../../components/Loader";
+import api from "../../../services/api";
+import Loader from "../../../components/Loader";
 import { useNavigate } from "react-router-dom";
-import Modal from "../../components/Modal";
+import Modal from "../../../components/Modal";
 import toast from "react-hot-toast";
-import { maps, modes } from "../../components/utils";
+import { maps, modes } from "../../../components/utils";
 import { useSelector } from "react-redux";
 
 const List = () => {

@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
-import api from "../../services/api";
-import Loader from "../../components/Loader";
+import api from "../../../services/api";
+import Loader from "../../../components/Loader";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
-import Player from "../../components/Player";
+import Player from "../../../components/Player";
 import { useSelector } from "react-redux";
-import StatColored from "../../components/StatColored";
+import StatColored from "../../../components/StatColored";
 
 const List = () => {
   const [stats, setStats] = useState([]);

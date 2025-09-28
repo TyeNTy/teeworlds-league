@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import API from "../../services/api";
-import Loader from "../../components/Loader";
+import API from "../../../services/api";
+import Loader from "../../../components/Loader";
 import { useParams } from "react-router";
 import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";

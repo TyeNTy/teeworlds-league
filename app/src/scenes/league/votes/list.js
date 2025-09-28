@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
-import api from "../../services/api";
-import Loader from "../../components/Loader";
+import api from "../../../services/api";
+import Loader from "../../../components/Loader";
 import { useNavigate } from "react-router-dom";
-import Modal from "../../components/Modal";
+import Modal from "../../../components/Modal";
 import { useSelector } from "react-redux";
 import toast from "react-hot-toast";
 import { MdDelete, MdEdit, MdAdd } from "react-icons/md";
-import enumVoteType from "../../enums/enumVote";
+import enumVoteType from "../../../enums/enumVote";
 
 const List = () => {
   const [votes, setVotes] = useState([]);
