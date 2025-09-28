@@ -9,8 +9,10 @@ import { modesWithLabel } from "../../../components/utils";
 
 const Details = () => {
   const [loading, setLoading] = useState(true);
-  const [queue, setQueue] = useState(null);
+  const [queue, setQueue] = useState({});
   const [canEdit, setCanEdit] = useState(false);
+  const [canJoin, setCanJoin] = useState(false);
+  const [canLeave, setCanLeave] = useState(false);
   const queueId = useParams().id;
   const navigate = useNavigate();
 
@@ -24,11 +26,17 @@ const Details = () => {
     setQueue(data[0]);
 
     setCanEdit(realUser?.role === "ADMIN");
+    setCanJoin(realUser && !data[0].players.some((player) => player.userId === realUser._id));
+    setCanLeave(realUser && data[0].players.some((player) => player.userId === realUser._id));
     setLoading(false);
   };
 
   useEffect(() => {
     get();
+    const interval = setInterval(() => {
+      get();
+    }, 5000);
+    return () => clearInterval(interval);
   }, []);
 
   const handleDelete = async () => {
@@ -48,6 +56,20 @@ const Details = () => {
     if (!ok) toast.error("Erreur while updating queue");
     toast.success("Queue updated successfully");
     navigate("../../queues");
+  };
+
+  const handleJoinQueue = async () => {
+    const { ok } = await api.post(`/queue/${queueId}/join`);
+    if (!ok) toast.error("Erreur while joining queue");
+    toast.success("Queue joined successfully");
+    get();
+  };
+
+  const handleLeaveQueue = async () => {
+    const { ok } = await api.post(`/queue/${queueId}/leave`);
+    if (!ok) toast.error("Erreur while leaving queue");
+    toast.success("Queue left successfully");
+    get();
   };
 
   if (loading) return <Loader />;
@@ -116,6 +138,25 @@ const Details = () => {
           placeholder="Available maps"
           disabled={!canEdit}
         />
+      </div>
+
+      <div className="mb-4">
+        Number of player in Queue : {queue.players.length}
+        <div className="flex items-center">
+          {canJoin && <button
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+            onClick={() => handleJoinQueue()}
+          >
+            Join queue
+          </button>}
+
+          {canLeave && <button
+            className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+            onClick={() => handleLeaveQueue()}
+          >
+            Leave queue
+          </button>}
+        </div>
       </div>
       
       {canEdit && (

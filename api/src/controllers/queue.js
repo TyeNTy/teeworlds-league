@@ -44,6 +44,10 @@ router.post(
     const { id } = req.params;
     const user = req.user;
 
+    const queue = await QueueModel.findById(id);
+    if (!queue) return res.status(400).send({ ok: false, message: "Queue not found" });
+    if (queue.players.some((player) => player.userId === user._id)) return res.status(400).send({ ok: false, message: "Player already in queue" });
+
     const playerObj = {
       userId: user._id,
       userName: user.userName,
@@ -54,9 +58,10 @@ router.post(
       joinedAt: new Date(),
     };
 
-    await QueueModel.findByIdAndUpdate(id, { $push: { players: playerObj } });
+    queue.players.push(playerObj);
+    await queue.save();
 
-    return res.status(200).send({ ok: true });
+    return res.status(200).send({ ok: true, data: queue.responseModel() });
   }),
 );
 
@@ -67,9 +72,14 @@ router.post(
     const { id } = req.params
     const user = req.user;
 
-    await QueueModel.findByIdAndUpdate(id, { $pull: { players: user._id } });
+    const queue = await QueueModel.findById(id);
+    if (!queue) return res.status(400).send({ ok: false, message: "Queue not found" });
+    if (!queue.players.some((player) => player.userId.toString() === user._id.toString())) return res.status(400).send({ ok: false, message: "Player not in queue" });
 
-    return res.status(200).send({ ok: true });
+    queue.players = queue.players.filter((player) => player.userId.toString() !== user._id.toString());
+    await queue.save();
+
+    return res.status(200).send({ ok: true, data: queue.responseModel() });
   }),
 );
 

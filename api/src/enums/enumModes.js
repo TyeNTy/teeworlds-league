@@ -10,25 +10,25 @@ const enumModes = {
 };
 
 const enumNumberOfPlayersPerTeam = {
-    oneVOne: 1,
-    twoVTwo: 2,
-    threeVThree: 3,
-    fourVFour: 4,
-    fiveVFive: 5,
-    sixVSix: 6,
-    sevenVSeven: 7,
-    eightVEight: 8,
+    "1v1": 1,
+    "2v2": 2,
+    "3v3": 3,
+    "4v4": 4,
+    "5v5": 5,
+    "6v6": 6,
+    "7v7": 7,
+    "8v8": 8,
 };
 
 const enumNumberOfPlayersForGame = {
-    oneVOne: enumNumberOfPlayersPerTeam.oneVOne*2   ,
-    twoVTwo: enumNumberOfPlayersPerTeam.twoVTwo*2,
-    threeVThree: enumNumberOfPlayersPerTeam.threeVThree*2,
-    fourVFour: enumNumberOfPlayersPerTeam.fourVFour*2,
-    fiveVFive: enumNumberOfPlayersPerTeam.fiveVFive*2,
-    sixVSix: enumNumberOfPlayersPerTeam.sixVSix*2,
-    sevenVSeven: enumNumberOfPlayersPerTeam.sevenVSeven*2,
-    eightVEight: enumNumberOfPlayersPerTeam.eightVEight*2,
+    "1v1": enumNumberOfPlayersPerTeam["1v1"]*2   ,
+    "2v2": enumNumberOfPlayersPerTeam["2v2"]*2,
+    "3v3": enumNumberOfPlayersPerTeam["3v3"]*2,
+    "4v4": enumNumberOfPlayersPerTeam["4v4"]*2,
+    "5v5": enumNumberOfPlayersPerTeam["5v5"]*2,
+    "6v6": enumNumberOfPlayersPerTeam["6v6"]*2,
+    "7v7": enumNumberOfPlayersPerTeam["7v7"]*2,
+    "8v8": enumNumberOfPlayersPerTeam["8v8"]*2,
 };
 
 module.exports = {enumModes, enumNumberOfPlayersForGame, enumNumberOfPlayersPerTeam};

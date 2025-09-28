@@ -23,8 +23,6 @@ const List = () => {
         return;
       }
 
-      console.log(data);
-
       setQueues(data);
       setLoading(false);
     };

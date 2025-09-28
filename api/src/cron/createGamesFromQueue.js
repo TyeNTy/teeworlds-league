@@ -1,7 +1,7 @@
 const QueueModel = require("../models/queue");
 const UserModel = require("../models/user");
 const ResultRankedModel = require("../models/resultRanked");
-const { chooseMap } = require("../utils/queue");
+const { chooseMap, choosePlayers } = require("../utils/queue");
 
 const createGamesFromQueue = async () => {
     const queues = await QueueModel.find({});
@@ -16,13 +16,13 @@ const createGamesFromQueue = async () => {
         const redRealPlayers = await UserModel.find({ _id: { $in: redPlayers.map(player => player.userId) } });
 
         const bluePlayersObj = blueRealPlayers.map(player => ({
-            userId: player.userId,
+            userId: player._id,
             userName: player.userName,
             avatar: player.avatar,
             eloBefore: player.eloRanked,
         }));
         const redPlayersObj = redRealPlayers.map(player => ({
-            userId: player.userId,
+            userId: player._id,
             userName: player.userName,
             avatar: player.avatar,
             eloBefore: player.eloRanked,
@@ -43,6 +43,13 @@ const createGamesFromQueue = async () => {
         const newResultRanked = await ResultRankedModel.create(newResultRankedObj);
         console.log("New game created");
         console.log(newResultRanked);
+
+        for (const player of bluePlayersObj) {
+            queue.players = queue.players.filter((playerQueue) => playerQueue.userId.toString() !== player.userId.toString());
+        }
+        for (const player of redPlayersObj) {
+            queue.players = queue.players.filter((playerQueue) => playerQueue.userId.toString() !== player.userId.toString());
+        }
 
         queue.numberOfGames++;
         await queue.save();
