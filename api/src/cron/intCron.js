@@ -1,4 +1,5 @@
 const cron = require("node-cron");
+const { createGamesFromQueue } = require("./createGamesFromQueue");
 
 // Example for a CRON job every 5s :
 "*/5 * * * * *"
@@ -8,7 +9,7 @@ const cron = require("node-cron");
 const initCron = () => {
     // Try to create a Queue every 3 seconds
     cron.schedule("*/3 * * * * *", () => {
-        console.log("Cron job executed");
+        createGamesFromQueue();
     });
 };
 

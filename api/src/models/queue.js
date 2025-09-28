@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const modes = require("../enums/enumModes");
 const { enumMaps } = require("../enums/enumMaps");
-const enumModes = require("../enums/enumModes");
+const { enumModes, enumNumberOfPlayersForGame } = require("../enums/enumModes");
 const ObjectId = mongoose.Types.ObjectId;
 
 const MODELNAME = "queue";
@@ -18,9 +18,15 @@ const PlayerSchema = new mongoose.Schema({
 
 const Schema = new mongoose.Schema(
   {
+    name: { type: String, trim: true },
+    
     players: { type: [PlayerSchema], default: [] },
+    numberOfPlayersForGame: { type: Number, default: enumNumberOfPlayersForGame.twoVTwo },
+    numberOfPlayersPerTeam: { type: Number, default: 2 },
     maps: { type: [String], default: [enumMaps.ctf_5, enumMaps.ctf_duskwood, enumMaps.ctf_cryochasm, enumMaps.ctf_mars, enumMaps.ctf_moon] },
     mode: { type: String, enum: enumModes, default: enumModes.twoVTwo },
+
+    numberOfGames: { type: Number, default: 0 },
   },
   {
     timestamps: true,
@@ -33,6 +39,9 @@ Schema.methods.responseModel = function () {
     players: this.players,
     maps: this.maps,
     mode: this.mode,
+    numberOfPlayersForGame: this.numberOfPlayersForGame,
+    numberOfPlayersPerTeam: this.numberOfPlayersPerTeam,
+    numberOfGames: this.numberOfGames,
   };
 };
 
