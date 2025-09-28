@@ -110,7 +110,7 @@ const TopBarRanked = () => {
                       <div className="absolute right-0 mt-2 w-48 bg-white shadow-lg z-10">
                         <button
                           className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-200"
-                          onClick={() => navigate("/users/profile")}
+                          onClick={() => navigate("./users/profile")}
                         >
                           Profile
                         </button>
