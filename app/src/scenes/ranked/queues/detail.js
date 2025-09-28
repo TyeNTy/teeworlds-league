@@ -5,6 +5,7 @@ import { useParams } from "react-router";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
+import { modesWithLabel } from "../../../components/utils";
 
 const Details = () => {
   const [loading, setLoading] = useState(true);
@@ -80,16 +81,23 @@ const Details = () => {
         >
           Mode
         </label>
-        <input
-          type="text"
+        <select
+          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
           id="mode"
           name="mode"
-          value={queue.mode}
           onChange={(e) => setQueue({ ...queue, mode: e.target.value })}
-          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-          placeholder="Game mode"
+          value={queue.mode}
           disabled={!canEdit}
-        />
+        >
+          <option value="" disabled>
+            Select a mode
+          </option>
+          {modesWithLabel.map((mode) => (
+            <option key={mode.value} value={mode.value}>
+              {mode.label}
+            </option>
+          ))}
+        </select>
       </div>
       <div className="mb-4">
         <label

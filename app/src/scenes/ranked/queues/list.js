@@ -3,7 +3,7 @@ import api from "../../../services/api";
 import Loader from "../../../components/Loader";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import { maps, modes } from "../../../components/utils";
+import { maps, modesWithLabel } from "../../../components/utils";
 import { useSelector } from "react-redux";
 
 const List = () => {
@@ -79,7 +79,7 @@ const List = () => {
                   {queue.name}
                 </td>
                 <td className="border px-4 py-2">
-                  {modes.find((m) => m.value === queue.mode)?.label ??
+                  {modesWithLabel.find((m) => m.value === queue.mode)?.label ??
                     "Unknown"}
                 </td>
                 <td className="border px-4 py-2">

@@ -8,7 +8,7 @@ import Modal from "../../../components/Modal";
 import { useNavigate } from "react-router-dom";
 import { MdDelete } from "react-icons/md";
 import Player from "../../../components/Player";
-import { maps, modes } from "../../../components/utils";
+import { maps, modesWithLabel } from "../../../components/utils";
 import { useSelector } from "react-redux";
 
 const Details = () => {
@@ -259,7 +259,7 @@ const Details = () => {
           <option value="" disabled>
             Select a mode
           </option>
-          {modes.map((mode) => (
+          {modesWithLabel.map((mode) => (
             <option key={mode.value} value={mode.value}>
               {mode.label}
             </option>

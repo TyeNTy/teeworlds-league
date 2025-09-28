@@ -4,7 +4,7 @@ import Loader from "../../../components/Loader";
 import { useNavigate } from "react-router-dom";
 import Modal from "../../../components/Modal";
 import toast from "react-hot-toast";
-import { maps, modes } from "../../../components/utils";
+import { maps, modesWithLabel } from "../../../components/utils";
 import { useSelector } from "react-redux";
 
 const List = () => {
@@ -121,7 +121,7 @@ const List = () => {
                   {result.date.split("T")[0]}
                 </td>
                 <td className="border px-4 py-2">
-                  {modes.find((m) => m.value === result.mode)?.label ??
+                  {modesWithLabel.find((m) => m.value === result.mode)?.label ??
                     "Unknown"}
                 </td>
                 <td className="border px-4 py-2">
