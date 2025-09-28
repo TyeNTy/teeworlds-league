@@ -65,7 +65,7 @@ const List = () => {
     if (!ok) return toast.error("Error while creating clan");
 
     setOpen(false);
-    return navigate(`/clans/${data._id}`);
+    return navigate(`./${data._id}`);
   };
 
   const handleEndSeason = async (e) => {
@@ -173,7 +173,7 @@ const List = () => {
               <tr
                 key={clan._id}
                 className="cursor-pointer hover:bg-gray-100"
-                onClick={() => navigate(`/clans/${clan._id}`)}
+                onClick={() => navigate(`./${clan._id}`)}
               >
                 <td className="border px-4 py-2">{clan.name}</td>
                 <td className="border px-4 py-2">{clan.numberGames}</td>

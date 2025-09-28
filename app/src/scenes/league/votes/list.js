@@ -69,7 +69,7 @@ const List = () => {
       return;
     }
 
-    navigate(`/votes/${res.data.vote._id}`);
+    navigate(`./${res.data.vote._id}`);
   };
 
   const handleDelete = async (voteId) => {
@@ -261,7 +261,7 @@ const List = () => {
                       </button>
                       <button
                         className="bg-blue-500 hover:bg-blue-700 text-white p-2 rounded"
-                        onClick={() => navigate(`/votes/${vote._id}`)}
+                        onClick={() => navigate(`./${vote._id}`)}
                         title="Edit"
                       >
                         <MdEdit />

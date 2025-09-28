@@ -70,7 +70,7 @@ const TopBarRanked = () => {
         <div className="pl-4 flex items-center">
           <Link to="./users" className="flex text-lg font-bold items-center">
             <img src={GCTFLogo} alt="GCTF League" className="w-12 h-12" />
-            gCTF League
+            gCTF Ranked
           </Link>
           <Link to="/league" className="ml-4 text-base font-medium flex items-center">
             League <FaAngleRight className="w-4 h-4 ml-1" />
@@ -84,9 +84,14 @@ const TopBarRanked = () => {
                 Players
               </Link>
             </div>
-            <div className="flex items-center pr-4">
+            {/* <div className="flex items-center pr-4">
               <Link to="./clans" className="ml-2">
                 Clans
+              </Link>
+            </div> */}
+            <div className="flex items-center pr-4">
+              <Link to="./queues" className="ml-2">
+                Queues
               </Link>
             </div>
             <div className="border-r border-gray-600 h-6 mx-4" />

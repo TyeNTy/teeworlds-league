@@ -18,8 +18,8 @@ const PlayerSchema = new mongoose.Schema({
 
 const Schema = new mongoose.Schema(
   {
-    name: { type: String, trim: true },
-    
+    name: { type: String, trim: true, default: "2v2" },
+
     players: { type: [PlayerSchema], default: [] },
     numberOfPlayersForGame: { type: Number, default: enumNumberOfPlayersForGame.twoVTwo },
     numberOfPlayersPerTeam: { type: Number, default: 2 },

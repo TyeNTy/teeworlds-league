@@ -55,7 +55,7 @@ const Detail = () => {
       const foundVote = data.find(v => v._id === id);
       if (!foundVote) {
         toast.error("Vote not found");
-        navigate("/votes");
+        navigate("../../votes");
         return;
       }
       
@@ -105,7 +105,7 @@ const Detail = () => {
       }
 
       toast.success("Vote updated successfully");
-      navigate("/votes");
+      navigate("../../votes");
     } catch (error) {
       toast.error("Error while updating vote");
     }
@@ -123,7 +123,7 @@ const Detail = () => {
       }
 
       toast.success("Vote deleted successfully");
-      navigate("/votes");
+      navigate("../../votes");
     } catch (error) {
       toast.error("Error while deleting vote");
     }

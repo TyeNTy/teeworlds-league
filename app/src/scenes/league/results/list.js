@@ -72,7 +72,7 @@ const List = () => {
 
     setOpen(false);
     toast.success("Result created");
-    navigate(`/results/${data._id}`);
+    navigate(`./${data._id}`);
   };
 
   if (loading || !currentSeason) return <Loader />;
@@ -115,7 +115,7 @@ const List = () => {
                     ? "cursor-pointer hover:bg-gray-100"
                     : "cursor-pointer hover:bg-gray-100 opacity-50"
                 }
-                onClick={() => navigate(`/results/${result._id}`)}
+                onClick={() => navigate(`./${result._id}`)}
               >
                 <td className="border px-4 py-2">
                   {result.date.split("T")[0]}

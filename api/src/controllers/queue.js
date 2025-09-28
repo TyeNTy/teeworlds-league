@@ -2,14 +2,13 @@ const express = require("express");
 const router = express.Router();
 const passport = require("passport");
 
-const StatModel = require("../models/stat");
-const UserModel = require("../models/user");
+const QueueModel = require("../models/queue");
 const enumUserRole = require("../enums/enumUserRole");
-const { catchErrors, updateStatPlayer } = require("../utils");
+const { catchErrors } = require("../utils");
 const { enumNumberOfPlayersPerTeam, enumNumberOfPlayersForGame } = require("../enums/enumModes");
 
 router.post(
-  "/:create",
+  "/create",
   passport.authenticate(enumUserRole.ADMIN, { session: false }),
   catchErrors(async (req, res) => {
     const body = req.body;
@@ -29,10 +28,11 @@ router.post(
   }),
 );
 
-router.get(
-  "/",
+router.post(
+  "/search",
   catchErrors(async (req, res) => {
     const queues = await QueueModel.find();
+
     return res.status(200).send({ ok: true, data: queues.map((queue) => queue.responseModel()) });
   }),
 );

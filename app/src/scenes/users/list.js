@@ -54,7 +54,7 @@ const List = () => {
 
     get();
     setShowCreatePlayer(false);
-    navigate(`/users/${data._id}`);
+    navigate(`./${data._id}`);
     toast.success("User created successfully");
   };
 
@@ -92,7 +92,7 @@ const List = () => {
               <tr
                 key={user._id}
                 className="cursor-pointer hover:bg-gray-100"
-                onClick={() => navigate(`/users/${user._id}`)}
+                onClick={() => navigate(`./${user._id}`)}
               >
                 <td className="border px-4 py-2">{user.userName}</td>
                 {realUser?.role === "ADMIN" && (

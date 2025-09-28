@@ -98,7 +98,7 @@ const CalendarDetail = (props) => {
     }
 
     setIsModalOpen(false);
-    navigate(`/calendar/${resEvent.data._id}`);
+    navigate(`./${resEvent.data._id}`);
   };
 
   const handleEventClick = (event) => {
@@ -226,7 +226,7 @@ const CalendarDetail = (props) => {
                   className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
                   onClick={() => {
                     setIsModalOpen(false);
-                    navigate(`/calendar/${selectedEvent._id}`);
+                    navigate(`./${selectedEvent._id}`);
                   }}
                 >
                   Edit Event

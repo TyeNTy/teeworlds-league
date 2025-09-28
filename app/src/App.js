@@ -61,7 +61,7 @@ const App = () => {
         <Route element={<ProtectedLayout />}>
           <Route path="/ranked/*" element={<Ranked />} />
           <Route path="/league/*" element={<League />} />
-          <Route path="/*" element={<Ranked />} />
+          <Route path="/" element={<Navigate to="/ranked" replace />} />
         </Route>
 
         <Route path="/auth/*" element={<Auth />} />

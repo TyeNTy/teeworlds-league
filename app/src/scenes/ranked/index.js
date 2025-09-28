@@ -4,6 +4,7 @@ import Users from "../users";
 import TopBarRanked from "../../components/TopBarRanked";
 import Footer from "../../components/Footer";
 import Clans from "../clans";
+import Queues from "./queues";
 
 const Ranked = () => {
   return (
@@ -14,6 +15,7 @@ const Ranked = () => {
         <Routes>
           <Route path="/users/*" element={<Users />} />
           <Route path="/clans/*" element={<Clans />} />
+          <Route path="/queues/*" element={<Queues />} />
           <Route path="" element={<Users />} />
         </Routes>
       </div>

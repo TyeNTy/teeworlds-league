@@ -97,7 +97,7 @@ const List = () => {
             {stats.map((stat) => (
               <tr
                 key={stat._id}
-                onClick={() => navigate(`/stats/${stat._id}`)}
+                onClick={() => navigate(`./${stat._id}`)}
                 className={"cursor-pointer hover:bg-gray-100"}
               >
                 <td className="border px-2 py-2">

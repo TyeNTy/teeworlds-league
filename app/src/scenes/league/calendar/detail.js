@@ -63,7 +63,7 @@ const Details = () => {
     if (!ok) return toast.error("Error while deleting event");
 
     toast.success("Event deleted successfully");
-    navigate("/calendar");
+    navigate("../../calendar");
   };
 
   if (loading || !currentSeason) return <Loader />;
