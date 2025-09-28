@@ -3,7 +3,7 @@ const StatModel = require("../models/stat");
 const UserModel = require("../models/user");
 const ClanModel = require("../models/clan");
 const SeasonModel = require("../models/season");
-const { enumMaps } = require("../enums/enumMaps");
+const { enumMapsWithLabel } = require("../enums/enumMaps");
 
 // Generate a random number between 000000 and 999999 and return as string
 function generateEmailcodeValidation() {
@@ -379,7 +379,7 @@ async function updateStatPlayer(player) {
 
 function detectMap(mapString) {
   const mapName = mapString.split("/").pop();
-  const foundMap = enumMaps.find((map) => map.label === mapName);
+  const foundMap = enumMapsWithLabel.find((map) => map.label === mapName);
   return foundMap ? foundMap.value : null;
 }
 
