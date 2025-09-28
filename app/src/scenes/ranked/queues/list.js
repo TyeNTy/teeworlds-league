@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import api from "../../../services/api";
 import Loader from "../../../components/Loader";
 import { useNavigate } from "react-router-dom";
-import Modal from "../../../components/Modal";
 import toast from "react-hot-toast";
 import { maps, modes } from "../../../components/utils";
 import { useSelector } from "react-redux";
@@ -33,6 +32,17 @@ const List = () => {
     fetchData();
   }, []);
 
+  const handleCreateQueue = async () => {
+    const { ok, data } = await api.post("/queue");
+    if (!ok) {
+      toast.error("Erreur while creating queue");
+      return;
+    }
+
+    toast.success("Queue created successfully");
+    navigate(`./${data._id}`);
+  };
+
   if (loading) return <Loader />;
 
   return (
@@ -42,7 +52,7 @@ const List = () => {
       {realUser?.role === "ADMIN" && (
         <button
           className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-          onClick={() => navigate("./create")}
+          onClick={handleCreateQueue}
         >
           Create queue
         </button>
@@ -73,7 +83,9 @@ const List = () => {
                     "Unknown"}
                 </td>
                 <td className="border px-4 py-2">
-                  {maps.find((m) => m.value === queue.maps)?.label ?? "Unknown"}
+                  {queue.maps.map((map) => (
+                    <div key={map}>{maps.find((m) => m.value === map)?.label ?? "Unknown"}</div>
+                  ))}
                 </td>
                 <td className="border px-4 py-2">
                   {queue.players.length}

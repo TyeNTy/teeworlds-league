@@ -8,7 +8,7 @@ const { catchErrors } = require("../utils");
 const { enumNumberOfPlayersPerTeam, enumNumberOfPlayersForGame } = require("../enums/enumModes");
 
 router.post(
-  "/create",
+  "/",
   passport.authenticate(enumUserRole.ADMIN, { session: false }),
   catchErrors(async (req, res) => {
     const body = req.body;
@@ -73,7 +73,27 @@ router.post(
   }),
 );
 
+router.put(
+  "/:id",
+  passport.authenticate(enumUserRole.ADMIN, { session: false }),
+  catchErrors(async (req, res) => {
+    const { id } = req.params;
+    const body = req.body;
 
+    const objUpdate = {};
+    if (body.name) objUpdate.name = body.name;
+    if (body.maps) objUpdate.maps = body.maps;
+    if (body.mode) {
+      objUpdate.mode = body.mode;
+      objUpdate.numberOfPlayersPerTeam = enumNumberOfPlayersPerTeam[body.mode];
+      objUpdate.numberOfPlayersForGame = enumNumberOfPlayersForGame[body.mode];
+    }
+
+    const queue = await QueueModel.findByIdAndUpdate(id, objUpdate);
+
+    return res.status(200).send({ ok: true, data: queue.responseModel() });
+  }),
+);
 
 router.delete(
   "/:id",

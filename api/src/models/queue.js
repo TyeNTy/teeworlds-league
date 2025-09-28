@@ -36,6 +36,7 @@ const Schema = new mongoose.Schema(
 Schema.methods.responseModel = function () {
   return {
     _id: this._id,
+    name: this.name,
     players: this.players,
     maps: this.maps,
     mode: this.mode,
