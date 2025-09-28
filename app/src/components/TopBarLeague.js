@@ -98,8 +98,8 @@ const TopBarLeague = () => {
               <Link
                 to={
                   currentSeason?.name?.includes("Season 2")
-                    ? "/rules/leagueSeason2"
-                    : "/rules/leagueSeason1"
+                    ? "./rules/leagueSeason2"
+                    : "./rules/leagueSeason1"
                 }
                 className="ml-2"
               >
