@@ -22,8 +22,6 @@ const ProtectedLayout = () => {
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(true);
 
-  // const user = useSelector((state) => state.Auth.user);
-
   async function fetchData() {
     try {
       const res = await api.get("/user/signin_token");
@@ -47,20 +45,11 @@ const ProtectedLayout = () => {
     fetchData();
   }, []);
 
-  // if (!user) return <Navigate to="/auth/signin" />;
   if (loading) return <Loader />;
 
   return (
     <div className="flex min-h-screen w-screen flex-col bg-gray-50">
-      <div className="flex flex-1">
-        <div className="flex min-h-screen w-full flex-col">
-          <TopBarLeague />
-          <div className="flex-1">
-            <Outlet />
-          </div>
-          <Footer />
-        </div>
-      </div>
+      <Outlet />
     </div>
   );
 };

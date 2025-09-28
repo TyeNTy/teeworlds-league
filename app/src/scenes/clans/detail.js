@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
-import Loader from "../../../components/Loader";
+import Loader from "../../components/Loader";
 import { useParams } from "react-router";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
-import Modal from "../../../components/Modal";
+import Modal from "../../components/Modal";
 import { useNavigate } from "react-router-dom";
 import { MdDelete } from "react-icons/md";
-import Player from "../../../components/Player";
+import Player from "../../components/Player";
 import { useSelector } from "react-redux";
-import API from "../../../services/api";
+import API from "../../services/api";
 
 const Details = () => {
   const [clan, setClan] = useState(null);

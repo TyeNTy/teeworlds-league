@@ -72,68 +72,21 @@ const TopBarRanked = () => {
             <img src={GCTFLogo} alt="GCTF League" className="w-12 h-12" />
             gCTF League
           </Link>
-          <Link to="/ranked" className="ml-4 text-base font-medium flex items-center">
-            Ranked <FaAngleRight className="w-4 h-4 ml-1" />
+          <Link to="/league" className="ml-4 text-base font-medium flex items-center">
+            League <FaAngleRight className="w-4 h-4 ml-1" />
           </Link>
         </div>
 
         <div className="flex items-center">
           <nav className="flex items-center justify-center">
-            {!isLoadingSeasons && seasons.length > 0 && (
-              <div className="flex items-center pr-4">
-                <select
-                  value={currentSeason?._id || ""}
-                  onChange={handleSeasonChange}
-                  className="bg-gray-700 text-white border border-gray-600 rounded px-2 py-1"
-                >
-                  {seasons.map((season) => (
-                    <option key={season._id} value={season._id}>
-                      {season.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
             <div className="flex items-center pr-4">
-              <Link
-                to={
-                  currentSeason?.name?.includes("Season 2")
-                    ? "/rules/leagueSeason2"
-                    : "/rules/leagueSeason1"
-                }
-                className="ml-2"
-              >
-                Rules
-              </Link>
-            </div>
-            <div className="flex items-center pr-4">
-              <Link to="/users" className="ml-2">
+              <Link to="./users" className="ml-2">
                 Players
               </Link>
             </div>
             <div className="flex items-center pr-4">
-              <Link to="/clans" className="ml-2">
+              <Link to="./clans" className="ml-2">
                 Clans
-              </Link>
-            </div>
-            <div className="flex items-center pr-4">
-              <Link to="/calendar" className="ml-2">
-                Calendar
-              </Link>
-            </div>
-            <div className="flex items-center pr-4">
-              <Link to="/results" className="ml-2">
-                Results
-              </Link>
-            </div>
-            <div className="flex items-center pr-4">
-              <Link to="/stats" className="ml-2">
-                Stats
-              </Link>
-            </div>
-            <div className="flex items-center pr-4">
-              <Link to="/votes" className="ml-2">
-                Votes
               </Link>
             </div>
             <div className="border-r border-gray-600 h-6 mx-4" />
