@@ -8,6 +8,9 @@ const Schema = new mongoose.Schema(
     userName: { type: String },
     avatar: { type: String },
 
+    clanId: { type: ObjectId },
+    clanName: { type: String },
+
     elo: { type: Number, default: 1000 },
 
     numberGames: { type: Number, default: 0 },
