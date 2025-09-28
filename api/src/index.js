@@ -6,6 +6,7 @@ const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const createError = require("http-errors");
 const fs = require("fs");
+const initCron = require("./cron/intCron");
 
 const { PORT, SENTRY_DSN, ENVIRONMENT, APP_URL } = require("./config");
 const app = express();
@@ -57,17 +58,5 @@ if (ENVIRONMENT === "production") {
   });
 }
 
-const init = async () => {
-  // UserModal = require("./models/user");
+initCron();
 
-  // const admin = await UserModal.create({
-  //   email: "admin@email.com",
-  //   password: "admin",
-  //   role: "ADMIN",
-  //   userName: "admin",
-  // });
-
-  console.log("init");
-};
-
-init();
