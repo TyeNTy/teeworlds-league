@@ -68,7 +68,7 @@ const TopBarRanked = () => {
     <div className="bg-gray-800 text-white">
       <div className="container mx-auto flex justify-between items-center py-4">
         <div className="pl-4 flex items-center">
-          <Link to="/users" className="flex text-lg font-bold items-center">
+          <Link to="./users" className="flex text-lg font-bold items-center">
             <img src={GCTFLogo} alt="GCTF League" className="w-12 h-12" />
             gCTF League
           </Link>
