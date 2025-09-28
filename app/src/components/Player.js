@@ -9,7 +9,15 @@ const Player = ({ player }) => {
       className="flex items-center cursor-pointer hover:bg-blue-100 p-2 rounded-md"
       onClick={(e) => {
         e.stopPropagation();
-        return navigate(`../users/${player._id}`);
+
+        if(window.location.pathname.includes("/league")) {
+          return navigate(`/league/users/${player._id}`);
+        }
+        if(window.location.pathname.includes("/ranked")) {
+          return navigate(`/ranked/users/${player._id}`);
+        }
+
+        return navigate(`/users/${player._id}`);
       }}
     >
       <img

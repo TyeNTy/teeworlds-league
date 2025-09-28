@@ -84,11 +84,11 @@ const TopBarRanked = () => {
                 Players
               </Link>
             </div>
-            {/* <div className="flex items-center pr-4">
-              <Link to="./clans" className="ml-2">
-                Clans
+            <div className="flex items-center pr-4">
+              <Link to="./resultsRanked" className="ml-2">
+                Results
               </Link>
-            </div> */}
+            </div>
             <div className="flex items-center pr-4">
               <Link to="./queues" className="ml-2">
                 Queues

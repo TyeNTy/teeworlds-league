@@ -42,6 +42,7 @@ app.use("/event", require("./controllers/event"));
 app.use("/vote", require("./controllers/vote"));
 app.use("/queue", require("./controllers/queue"));
 app.use("/resultRanked", require("./controllers/resultRanked"));
+app.use("/statRanked", require("./controllers/statRanked"));
 
 if (ENVIRONMENT === "production") {
   var https = require("https");
