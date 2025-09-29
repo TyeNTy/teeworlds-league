@@ -6,13 +6,13 @@ import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { modesWithLabel } from "../../../components/utils";
+import { enumMaps, enumMapsWithLabel } from "../../../enums/enumMaps";
+import MultiPicker from "../../../components/MultiPicker";
 
 const Details = () => {
   const [loading, setLoading] = useState(true);
   const [queue, setQueue] = useState({});
   const [canEdit, setCanEdit] = useState(false);
-  const [canJoin, setCanJoin] = useState(false);
-  const [canLeave, setCanLeave] = useState(false);
   const queueId = useParams().id;
   const navigate = useNavigate();
 
@@ -26,17 +26,11 @@ const Details = () => {
     setQueue(data[0]);
 
     setCanEdit(realUser?.role === "ADMIN");
-    setCanJoin(realUser && !data[0].players.some((player) => player.userId === realUser._id));
-    setCanLeave(realUser && data[0].players.some((player) => player.userId === realUser._id));
     setLoading(false);
   };
 
   useEffect(() => {
     get();
-    const interval = setInterval(() => {
-      get();
-    }, 5000);
-    return () => clearInterval(interval);
   }, []);
 
   const handleDelete = async () => {
@@ -56,20 +50,6 @@ const Details = () => {
     if (!ok) toast.error("Erreur while updating queue");
     toast.success("Queue updated successfully");
     navigate("../../queues");
-  };
-
-  const handleJoinQueue = async () => {
-    const { ok } = await api.post(`/queue/${queueId}/join`);
-    if (!ok) toast.error("Erreur while joining queue");
-    toast.success("Queue joined successfully");
-    get();
-  };
-
-  const handleLeaveQueue = async () => {
-    const { ok } = await api.post(`/queue/${queueId}/leave`);
-    if (!ok) toast.error("Erreur while leaving queue");
-    toast.success("Queue left successfully");
-    get();
   };
 
   if (loading) return <Loader />;
@@ -128,35 +108,41 @@ const Details = () => {
         >
           Maps
         </label>
-        <input
-          type="text"
-          id="maps"
-          name="maps"
-          value={queue.maps}
-          onChange={(e) => setQueue({ ...queue, maps: e.target.value })}
-          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-          placeholder="Available maps"
-          disabled={!canEdit}
-        />
+        {canEdit ? (
+          <MultiPicker
+            items={Object.values(enumMaps)}
+            selectedItems={Object.values(enumMaps).filter(mapValue => queue.maps?.includes(mapValue))}
+            onSelectionChange={(selectedMaps) => {
+              setQueue({ ...queue, maps: selectedMaps });
+            }}
+            renderItem={(mapValue, isSelected) => {
+              const mapObj = enumMapsWithLabel.find(m => m.value === mapValue);
+              return (
+                <div className="flex items-center justify-between">
+                  <span>{mapObj?.label || mapValue}</span>
+                  {isSelected && <span className="text-green-500">✓</span>}
+                </div>
+              );
+            }}
+            className="space-y-2 max-h-64 overflow-y-auto"
+            itemClassName="border rounded p-2"
+          />
+        ) : (
+          <div className="space-y-2">
+            {queue.maps?.map((mapValue) => {
+              const mapObj = enumMapsWithLabel.find(m => m.value === mapValue);
+              return (
+                <div key={mapValue} className="bg-gray-100 p-2 rounded">
+                  {mapObj?.label || mapValue}
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       <div className="mb-4">
         Number of player in Queue : {queue.players.length}
-        <div className="flex items-center">
-          {canJoin && <button
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-            onClick={() => handleJoinQueue()}
-          >
-            Join queue
-          </button>}
-
-          {canLeave && <button
-            className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-            onClick={() => handleLeaveQueue()}
-          >
-            Leave queue
-          </button>}
-        </div>
       </div>
       
       {canEdit && (

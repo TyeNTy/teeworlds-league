@@ -4,7 +4,8 @@ import Loader from "../../../components/Loader";
 import { useNavigate } from "react-router-dom";
 import Modal from "../../../components/Modal";
 import toast from "react-hot-toast";
-import { maps, modesWithLabel } from "../../../components/utils";
+import { modesWithLabel } from "../../../components/utils";
+import { enumMapsWithLabel } from "../../../enums/enumMaps";
 import { useSelector } from "react-redux";
 
 const List = () => {
@@ -125,7 +126,7 @@ const List = () => {
                     "Unknown"}
                 </td>
                 <td className="border px-4 py-2">
-                  {maps.find((m) => m.value === result.map)?.label ?? "Unknown"}
+                  {enumMapsWithLabel.find((m) => m.value === result.map)?.label ?? "Unknown"}
                 </td>
                 {result.isForfeit ? (
                   result.winnerSide === "red" ? (

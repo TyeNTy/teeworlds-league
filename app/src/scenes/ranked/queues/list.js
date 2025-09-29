@@ -3,7 +3,8 @@ import api from "../../../services/api";
 import Loader from "../../../components/Loader";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import { maps, modesWithLabel } from "../../../components/utils";
+import { modesWithLabel } from "../../../components/utils";
+import { enumMapsWithLabel } from "../../../enums/enumMaps";
 import { useSelector } from "react-redux";
 
 const List = () => {
@@ -14,20 +15,24 @@ const List = () => {
 
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const { ok, data } = await api.post(`/queue/search`);
-      if (!ok) {
-        toast.error("Erreur while fetching queues");
-        setLoading(false);
-        return;
-      }
-
-      setQueues(data);
+  const fetchData = async () => {
+    const { ok, data } = await api.post(`/queue/search`);
+    if (!ok) {
+      toast.error("Erreur while fetching queues");
       setLoading(false);
-    };
+      return;
+    }
 
+    setQueues(data);
+    setLoading(false);
+  };
+
+  useEffect(() => {
     fetchData();
+    const interval = setInterval(() => {
+      fetchData();
+    }, 5000);
+    return () => clearInterval(interval);
   }, []);
 
   const handleCreateQueue = async () => {
@@ -39,6 +44,28 @@ const List = () => {
 
     toast.success("Queue created successfully");
     navigate(`./${data._id}`);
+  };
+
+  const handleJoinQueue = async (queueId) => {
+    const { ok } = await api.post(`/queue/${queueId}/join`);
+    if (!ok) return toast.error("Erreur while joining queue");
+    toast.success("Queue joined successfully");
+    fetchData();
+  };
+
+  const handleLeaveQueue = async (queueId) => {
+    const { ok } = await api.post(`/queue/${queueId}/leave`);
+    if (!ok) return toast.error("Erreur while leaving queue");
+    toast.success("Queue left successfully");
+    fetchData();
+  };
+
+  const canJoinQueue = (queue) => {
+    return realUser && !queue.players.some((player) => player.userId === realUser._id);
+  };
+
+  const canLeaveQueue = (queue) => {
+    return realUser && queue.players.some((player) => player.userId === realUser._id);
   };
 
   if (loading) return <Loader />;
@@ -64,29 +91,67 @@ const List = () => {
               <th className="px-4 py-2">Mode</th>
               <th className="px-4 py-2">Maps</th>
               <th className="px-4 py-2">Players in queue</th>
+              <th className="px-4 py-2">Actions</th>
             </tr>
           </thead>
           <tbody>
             {queues.map((queue) => (
               <tr
                 key={queue._id}
-                className={"cursor-pointer hover:bg-gray-100 opacity-50"}
-                onClick={() => navigate(`./${queue._id}`)}
+                className={"hover:bg-gray-100"}
               >
-                <td className="border px-4 py-2">
+                <td 
+                  className="border px-4 py-2 cursor-pointer"
+                  onClick={() => navigate(`./${queue._id}`)}
+                >
                   {queue.name}
                 </td>
-                <td className="border px-4 py-2">
+                <td 
+                  className="border px-4 py-2 cursor-pointer"
+                  onClick={() => navigate(`./${queue._id}`)}
+                >
                   {modesWithLabel.find((m) => m.value === queue.mode)?.label ??
                     "Unknown"}
                 </td>
-                <td className="border px-4 py-2">
+                <td 
+                  className="border px-4 py-2 cursor-pointer"
+                  onClick={() => navigate(`./${queue._id}`)}
+                >
                   {queue.maps.map((map) => (
-                    <div key={map}>{maps.find((m) => m.value === map)?.label ?? "Unknown"}</div>
+                    <div key={map}>{enumMapsWithLabel.find((m) => m.value === map)?.label ?? "Unknown"}</div>
                   ))}
                 </td>
-                <td className="border px-4 py-2">
+                <td 
+                  className="border px-4 py-2 cursor-pointer"
+                  onClick={() => navigate(`./${queue._id}`)}
+                >
                   {queue.players.length}
+                </td>
+                <td className="border px-4 py-2">
+                  <div className="flex space-x-2">
+                    {canJoinQueue(queue) && (
+                      <button
+                        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded text-sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleJoinQueue(queue._id);
+                        }}
+                      >
+                        Join
+                      </button>
+                    )}
+                    {canLeaveQueue(queue) && (
+                      <button
+                        className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded text-sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleLeaveQueue(queue._id);
+                        }}
+                      >
+                        Leave
+                      </button>
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}

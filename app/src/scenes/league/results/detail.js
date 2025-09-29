@@ -2,13 +2,13 @@ import React, { useState, useEffect } from "react";
 import api from "../../../services/api";
 import Loader from "../../../components/Loader";
 import { useParams } from "react-router";
-import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import Modal from "../../../components/Modal";
 import { useNavigate } from "react-router-dom";
 import { MdDelete } from "react-icons/md";
 import Player from "../../../components/Player";
-import { maps, modesWithLabel } from "../../../components/utils";
+import { modesWithLabel } from "../../../components/utils";
+import { enumMapsWithLabel } from "../../../enums/enumMaps";
 import { useSelector } from "react-redux";
 
 const Details = () => {
@@ -318,7 +318,7 @@ const Details = () => {
           <option value="" disabled>
             Select a map
           </option>
-          {maps.map((map) => (
+          {enumMapsWithLabel.map((map) => (
             <option key={map.value} value={map.value}>
               {map.label}
             </option>
