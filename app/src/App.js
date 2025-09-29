@@ -10,25 +10,17 @@ import {
 } from "react-router-dom";
 import { setUser } from "./redux/auth/actions";
 
-import Users from "./scenes/users";
-
 import api from "./services/api";
 import Footer from "./components/Footer";
 import Loader from "./components/Loader";
 import Auth from "./scenes/auth";
-import TopBar from "./components/TopBar";
-import Rules from "./scenes/rules";
-import Clans from "./scenes/clans";
-import Calendar from "./scenes/calendar";
-import Results from "./scenes/results";
-import Stats from "./scenes/stats";
-import Votes from "./scenes/votes";
+import TopBarLeague from "./components/TopBarLeague";
+import Ranked from "./scenes/ranked";
+import League from "./scenes/league";
 
 const ProtectedLayout = () => {
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(true);
-
-  // const user = useSelector((state) => state.Auth.user);
 
   async function fetchData() {
     try {
@@ -53,20 +45,11 @@ const ProtectedLayout = () => {
     fetchData();
   }, []);
 
-  // if (!user) return <Navigate to="/auth/signin" />;
   if (loading) return <Loader />;
 
   return (
     <div className="flex min-h-screen w-screen flex-col bg-gray-50">
-      <div className="flex flex-1">
-        <div className="flex min-h-screen w-full flex-col">
-          <TopBar />
-          <div className="flex-1">
-            <Outlet />
-          </div>
-          <Footer />
-        </div>
-      </div>
+      <Outlet />
     </div>
   );
 };
@@ -76,14 +59,9 @@ const App = () => {
     <BrowserRouter>
       <Routes>
         <Route element={<ProtectedLayout />}>
-          <Route path="/rules/*" element={<Rules />} />
-          <Route path="/clans/*" element={<Clans />} />
-          <Route path="/users/*" element={<Users />} />
-          <Route path="/calendar/*" element={<Calendar />} />
-          <Route path="/results/*" element={<Results />} />
-          <Route path="/stats/*" element={<Stats />} />
-          <Route path="/votes/*" element={<Votes />} />
-          <Route path="/*" index element={<Users />} />
+          <Route path="/ranked/*" element={<Ranked />} />
+          <Route path="/league/*" element={<League />} />
+          <Route path="/" element={<Navigate to="/ranked" replace />} />
         </Route>
 
         <Route path="/auth/*" element={<Auth />} />

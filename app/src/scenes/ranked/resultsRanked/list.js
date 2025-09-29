@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
-import api from "../../services/api";
-import Loader from "../../components/Loader";
+import api from "../../../services/api";
+import Loader from "../../../components/Loader";
 import { useNavigate } from "react-router-dom";
-import Modal from "../../components/Modal";
+import Modal from "../../../components/Modal";
 import toast from "react-hot-toast";
-import { maps, modes } from "../../components/utils";
+import { modesWithLabel } from "../../../components/utils";
+import { enumMapsWithLabel } from "../../../enums/enumMaps";
 import { useSelector } from "react-redux";
 
 const List = () => {
@@ -25,7 +26,7 @@ const List = () => {
   useEffect(() => {
     if (currentSeason) {
       const fetchData = async () => {
-        const { ok, data } = await api.post(`/result/search`, {
+        const { ok, data } = await api.post(`/resultRanked/search`, {
           ...filters,
           seasonId: currentSeason._id,
           seasonName: currentSeason.name,
@@ -47,7 +48,7 @@ const List = () => {
 
   const handleCreateResult = async () => {
     const { ok, data, errorCode, errorData } = await api.post(
-      `/result/import`,
+      `/resultRanked/import`,
       { ...newPost }
     );
     if (!ok) {
@@ -72,7 +73,7 @@ const List = () => {
 
     setOpen(false);
     toast.success("Result created");
-    navigate(`/results/${data._id}`);
+    navigate(`./${data._id}`);
   };
 
   if (loading || !currentSeason) return <Loader />;
@@ -97,9 +98,9 @@ const List = () => {
               <th className="px-4 py-2">Date</th>
               <th className="px-4 py-2">Mode</th>
               <th className="px-4 py-2">Map</th>
-              <th className="px-4 py-2">Red clan (elo)</th>
+              <th className="px-4 py-2">ELO Red</th>
               <th className="px-4 py-2">Score</th>
-              <th className="px-4 py-2">Blue clan (elo)</th>
+              <th className="px-4 py-2">ELO Blue</th>
               <th className="px-4 py-2">Winner</th>
               {realUser?.role === "ADMIN" && (
                 <th className="px-4 py-2">Status</th>
@@ -115,36 +116,36 @@ const List = () => {
                     ? "cursor-pointer hover:bg-gray-100"
                     : "cursor-pointer hover:bg-gray-100 opacity-50"
                 }
-                onClick={() => navigate(`/results/${result._id}`)}
+                onClick={() => navigate(`./${result._id}`)}
               >
                 <td className="border px-4 py-2">
                   {result.date.split("T")[0]}
                 </td>
                 <td className="border px-4 py-2">
-                  {modes.find((m) => m.value === result.mode)?.label ??
+                  {modesWithLabel.find((m) => m.value === result.mode)?.label ??
                     "Unknown"}
                 </td>
                 <td className="border px-4 py-2">
-                  {maps.find((m) => m.value === result.map)?.label ?? "Unknown"}
+                  {enumMapsWithLabel.find((m) => m.value === result.map)?.label ?? "Unknown"}
                 </td>
                 {result.isForfeit ? (
                   result.winnerSide === "red" ? (
                     <>
-                      <td className="border px-4 py-2 text-green-500">{`${result.redClanName}`}</td>
+                      <td className="border px-4 py-2 text-green-500">{`${result.redEloBefore.toFixed(2)}`}</td>
                       <td className="border px-4 py-2">
                         <span className="text-green-500">1000</span> -{" "}
                         <span className="text-red-500">Forfeit</span>
                       </td>
-                      <td className="border px-4 py-2 text-red-500">{`${result.blueClanName} (Forfeit)`}</td>
+                      <td className="border px-4 py-2 text-red-500">{`${result.blueEloBefore.toFixed(2)} (Forfeit)`}</td>
                     </>
                   ) : (
                     <>
-                      <td className="border px-4 py-2 text-red-500">{`${result.redClanName} (Forfeit)`}</td>
+                      <td className="border px-4 py-2 text-red-500">{`${result.redEloBefore.toFixed(2)} (Forfeit)`}</td>
                       <td className="border px-4 py-2">
                         <span className="text-red-500">Forfeit</span> -{" "}
                         <span className="text-green-500">1000</span>
                       </td>
-                      <td className="border px-4 py-2 text-green-500">{`${result.blueClanName}`}</td>
+                      <td className="border px-4 py-2 text-green-500">{`${result.blueEloBefore.toFixed(2)}`}</td>
                     </>
                   )
                 ) : (
@@ -155,9 +156,9 @@ const List = () => {
                           ? "border px-4 py-2 text-green-500"
                           : "border px-4 py-2 text-red-500"
                       }
-                    >{`${result.redClanName} ${
+                    >{`${
                       result.freezed
-                        ? `: ${result.redEloBefore.toFixed(2)} (${
+                        ? `${result.redEloBefore.toFixed(2)} (${
                             result.winnerSide === "red"
                               ? "+" + result.redEloGain.toFixed(2)
                               : result.redEloGain.toFixed(2)
@@ -191,9 +192,9 @@ const List = () => {
                           ? "border px-4 py-2 text-green-500"
                           : "border px-4 py-2 text-red-500"
                       }
-                    >{`${result.blueClanName} ${
+                    >{`${
                       result.freezed
-                        ? `: ${result.blueEloBefore.toFixed(2)} (${
+                        ? `${result.blueEloBefore.toFixed(2)} (${
                             result.winnerSide === "blue"
                               ? "+" + result.blueEloGain.toFixed(2)
                               : result.blueEloGain.toFixed(2)

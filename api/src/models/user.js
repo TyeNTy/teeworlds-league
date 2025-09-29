@@ -18,6 +18,7 @@ const Schema = new mongoose.Schema(
     },
 
     elo: { type: Number, default: 1000 },
+    eloRanked: { type: Number, default: 1000 },
 
     password: { type: String },
     blocked: { type: Boolean, default: false },

@@ -93,7 +93,7 @@ const Details = () => {
     if (!ok) return toast.error("Erreur while deleting clan");
 
     toast.success("Clan deleted successfully");
-    navigate("/clans");
+    navigate("../../clans");
   };
 
   const handleDeletePlayer = async (playerId) => {

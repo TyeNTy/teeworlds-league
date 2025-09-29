@@ -1,68 +1,49 @@
 import React, { useState, useEffect } from "react";
-import api from "../../services/api";
-import Loader from "../../components/Loader";
+import api from "../../../services/api";
+import Loader from "../../../components/Loader";
 import { useParams } from "react-router";
-import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
-import Modal from "../../components/Modal";
+import Modal from "../../../components/Modal";
 import { useNavigate } from "react-router-dom";
 import { MdDelete } from "react-icons/md";
-import Player from "../../components/Player";
-import { maps, modes } from "../../components/utils";
+import Player from "../../../components/Player";
+import { modesWithLabel } from "../../../components/utils";
+import { enumMapsWithLabel } from "../../../enums/enumMaps";
 import { useSelector } from "react-redux";
 
 const Details = () => {
   const [loading, setLoading] = useState(true);
-  const [redClanPlayers, setRedClanPlayers] = useState([]);
-  const [blueClanPlayers, setBlueClanPlayers] = useState([]);
   const [open, setOpen] = useState(false);
   const [playerSelected, setPlayerSelected] = useState(null);
+  const [players, setPlayers] = useState([]);
   const [isRed, setIsRed] = useState(true);
-  const [clans, setClans] = useState([]);
   const [canEdit, setCanEdit] = useState(false);
 
-  const [result, setResult] = useState(null);
+  const [resultRanked, setResultRanked] = useState(null);
   const [canUpdate, setCanUpdate] = useState(false);
 
-  const resultId = useParams().id;
+  const resultRankedId = useParams().id;
   const navigate = useNavigate();
 
   const realUser = useSelector((state) => state.Auth.user);
-  const currentSeason = useSelector((state) => state.Season.currentSeason);
 
-  const getRedClanPlayers = async () => {
-    const { ok: okPlayers, data: dataPlayers } = await api.post(
-      `/user/search`,
-      { clanId: result.redClanId }
-    );
-    if (!okPlayers) return toast.error("Erreur while fetching players");
-    setRedClanPlayers(dataPlayers);
-  };
-
-  const getBlueClanPlayers = async () => {
-    const { ok, data } = await api.post(`/user/search`, {
-      clanId: result.blueClanId,
-    });
+  const getPlayers = async () => {
+    const { ok, data } = await api.post(`/user/search`, {});
     if (!ok) return toast.error("Erreur while fetching players");
-    setBlueClanPlayers(data);
+    setPlayers(data);
   };
 
   const get = async () => {
-    const { ok, data } = await api.post(`/result/search`, { _id: resultId });
+    const { ok, data } = await api.post(`/resultRanked/search`, { _id: resultRankedId });
     if (!ok) return toast.error("Erreur while fetching result");
 
     if (data.length !== 1) return toast.error("Result not found");
-    setResult(data[0]);
+    setResultRanked(data[0]);
 
-    const { ok: okClans, data: dataClans } = await api.post(`/clan/search`, {
-      seasonId: data[0].seasonId,
-    });
-    if (!okClans) return toast.error("Erreur while fetching clans");
-
-    setClans(dataClans);
+    await getPlayers();
 
     setCanEdit(
-      realUser?.role === "ADMIN" && !data[0].freezed && currentSeason?.isActive
+      realUser?.role === "ADMIN" && !data[0].freezed
     );
 
     setCanUpdate(false);
@@ -71,10 +52,10 @@ const Details = () => {
 
   useEffect(() => {
     get();
-  }, [resultId]);
+  }, [resultRankedId]);
 
   const handleSubmit = async () => {
-    const { ok } = await api.put(`/result/${resultId}`, { ...result });
+    const { ok } = await api.put(`/resultRanked/${resultRankedId}`, { ...resultRanked });
     if (!ok) toast.error("Erreur while updating result");
 
     toast.success("Result updated");
@@ -86,7 +67,7 @@ const Details = () => {
     if (!playerSelected) return toast.error("Please select a player");
 
     if (isRed) {
-      const { ok, data } = await api.post(`/result/${resultId}/addRedPlayer`, {
+      const { ok, data } = await api.post(`/resultRanked/${resultRankedId}/addRedPlayer`, {
         playerId: playerSelected._id,
       });
       if (!ok) return toast.error("Erreur while adding red player");
@@ -98,13 +79,13 @@ const Details = () => {
         return toast.error("Error, there is no player returned");
       const newPlayer = newPlayers[0];
 
-      setResult({
-        ...result,
-        redPlayers: [...result.redPlayers, newPlayer],
+      setResultRanked({
+        ...resultRanked,
+        redPlayers: [...resultRanked.redPlayers, newPlayer],
       });
       toast.success("Player added to red team");
     } else {
-      const { ok, data } = await api.post(`/result/${resultId}/addBluePlayer`, {
+      const { ok, data } = await api.post(`/resultRanked/${resultRankedId}/addBluePlayer`, {
         playerId: playerSelected._id,
       });
       if (!ok) return toast.error("Erreur while adding blue player");
@@ -116,9 +97,9 @@ const Details = () => {
         return toast.error("Error, there is no player returned");
       const newPlayer = newPlayers[0];
 
-      setResult({
-        ...result,
-        bluePlayers: [...result.bluePlayers, newPlayer],
+      setResultRanked({
+        ...resultRanked,
+        bluePlayers: [...resultRanked.bluePlayers, newPlayer],
       });
       toast.success("Player added to blue team");
     }
@@ -131,14 +112,14 @@ const Details = () => {
     );
     if (!approved) return;
 
-    const { ok } = await api.post(`/result/${resultId}/removePlayer`, {
+    const { ok } = await api.post(`/resultRanked/${resultRankedId}/removePlayer`, {
       playerId: player.userId,
     });
     if (!ok) return toast.error("Erreur while removing player");
-    setResult({
-      ...result,
-      redPlayers: result.redPlayers.filter((p) => p._id !== player._id),
-      bluePlayers: result.bluePlayers.filter((p) => p._id !== player._id),
+    setResultRanked({
+      ...resultRanked,
+      redPlayers: resultRanked.redPlayers.filter((p) => p._id !== player._id),
+      bluePlayers: resultRanked.bluePlayers.filter((p) => p._id !== player._id),
     });
     toast.success("Player removed successfully");
   };
@@ -146,17 +127,17 @@ const Details = () => {
   const handleUpdateRedPlayer = async (e, player) => {
     setCanUpdate(true);
     const { name, value } = e.target;
-    const redPlayer = result.redPlayers.find((p) => p._id === player._id);
+    const redPlayer = resultRanked.redPlayers.find((p) => p._id === player._id);
     redPlayer[name] = value;
-    setResult({ ...result, redPlayers: [...result.redPlayers] });
+    setResultRanked({ ...resultRanked, redPlayers: [...resultRanked.redPlayers] });
   };
 
   const handleUpdateBluePlayer = async (e, player) => {
     setCanUpdate(true);
     const { name, value } = e.target;
-    const bluePlayer = result.bluePlayers.find((p) => p._id === player._id);
+    const bluePlayer = resultRanked.bluePlayers.find((p) => p._id === player._id);
     bluePlayer[name] = value;
-    setResult({ ...result, bluePlayers: [...result.bluePlayers] });
+    setResultRanked({ ...resultRanked, bluePlayers: [...resultRanked.bluePlayers] });
   };
 
   const handleDelete = async () => {
@@ -165,16 +146,16 @@ const Details = () => {
     );
     if (!approved) return;
 
-    const { ok } = await api.remove(`/result/${resultId}`);
+    const { ok } = await api.remove(`/resultRanked/${resultRankedId}`);
     if (!ok) toast.error("Erreur while deleting result");
 
-    navigate("/results");
+    navigate("../../results");
   };
 
   const handleChange = (e) => {
     setCanUpdate(true);
     const { name, value } = e.target;
-    setResult({ ...result, [name]: value });
+    setResultRanked({ ...resultRanked, [name]: value });
   };
 
   const handleFreeze = async () => {
@@ -183,7 +164,7 @@ const Details = () => {
     );
     if (!approved) return;
 
-    const { ok, data } = await api.post(`/result/${resultId}/freeze`);
+    const { ok, data } = await api.post(`/resultRanked/${resultRankedId}/freeze`);
     if (!ok) return toast.error("Erreur while freezing result");
 
     toast.success("Result frozen");
@@ -197,12 +178,12 @@ const Details = () => {
 
     if (!approved) return;
 
-    const { ok, data } = await api.post(`/result/${resultId}/forfeit`, {
+    const { ok, data } = await api.post(`/resultRanked/${resultRankedId}/forfeit`, {
       side,
     });
     if (!ok) return toast.error("Erreur while declaring forfeit");
 
-    setResult(data);
+    setResultRanked(data);
     toast.success(`Forfeit declared for ${side} side`);
   };
 
@@ -213,10 +194,10 @@ const Details = () => {
 
     if (!approved) return;
 
-    const { ok, data } = await api.post(`/result/${resultId}/unforfeit`);
+    const { ok, data } = await api.post(`/resultRanked/${resultRankedId}/unforfeit`);
     if (!ok) return toast.error("Erreur while removing forfeit");
 
-    setResult(data);
+    setResultRanked(data);
     toast.success(`Forfeit removed for ${side} side`);
   };
 
@@ -236,7 +217,7 @@ const Details = () => {
           type="date"
           id="date"
           name="date"
-          value={result.date.split("T")[0]}
+          value={resultRanked.date.split("T")[0]}
           onChange={handleChange}
           className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
           placeholder="Name of the clan"
@@ -253,13 +234,13 @@ const Details = () => {
           id="mode"
           name="mode"
           onChange={handleChange}
-          value={result.mode}
+          value={resultRanked.mode}
           disabled={!canEdit}
         >
           <option value="" disabled>
             Select a mode
           </option>
-          {modes.map((mode) => (
+          {modesWithLabel.map((mode) => (
             <option key={mode.value} value={mode.value}>
               {mode.label}
             </option>
@@ -275,7 +256,7 @@ const Details = () => {
           type="number"
           id="timeLimit"
           name="timeLimit"
-          value={result.timeLimit}
+          value={resultRanked.timeLimit}
           onChange={handleChange}
           min={0}
           className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
@@ -292,7 +273,7 @@ const Details = () => {
           type="number"
           id="scoreLimit"
           name="scoreLimit"
-          value={result.scoreLimit}
+          value={resultRanked.scoreLimit}
           onChange={handleChange}
           min={0}
           className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
@@ -312,13 +293,13 @@ const Details = () => {
           id="map"
           name="map"
           onChange={handleChange}
-          value={result.map}
+          value={resultRanked.map}
           disabled={!canEdit}
         >
           <option value="" disabled>
             Select a map
           </option>
-          {maps.map((map) => (
+          {enumMapsWithLabel.map((map) => (
             <option key={map.value} value={map.value}>
               {map.label}
             </option>
@@ -330,26 +311,6 @@ const Details = () => {
       <div className="flex justify-between">
         <div className="mb-4">
           <div className="flex flex-row items-center">
-            <label>
-              Red clan
-              <select
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                id="redClanId"
-                name="redClanId"
-                onChange={handleChange}
-                value={result.redClanId || ""}
-                disabled={!canEdit}
-              >
-                <option value="" disabled>
-                  Select a clan
-                </option>
-                {clans.map((clan) => (
-                  <option key={clan._id} value={clan._id}>
-                    {clan.name}
-                  </option>
-                ))}
-              </select>
-            </label>
             <label className="ml-2">
               Score
               <input
@@ -357,15 +318,15 @@ const Details = () => {
                 className="ml-2 w-20"
                 min={0}
                 max={2000}
-                value={result.redScore}
+                value={resultRanked.redScore}
                 onChange={handleChange}
                 name="redScore"
                 disabled={!canEdit}
               />
             </label>
             {canEdit ? (
-              result.isForfeit ? (
-                result.winnerSide === "blue" ? (
+              resultRanked.isForfeit ? (
+                resultRanked.winnerSide === "blue" ? (
                   <button
                     className="ml-2 bg-green-500 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
                     onClick={() => handleUnforfeit("red")}
@@ -384,7 +345,7 @@ const Details = () => {
             ) : null}
           </div>
           <div className="flex flex-col items-center">
-            {result.redPlayers.length > 0 && (
+            {resultRanked.redPlayers.length > 0 && (
               <table className="min-w-full divide-y divide-gray-200">
                 <thead>
                   <tr>
@@ -409,7 +370,7 @@ const Details = () => {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {result.redPlayers.map((player) => (
+                  {resultRanked.redPlayers.map((player) => (
                     <tr key={player._id}>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {canEdit && (
@@ -489,7 +450,7 @@ const Details = () => {
                 className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mt-2"
                 onClick={() => {
                   setIsRed(true);
-                  getRedClanPlayers();
+                  getPlayers();
                   setOpen(true);
                 }}
               >
@@ -500,26 +461,6 @@ const Details = () => {
         </div>
         <div className="mb-4 ml-2">
           <div className="flex flex-row items-center">
-            <label>
-              Blue clan
-              <select
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                id="blueClanId"
-                name="blueClanId"
-                onChange={handleChange}
-                value={result.blueClanId || ""}
-                disabled={!canEdit}
-              >
-                <option value="" disabled>
-                  Select a clan
-                </option>
-                {clans.map((clan) => (
-                  <option key={clan._id} value={clan._id}>
-                    {clan.name}
-                  </option>
-                ))}
-              </select>
-            </label>
             <label className="ml-2">
               Score
               <input
@@ -527,15 +468,15 @@ const Details = () => {
                 className="ml-2 w-20"
                 min={0}
                 max={2000}
-                value={result.blueScore}
+                value={resultRanked.blueScore}
                 onChange={handleChange}
                 name="blueScore"
                 disabled={!canEdit}
               />
             </label>
             {canEdit ? (
-              result.isForfeit ? (
-                result.winnerSide === "red" ? (
+              resultRanked.isForfeit ? (
+                resultRanked.winnerSide === "red" ? (
                   <button
                     className="ml-2 bg-green-500 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
                     onClick={() => handleUnforfeit("blue")}
@@ -554,7 +495,7 @@ const Details = () => {
             ) : null}
           </div>
           <div className="flex flex-col items-center">
-            {result.bluePlayers.length > 0 && (
+            {resultRanked.bluePlayers.length > 0 && (
               <table className="min-w-full divide-y divide-gray-200">
                 <thead>
                   <tr>
@@ -579,7 +520,7 @@ const Details = () => {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {result.bluePlayers.map((player) => (
+                  {resultRanked.bluePlayers.map((player) => (
                     <tr key={player._id}>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {canEdit && (
@@ -658,7 +599,7 @@ const Details = () => {
                 className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mt-2"
                 onClick={() => {
                   setIsRed(false);
-                  getBlueClanPlayers();
+                  getPlayers();
                   setOpen(true);
                 }}
               >
@@ -710,31 +651,17 @@ const Details = () => {
             name="playerId"
             value={playerSelected?._id ?? ""}
             onChange={(e) =>
-              setPlayerSelected(
-                isRed
-                  ? redClanPlayers.find(
-                      (player) => player._id === e.target.value
-                    )
-                  : blueClanPlayers.find(
-                      (player) => player._id === e.target.value
-                    )
-              )
-            }
+              setPlayerSelected(players.find((player) => player._id === e.target.value)
+            )}
           >
             <option value="" disabled>
               Select a player
             </option>
-            {isRed
-              ? redClanPlayers.map((player) => (
-                  <option key={player._id} value={player._id}>
-                    {player.userName}
-                  </option>
-                ))
-              : blueClanPlayers.map((player) => (
-                  <option key={player._id} value={player._id}>
-                    {player.userName}
-                  </option>
-                ))}
+              {players.map((player) => (
+                <option key={player._id} value={player._id}>
+                  {player.userName}
+                </option>
+              ))}
           </select>
         </div>
         <div className="flex items-center justify-between">

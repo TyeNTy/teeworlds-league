@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import API from "../../services/api";
-import Loader from "../../components/Loader";
+import API from "../../../services/api";
+import Loader from "../../../components/Loader";
 import { useParams } from "react-router";
 import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
@@ -59,7 +59,7 @@ const Details = () => {
             <StatCard
               title="Clan"
               value={stat.clanName}
-              onClick={() => navigate(`/clans/${stat.clanId}`)}
+              onClick={() => navigate(`../clans/${stat.clanId}`)}
             />
             <StatCard title="Elo" value={stat.elo} />
             <StatCard title="KD Ratio" value={stat.kdRatio} />
@@ -67,7 +67,7 @@ const Details = () => {
               title="Highest K/D Ratio"
               value={stat.highestKdRatio}
               onClick={() =>
-                navigate(`/results/${stat.highestKdRatioResultId}`)
+                navigate(`../results/${stat.highestKdRatioResultId}`)
               }
             />
             <StatCard title="Total Score" value={stat.totalScore} />
@@ -82,7 +82,7 @@ const Details = () => {
             <StatCard
               title="Highest Kills"
               value={stat.highestKills}
-              onClick={() => navigate(`/results/${stat.highestKillResultId}`)}
+              onClick={() => navigate(`../results/${stat.highestKillResultId}`)}
             />
           </div>
 
@@ -93,7 +93,7 @@ const Details = () => {
             <StatCard
               title="Highest Deaths"
               value={stat.highestDeaths}
-              onClick={() => navigate(`/results/${stat.highestDeathResultId}`)}
+              onClick={() => navigate(`../results/${stat.highestDeathResultId}`)}
             />
           </div>
           <h3 className="text-lg font-bold pt-3">Scores</h3>
@@ -103,7 +103,7 @@ const Details = () => {
             <StatCard
               title="Highest Score"
               value={stat.highestScore}
-              onClick={() => navigate(`/results/${stat.highestScoreResultId}`)}
+              onClick={() => navigate(`../results/${stat.highestScoreResultId}`)}
             />
             <StatCard
               title="Avg. Winning Result"
@@ -136,7 +136,7 @@ const Details = () => {
               title="Highest Result"
               value={stat.highestRedTeamScore}
               onClick={() =>
-                navigate(`/results/${stat.highestRedTeamScoreResultId}`)
+                navigate(`../results/${stat.highestRedTeamScoreResultId}`)
               }
             />
           </div>
@@ -154,7 +154,7 @@ const Details = () => {
               title="Highest Result"
               value={stat.highestBlueTeamScore}
               onClick={() =>
-                navigate(`/results/${stat.highestBlueTeamScoreResultId}`)
+                navigate(`../results/${stat.highestBlueTeamScoreResultId}`)
               }
             />
           </div>
