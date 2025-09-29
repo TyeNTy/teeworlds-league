@@ -1,20 +1,17 @@
 import React, { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import {
   BrowserRouter,
   Routes,
   Outlet,
   Route,
-  redirect,
   Navigate,
 } from "react-router-dom";
 import { setUser } from "./redux/auth/actions";
 
 import api from "./services/api";
-import Footer from "./components/Footer";
 import Loader from "./components/Loader";
 import Auth from "./scenes/auth";
-import TopBarLeague from "./components/TopBarLeague";
 import Ranked from "./scenes/ranked";
 import League from "./scenes/league";
 
