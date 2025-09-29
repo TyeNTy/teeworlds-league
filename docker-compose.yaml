@@ -7,6 +7,8 @@ services:
     ports:
       - "127.0.0.1:8080:8080"
     command: sh -c "npm install && sleep infinity" # && npm run dev
+    depends_on:
+      - mongodb
 
   app:
     image: node:20
