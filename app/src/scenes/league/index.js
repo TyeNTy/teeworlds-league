@@ -8,7 +8,7 @@ import Results from "./results";
 import Stats from "./stats";
 import Votes from "./votes";
 import TopBarLeague from "../../components/TopBarLeague";
-import Footer from "../../components/Footer";
+import FooterLeague from "../../components/FooterLeague";
 
 const League = () => {
   return (
@@ -27,7 +27,7 @@ const League = () => {
           <Route path="/*" index element={<Users />} />
         </Routes>
       </div>
-      <Footer />
+      <FooterLeague />
     </div>
   </div>
   );

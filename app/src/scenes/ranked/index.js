@@ -2,7 +2,7 @@ import React from "react";
 import { Route, Routes } from "react-router-dom";
 import Users from "../users";
 import TopBarRanked from "../../components/TopBarRanked";
-import Footer from "../../components/Footer";
+import FooterRanked from "../../components/FooterRanked";
 import Queues from "./queues";
 import ResultsRanked from "./resultsRanked";
 import StatsRanked from "./statsRanked";
@@ -21,7 +21,7 @@ const Ranked = () => {
           <Route path="" element={<Users />} />
         </Routes>
       </div>
-      <Footer />
+      <FooterRanked />
     </div>
   </div>
   );
