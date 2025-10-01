@@ -4,6 +4,182 @@ const StatRankedModel = require("../models/statRanked");
 const { computeElo } = require(".");
 
 
+/**
+ * Example content:
+ * {
+ *   "matchId": "588f4d23-d7fa-4fba-80d1-91bfd84c16e3",
+ *   "queueId": "test-1",
+ *   "gamemodeId": "test",
+ *   "winningTeam": 2,
+ *   "map": "ctf_test",
+ *   "teams": {
+ *     "team1": [
+ *       "135115084560203776"
+ *     ],
+ *     "team2": []
+ *   },
+ *   "players": [
+ *     "135115084560203776"
+ *   ],
+ *   "displayNames": {"135115084560203776": "Pata"},
+ *   "startedAt": "2025-10-01T17:03:25.333Z",
+ *   "completedAt": "2025-10-01T17:03:27.974Z",
+ *   "server": "queue"
+ * }
+ */
+
+const parseQueueWebhookMessage = async (content) => {
+  console.log('Parsing queue webhook message:', JSON.stringify(content, null, 2));
+
+  const obj = {};
+
+  // Set properties from MatchResult
+  obj.date = content.completedAt ? new Date(content.completedAt) : new Date();
+  obj.map = content.map || "unknown";
+  obj.mode = content.gamemodeId || "gctf";
+
+  // Parse players from MatchResult format
+  const redPlayerIds = content.teams?.team1 || [];
+  const bluePlayerIds = content.teams?.team2 || [];
+
+  console.log('Red team player IDs:', redPlayerIds);
+  console.log('Blue team player IDs:', bluePlayerIds);
+  console.log('Display names:', content.displayNames);
+
+  const redPlayers = [];
+  for (const playerId of redPlayerIds) {
+    const objPlayer = {};
+
+    // Look up user by Discord ID
+    let user = await UserModel.findOne({
+      $or: [
+        { discordId: playerId },
+        { userName: playerId }
+      ]
+    });
+
+    // Create user if not found
+    if (!user) {
+      const displayName = content.displayNames?.[playerId] || playerId;
+      user = new UserModel({
+        userName: displayName,
+        discordId: playerId,
+        avatar: "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y",
+        elo: 1000,
+        eloRanked: 1000
+      });
+      await user.save();
+      console.log(`Created new user: ${displayName} (${playerId})`);
+    }
+
+    objPlayer.userId = user._id;
+    objPlayer.userName = content.displayNames?.[playerId] || user.userName;
+    objPlayer.avatar = user.avatar;
+
+    // Set eloBefore to current elo value for proper elo system
+    objPlayer.eloBefore = user.eloRanked;
+
+    // Player stats - use 0 as default since we don't have individual scores from voting
+    objPlayer.score = 0;
+    objPlayer.kills = 0;
+    objPlayer.deaths = 0;
+    objPlayer.flags = 0;
+    objPlayer.flagsTouches = 0;
+
+    redPlayers.push(objPlayer);
+  }
+  obj.redPlayers = redPlayers;
+
+  const bluePlayers = [];
+  for (const playerId of bluePlayerIds) {
+    const objPlayer = {};
+
+    // Look up user by Discord ID
+    let user = await UserModel.findOne({
+      $or: [
+        { discordId: playerId },
+        { userName: playerId }
+      ]
+    });
+
+    // Create user if not found
+    if (!user) {
+      const displayName = content.displayNames?.[playerId] || playerId;
+      user = new UserModel({
+        userName: displayName,
+        discordId: playerId,
+        avatar: "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y",
+        elo: 1000,
+        eloRanked: 1000
+      });
+      await user.save();
+      console.log(`Created new user: ${displayName} (${playerId})`);
+    }
+
+    objPlayer.userId = user._id;
+    objPlayer.userName = content.displayNames?.[playerId] || user.userName;
+    objPlayer.avatar = user.avatar;
+
+    // Set eloBefore to current elo value for proper elo system
+    objPlayer.eloBefore = user.eloRanked;
+
+    // Player stats - use 0 as default since we don't have individual scores from voting
+    objPlayer.score = 0;
+    objPlayer.kills = 0;
+    objPlayer.deaths = 0;
+    objPlayer.flags = 0;
+    objPlayer.flagsTouches = 0;
+
+    bluePlayers.push(objPlayer);
+  }
+  obj.bluePlayers = bluePlayers;
+
+  // Determine winner and set scores based on winningTeam from MatchResult
+  const winningTeam = content.winningTeam || 1;
+
+  if (winningTeam === 1) {
+    obj.redScore = 1000;  // Winner gets score limit
+    obj.blueScore = 0; // Loser gets 0 points
+  } else {
+    obj.redScore = 0;  // Loser gets 0 points
+    obj.blueScore = 1000; // Winner gets score limit
+  }
+
+  // Set queue metadata from MatchResult
+  obj.queueId = content.queueId || null;
+  obj.numberFromQueue = 0; // Not available in MatchResult
+  obj.queueName = "Ranked Queue";
+
+  // Store the original match ID from the queue for reference
+  if (content.matchId) {
+    obj.queueMatchId = content.matchId;
+  }
+
+  // Add timing information
+  if (content.startedAt) {
+    // Calculate duration in seconds and minutes
+    const startTime = new Date(content.startedAt);
+    const endTime = new Date(content.completedAt);
+    const durationMs = endTime.getTime() - startTime.getTime();
+    const totalTimeSeconds = Math.floor(durationMs / 1000);
+    const totalTimeMinutes = Math.floor(totalTimeSeconds / 60);
+
+    obj.totalTimeSeconds = totalTimeSeconds % 60;
+    obj.totalTimeMinutes = totalTimeMinutes;
+    obj.totalTime = totalTimeSeconds;
+  }
+
+  console.log('Created result object:', JSON.stringify(obj, null, 2));
+
+  // Create the result
+  const result = await ResultRankedModel.create(obj);
+
+  console.log('Saved result to database with ID:', result._id);
+
+  return { ok: true, data: { result } };
+};
+
+
 async function forfeitResultRanked(resultRanked, side) {
     resultRanked.isForfeit = true;
   
@@ -417,6 +593,7 @@ const computeEloResultRanked = async (resultRanked) => {
 };
 
 module.exports = {
+    parseQueueWebhookMessage,
     forfeitResultRanked,
     unforfeitResultRanked,
     updateAllStatsResultRanked,

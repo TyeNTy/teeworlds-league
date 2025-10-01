@@ -22,9 +22,10 @@ const PlayerSchema = new mongoose.Schema({
 
 const Schema = new mongoose.Schema(
   {
-    queueId: { type: ObjectId },
+    queueId: { type: String, trim: true },
     numberFromQueue: { type: Number, default: 0 },
     queueName: { type: String, trim: true },
+    queueMatchId: { type: String, trim: true },
 
     date: { type: Date, default: Date.now },
     mode: { type: String, trim: true, default: enumModes.twoVTwo },
@@ -72,6 +73,7 @@ Schema.methods.responseModel = function () {
     date: this.date,
     numberFromQueue: this.numberFromQueue,
     queueName: this.queueName,
+    queueMatchId: this.queueMatchId,
     mode: this.mode,
     map: this.map,
     scoreLimit: this.scoreLimit,
