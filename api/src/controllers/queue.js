@@ -31,7 +31,12 @@ router.post(
 router.post(
   "/search",
   catchErrors(async (req, res) => {
-    const queues = await QueueModel.find();
+    const body = req.body;
+    const obj = {};
+
+    if (body._id) obj._id = body._id;
+    
+    const queues = await QueueModel.find(obj);
 
     return res.status(200).send({ ok: true, data: queues.map((queue) => queue.responseModel()) });
   }),
