@@ -8,6 +8,8 @@ const EMAIL_USER = process.env.EMAIL_USER || "emqil";
 const EMAIL_PASSWORD = process.env.EMAIL_PASSWORD || "token";
 const EMAIL_URL = process.env.ENMAIL_URL || "smtp-relay.sendinblue.com";
 const WEBHOOK_TOKEN = process.env.WEBHOOK_TOKEN || "WEBHOOK_TOKEN";
+const DISCORD_TOKEN = process.env.DISCORD_TOKEN;
+const DISCORD_GUILD_ID = process.env.DISCORD_GUILD_ID;
 
 const CONFIG = {
   ENVIRONMENT,
@@ -20,6 +22,8 @@ const CONFIG = {
   EMAIL_PASSWORD,
   EMAIL_URL,
   WEBHOOK_TOKEN,
+  DISCORD_TOKEN,
+  DISCORD_GUILD_ID,
 };
 
 if (ENVIRONMENT === "development") console.log(CONFIG);

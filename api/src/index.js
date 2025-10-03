@@ -60,5 +60,13 @@ if (ENVIRONMENT === "production") {
   });
 }
 
-initCron();
+const discordService = require('./services/discord');
+const init = async () => {
 
+  initCron();
+
+  // Wait for Discord service to connect
+  await discordService.tryConnect();
+};
+
+init();
