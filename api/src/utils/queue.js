@@ -23,6 +23,12 @@ const join = async ({ queue, user }) => {
   if (!queue) return { ok: false, message: "Queue not found" };
   if (queue.players.some((player) => player.userId.toString() === user._id.toString())) return { ok: false, message: "Player already in queue" };
 
+  const resultRanked = await ResultRankedModel.findOne({
+    freezed: false,
+    $or: [{ "redPlayers.userId": user._id }, { "bluePlayers.userId": user._id }],
+  });
+  if (resultRanked) return { ok: false, message: "You are already in a game" };
+
   const playerObj = {
     userId: user._id,
     userName: user.userName,
@@ -84,8 +90,6 @@ const createGameFromQueue = async ({ queue }) => {
   };
 
   const newResultRanked = await ResultRankedModel.create(newResultRankedObj);
-  console.log("New game created");
-  console.log(newResultRanked);
 
   for (const player of bluePlayersObj) {
     queue.players = queue.players.filter((playerQueue) => playerQueue.userId.toString() !== player.userId.toString());
