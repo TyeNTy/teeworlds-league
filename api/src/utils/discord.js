@@ -239,4 +239,5 @@ module.exports = {
   updateQueue,
   deleteQueue,
   initCallbacksForQueues,
+  displayQueue,
 };
