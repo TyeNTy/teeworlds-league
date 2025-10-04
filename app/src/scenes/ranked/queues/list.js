@@ -6,13 +6,11 @@ import toast from "react-hot-toast";
 import { modesWithLabel } from "../../../components/utils";
 import { enumMapsWithLabel } from "../../../enums/enumMaps";
 import { useSelector } from "react-redux";
-import { FaDiscord } from "react-icons/fa";
 
 const List = () => {
   const realUser = useSelector((state) => state.Auth.user);
 
   const [queues, setQueues] = useState([]);
-  const [discordActivationCodeUrl, setDiscordActivationCodeUrl] = useState(null);
   const [loading, setLoading] = useState(true);
   const [searchParams, setSearchParams] = useSearchParams();
   const codeSuccess = searchParams.get("codeSuccess");
@@ -36,13 +34,6 @@ const List = () => {
       toast.success("Discord code activated successfully");
       setSearchParams({ codeSuccess: null });
     }
-
-    const resultActivationCodeUrl = async () => {
-      const resultActivationCodeUrl = await api.get(`/discord/getActivationCodeUrl`);
-      if (!resultActivationCodeUrl.ok) return toast.error("Erreur while fetching discord activation code url");
-      setDiscordActivationCodeUrl(resultActivationCodeUrl.data.url);
-    };
-    resultActivationCodeUrl();
 
     fetchData();
     const interval = setInterval(() => {
@@ -95,17 +86,6 @@ const List = () => {
           <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onClick={handleCreateQueue}>
             Create queue
           </button>
-
-          <div className="text-right">
-            <a
-              href={discordActivationCodeUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-md transition-colors duration-200 shadow-sm hover:shadow-md">
-              <FaDiscord className="w-4 h-4 mr-2" />
-              Connect Discord
-            </a>
-          </div>
         </div>
       )}
 

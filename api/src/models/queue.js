@@ -28,8 +28,11 @@ const Schema = new mongoose.Schema(
 
     numberOfGames: { type: Number, default: 0 },
 
-    discordTokenId: { type: ObjectId, ref: "discordToken" },
+    // Discord
     guildId: { type: String, trim: true },
+    categoryQueueId: { type: String, trim: true },
+    textChannelDisplayQueueId: { type: String, trim: true },
+    textChannelDisplayResultsId: { type: String, trim: true },
   },
   {
     timestamps: true,

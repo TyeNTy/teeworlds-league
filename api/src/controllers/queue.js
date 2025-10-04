@@ -7,8 +7,7 @@ const enumUserRole = require("../enums/enumUserRole");
 const { catchErrors } = require("../utils");
 const { enumNumberOfPlayersPerTeam, enumNumberOfPlayersForGame } = require("../enums/enumModes");
 const discordService = require("../services/discordService");
-const DiscordTokenModel = require("../models/discordToken");
-const { APP_URL } = require("../config");
+const { initNewQueue, deleteQueue } = require("../utils/discord");
 
 router.post(
   "/",
@@ -122,6 +121,43 @@ router.delete(
     await QueueModel.findByIdAndDelete(id);
 
     return res.status(200).send({ ok: true });
+  }),
+);
+
+router.put(
+  "/:id/guild",
+  passport.authenticate(enumUserRole.ADMIN, { session: false }),
+  catchErrors(async (req, res) => {
+    const { id } = req.params;
+    const { guildId } = req.body;
+
+    if (!guildId) {
+      return res.status(400).send({ ok: false, error: "guildId is required" });
+    }
+
+    const queue = await QueueModel.findById(id);
+    if (!queue) {
+      return res.status(404).send({ ok: false, error: "Queue not found" });
+    }
+    if (queue.guildId === guildId) {
+      return res.status(200).send({ ok: true, data: queue.responseModel() });
+    } else if (queue.guildId) {
+      const resDeleteQueue = await deleteQueue({ queue });
+      if (!resDeleteQueue.ok) return res.status(500).send(resDeleteQueue);
+    }
+
+    const resGuilds = await discordService.getGuilds();
+    if (!resGuilds.ok) return res.status(500).send(resGuilds);
+
+    const guilds = resGuilds.data.guilds;
+    if (!guilds.has(guildId)) {
+      return res.status(400).send({ ok: false, error: "Guild not found or bot not in guild" });
+    }
+
+    const resInitNewQueue = await initNewQueue({ queue });
+    if (!resInitNewQueue.ok) return res.status(500).send(resInitNewQueue);
+
+    return res.status(200).send({ ok: true, data: queue.responseModel() });
   }),
 );
 

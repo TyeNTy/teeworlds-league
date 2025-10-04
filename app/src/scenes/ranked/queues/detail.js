@@ -8,6 +8,7 @@ import { useSelector } from "react-redux";
 import { modesWithLabel } from "../../../components/utils";
 import { enumMaps, enumMapsWithLabel } from "../../../enums/enumMaps";
 import MultiPicker from "../../../components/MultiPicker";
+import { FaDiscord } from "react-icons/fa";
 
 const Details = () => {
   const [loading, setLoading] = useState(true);
@@ -16,6 +17,7 @@ const Details = () => {
   const [guilds, setGuilds] = useState([]);
   const [loadingGuilds, setLoadingGuilds] = useState(false);
   const [showGuildSelector, setShowGuildSelector] = useState(false);
+  const [botInviteUrl, setBotInviteUrl] = useState(null);
   const queueId = useParams().id;
   const navigate = useNavigate();
 
@@ -35,6 +37,18 @@ const Details = () => {
 
   useEffect(() => {
     get();
+
+    const fetchBotInviteUrl = async () => {
+      try {
+        const result = await api.get(`/discord/getBotInviteUrl`);
+        if (result.ok) {
+          setBotInviteUrl(result.data.url);
+        }
+      } catch (error) {
+        console.error("Error fetching bot invite URL:", error);
+      }
+    };
+    fetchBotInviteUrl();
   }, []);
 
   const handleDelete = async () => {
@@ -71,7 +85,7 @@ const Details = () => {
 
   const handleConnectGuild = async (guildId) => {
     try {
-      const { ok, data } = await api.put(`/discord/queue/${queueId}/guild`, { guildId });
+      const { ok, data } = await api.put(`/queue/${queueId}/guild`, { guildId });
       if (ok) {
         setQueue(data);
         setShowGuildSelector(false);
@@ -169,7 +183,19 @@ const Details = () => {
       </div>
 
       <div className="mb-4">
-        <label className="block text-gray-700 text-sm font-bold mb-2">Discord Server</label>
+        <div className="flex items-center justify-between mb-2">
+          <label className="block text-gray-700 text-sm font-bold">Discord Server</label>
+          {canEdit && botInviteUrl && (
+            <a
+              href={botInviteUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center px-3 py-1 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium rounded-md transition-colors duration-200 shadow-sm hover:shadow-md">
+              <FaDiscord className="w-3 h-3 mr-1" />
+              Invite Bot to Server
+            </a>
+          )}
+        </div>
         {queue.guildId ? (
           <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded p-3">
             <div>

@@ -31,40 +31,14 @@ class DiscordService {
     });
   }
 
-  async getTokenFromCode({ code }) {
-    try {
-      const tokenResponseData = await fetch("https://discord.com/api/oauth2/token", {
-        method: "POST",
-        body: new URLSearchParams({
-          client_id: DISCORD_CLIENT_ID,
-          client_secret: DISCORD_CLIENT_SECRET,
-          code,
-          grant_type: "authorization_code",
-          redirect_uri: `${API_URL}/discord/activateCode`,
-        }).toString(),
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-      });
-      const tokenData = await tokenResponseData.json();
-
-      return { ok: true, data: tokenData };
-    } catch (error) {
-      console.error("Failed to get Discord token:", error);
-      return { ok: false, errorCode: enumErrorCode.SERVER_ERROR };
-    }
-  }
-
-  async getActivationCodeUrl() {
+  async getBotInviteUrl() {
     const scopes = ["bot", "applications.commands"];
-    const redirectUri = `${API_URL}/discord/activateCode`;
+    const permissions = "8"; // Administrator permissions (you can customize this)
 
     return {
       ok: true,
       data: {
-        url: `https://discord.com/oauth2/authorize?client_id=${DISCORD_CLIENT_ID}&redirect_uri=${redirectUri}&response_type=code&scope=${scopes.join(
-          " ",
-        )}`,
+        url: `https://discord.com/oauth2/authorize?client_id=${DISCORD_CLIENT_ID}&scope=${scopes.join("%20")}&permissions=${permissions}`,
       },
     };
   }
