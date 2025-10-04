@@ -1,0 +1,9 @@
+{
+  "arrowParens": "always",
+  "printWidth": 150,
+  "semi": true,
+  "doubleQuote": true,
+  "tabWidth": 2,
+  "trailingComma": "all",
+  "jsxBracketSameLine": true
+}

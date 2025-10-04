@@ -18,6 +18,8 @@ const PlayerSchema = new mongoose.Schema({
 
   eloBefore: { type: Number, default: 1000 },
   eloAfter: { type: Number, default: 1000 },
+
+  isReady: { type: Boolean, default: false },
 });
 
 const Schema = new mongoose.Schema(
@@ -60,6 +62,16 @@ const Schema = new mongoose.Schema(
 
     freezed: { type: Boolean, default: false },
     freezedAt: { type: Date },
+
+    // Discord
+    guildId: { type: String, trim: true },
+    categoryQueueId: { type: String, trim: true },
+    textChannelDisplayFinalResultId: { type: String, trim: true },
+    textChannelDisplayResultId: { type: String, trim: true },
+    messageResultId: { type: String, trim: true },
+    readyButtonId: { type: String, trim: true },
+    voiceRedChannelId: { type: String, trim: true },
+    voiceBlueChannelId: { type: String, trim: true },
   },
   {
     timestamps: true,

@@ -1,7 +1,32 @@
 const express = require("express");
 const router = express.Router();
-const { catchErrors, parseWebhookMessage, updateStatResult } = require("../utils");
-const { WEBHOOK_TOKEN } = require("../config");
+const { catchErrors, updateStatResult } = require("../utils");
+const { WEBHOOK_TOKEN, WEBHOOK_RANKED_TOKEN } = require("../config");
+const { updateAllStatsResultRanked, parseWebhookMessage } = require("../utils/resultRanked");
+const { sendFinalResultRankedMessage, deleteResultRanked } = require("../utils/discord");
+
+router.post(
+  "/resultRanked/:webhookToken",
+  catchErrors(async (req, res) => {
+    const { body, params } = req;
+
+    const webhookToken = params.webhookToken;
+    if (webhookToken !== WEBHOOK_RANKED_TOKEN) return res.status(200).send();
+
+    res.status(200).send();
+    const resMessage = await parseWebhookMessage(body);
+    if (!resMessage.ok) {
+      console.error(resMessage);
+      return;
+    }
+
+    const resultRanked = resMessage.data.resultRanked;
+
+    await updateAllStatsResultRanked(resultRanked);
+    await deleteResultRanked({ resultRanked });
+    await sendFinalResultRankedMessage({ resultRanked });
+  }),
+);
 
 router.post(
   "/:webhookToken",

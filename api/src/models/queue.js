@@ -27,6 +27,15 @@ const Schema = new mongoose.Schema(
     mode: { type: String, enum: enumModes, default: enumModes.twoVTwo },
 
     numberOfGames: { type: Number, default: 0 },
+
+    // Discord
+    guildId: { type: String, trim: true },
+    categoryQueueId: { type: String, trim: true },
+    textChannelDisplayQueueId: { type: String, trim: true },
+    textChannelDisplayResultsId: { type: String, trim: true },
+    messageQueueId: { type: String, trim: true },
+    joinButtonId: { type: String, trim: true },
+    leaveButtonId: { type: String, trim: true },
   },
   {
     timestamps: true,
@@ -43,6 +52,8 @@ Schema.methods.responseModel = function () {
     numberOfPlayersForGame: this.numberOfPlayersForGame,
     numberOfPlayersPerTeam: this.numberOfPlayersPerTeam,
     numberOfGames: this.numberOfGames,
+    discordTokenId: this.discordTokenId,
+    guildId: this.guildId,
   };
 };
 
