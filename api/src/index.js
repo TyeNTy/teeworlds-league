@@ -10,6 +10,7 @@ const initCron = require("./cron/intCron");
 const DiscordService = require("./services/discordService");
 
 const { PORT, SENTRY_DSN, ENVIRONMENT, APP_URL } = require("./config");
+const { initCallbacksForQueues } = require("./utils/discord");
 const app = express();
 
 if (ENVIRONMENT === "development") {
@@ -64,3 +65,4 @@ if (ENVIRONMENT === "production") {
 
 initCron();
 DiscordService.init();
+initCallbacksForQueues();

@@ -1,7 +1,18 @@
 const discordService = require("../services/discordService");
 const { ButtonStyle } = require("discord.js");
 
-const initNewQueue = async ({ queue }) => {
+const QueueModel = require("../models/queue");
+
+const initCallbacksForQueues = async () => {
+  const queues = await QueueModel.find({});
+  for (const queue of queues) {
+    registerJoinButtonCallback({ queue });
+    registerLeaveButtonCallback({ queue });
+  }
+  return { ok: true };
+};
+
+const createNewQueue = async ({ queue }) => {
   const resCreateCategoryQueue = await discordService.createCategory({ guildId: queue.guildId, name: queue.name });
   if (!resCreateCategoryQueue.ok) return resCreateCategoryQueue;
 
@@ -19,8 +30,13 @@ const initNewQueue = async ({ queue }) => {
   });
   if (!resCreateTextChannelDisplayResults.ok) return resCreateTextChannelDisplayResults;
 
-  const joinQueueButton = await discordService.createButton({ customId: "join_queue", label: "Join Queue", style: ButtonStyle.Success });
-  const leaveQueueButton = await discordService.createButton({ customId: "leave_queue", label: "Leave Queue", style: ButtonStyle.Danger });
+  const joinButtonId = `${queue._id}-join_queue`;
+  const joinQueueButton = await discordService.createButton({ customId: joinButtonId, label: "Join Queue", style: ButtonStyle.Success });
+  registerJoinButtonCallback({ queue });
+
+  const leaveButtonId = `${queue._id}-leave_queue`;
+  const leaveQueueButton = await discordService.createButton({ customId: leaveButtonId, label: "Leave Queue", style: ButtonStyle.Danger });
+  registerLeaveButtonCallback({ queue });
 
   const resMessageQueue = await discordService.sendMessage({
     channelId: resCreateTextChannelDisplayQueue.data.channel.id,
@@ -32,6 +48,8 @@ const initNewQueue = async ({ queue }) => {
   queue.categoryQueueId = resCreateCategoryQueue.data.category.id;
   queue.textChannelDisplayQueueId = resCreateTextChannelDisplayQueue.data.channel.id;
   queue.textChannelDisplayResultsId = resCreateTextChannelDisplayResults.data.channel.id;
+  queue.joinButtonId = joinButtonId;
+  queue.leaveButtonId = leaveButtonId;
   await queue.save();
 
   return {
@@ -69,8 +87,31 @@ const deleteQueue = async ({ queue }) => {
   return { ok: true };
 };
 
+const registerJoinButtonCallback = async ({ queue }) => {
+  const joinButtonId = queue.joinButtonId;
+  discordService.registerButtonCallback(joinButtonId, async (interaction) => {
+    console.log(`User ${interaction.user.tag} clicked Join Queue button`);
+    await interaction.reply({
+      content: `${interaction.user.tag} joined the queue!`,
+      ephemeral: false,
+    });
+  });
+};
+
+const registerLeaveButtonCallback = async ({ queue }) => {
+  const leaveButtonId = queue.leaveButtonId;
+  discordService.registerButtonCallback(leaveButtonId, async (interaction) => {
+    console.log(`User ${interaction.user.tag} clicked Leave Queue button`);
+    await interaction.reply({
+      content: `${interaction.user.tag} left the queue!`,
+      ephemeral: false,
+    });
+  });
+};
+
 module.exports = {
-  initNewQueue,
+  createNewQueue,
   updateQueue,
   deleteQueue,
+  initCallbacksForQueues,
 };

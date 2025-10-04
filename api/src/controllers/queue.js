@@ -7,7 +7,7 @@ const enumUserRole = require("../enums/enumUserRole");
 const { catchErrors } = require("../utils");
 const { enumNumberOfPlayersPerTeam, enumNumberOfPlayersForGame } = require("../enums/enumModes");
 const discordService = require("../services/discordService");
-const { initNewQueue, deleteQueue, updateQueue } = require("../utils/discord");
+const { createNewQueue, deleteQueue, updateQueue } = require("../utils/discord");
 
 router.post(
   "/",
@@ -102,8 +102,8 @@ router.post(
     const resDelete = await deleteQueue({ queue });
     if (!resDelete.ok) return res.status(500).send(resDelete);
 
-    const resInitNewQueue = await initNewQueue({ queue });
-    if (!resInitNewQueue.ok) return res.status(500).send(resInitNewQueue);
+    const resCreateNewQueue = await createNewQueue({ queue });
+    if (!resCreateNewQueue.ok) return res.status(500).send(resCreateNewQueue);
 
     return res.status(200).send({ ok: true, data: queue.responseModel() });
   }),
@@ -175,8 +175,8 @@ router.put(
       return res.status(400).send({ ok: false, error: "Guild not found or bot not in guild" });
     }
 
-    const resInitNewQueue = await initNewQueue({ queue });
-    if (!resInitNewQueue.ok) return res.status(500).send(resInitNewQueue);
+    const resCreateNewQueue = await createNewQueue({ queue });
+    if (!resCreateNewQueue.ok) return res.status(500).send(resCreateNewQueue);
 
     return res.status(200).send({ ok: true, data: queue.responseModel() });
   }),
