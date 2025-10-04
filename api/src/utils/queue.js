@@ -253,6 +253,8 @@ const generateResultRankedMessageNotReady = async ({ resultRanked }) => {
     if (!resReady.ok) return { ok: false, message: "Player not in result ranked" };
 
     await interaction.reply({ content: `You have been marked as ready!`, ephemeral: true });
+
+    await initResultRankedMessage({ resultRanked });
   });
 
   const embed = new EmbedBuilder()

@@ -57,6 +57,10 @@ class DiscordService {
     this.buttonCallbacks.set(customId, callback);
   }
 
+  unregisterButtonCallback(customId) {
+    this.buttonCallbacks.delete(customId);
+  }
+
   async getBotInviteUrl() {
     const scopes = ["bot", "applications.commands"];
     const permissions = "8"; // Administrator permissions (you can customize this)
