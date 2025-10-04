@@ -103,6 +103,15 @@ const deleteResultRanked = async ({ resultRanked }) => {
 
   const resDeleteTextChannelDisplayResult = await discordService.deleteChannel({ channelId: resultRanked.textChannelDisplayResultId });
   if (!resDeleteTextChannelDisplayResult.ok) return resDeleteTextChannelDisplayResult;
+  resultRanked.textChannelDisplayResultId = null;
+
+  const resDeleteVoiceRedChannel = await discordService.deleteChannel({ channelId: resultRanked.voiceRedChannelId });
+  if (!resDeleteVoiceRedChannel.ok) return resDeleteVoiceRedChannel;
+  resultRanked.voiceRedChannelId = null;
+
+  const resDeleteVoiceBlueChannel = await discordService.deleteChannel({ channelId: resultRanked.voiceBlueChannelId });
+  if (!resDeleteVoiceBlueChannel.ok) return resDeleteVoiceBlueChannel;
+  resultRanked.voiceBlueChannelId = null;
 
   discordService.unregisterButtonCallback(resultRanked.readyButtonId);
 

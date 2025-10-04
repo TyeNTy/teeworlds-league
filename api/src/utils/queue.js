@@ -137,6 +137,24 @@ const createGameFromQueue = async ({ queue }) => {
   const resInitResultRankedMessage = await initResultRankedMessage({ resultRanked: newResultRanked });
   if (!resInitResultRankedMessage.ok) return { ok: false, message: "Failed to initialize result ranked message" };
 
+  const resCreateVoiceRedChannel = await discordService.createVoiceChannel({
+    guildId: newResultRanked.guildId,
+    name: "red_" + newResultRanked.id.toString(),
+    categoryId: newResultRanked.categoryQueueId,
+  });
+  if (!resCreateVoiceRedChannel.ok) return { ok: false, message: "Failed to create voice channel" };
+  newResultRanked.voiceRedChannelId = resCreateVoiceRedChannel.data.channel.id;
+
+  const resCreateVoiceBlueChannel = await discordService.createVoiceChannel({
+    guildId: newResultRanked.guildId,
+    name: "blue_" + newResultRanked.id.toString(),
+    categoryId: newResultRanked.categoryQueueId,
+  });
+  if (!resCreateVoiceBlueChannel.ok) return { ok: false, message: "Failed to create voice channel" };
+  newResultRanked.voiceBlueChannelId = resCreateVoiceBlueChannel.data.channel.id;
+
+  await newResultRanked.save();
+
   return { ok: true, data: { newResultRanked, queue } };
 };
 
@@ -204,7 +222,6 @@ const generateResultRankedMessage = async ({ resultRanked }) => {
   const winner = resultRanked.winnerName;
   const winnerColor = resultRanked.winnerSide === "red" ? 0xff0000 : 0x0000ff;
 
-  // Format players with scores and stats for completed matches
   const formatPlayerWithStats = (player) => {
     if (resultRanked.freezed) {
       const stats = `**${player.score}** pts | ${player.kills}K/${player.deaths}D | ${player.flags} flags`;
@@ -253,7 +270,6 @@ const generateResultRankedMessage = async ({ resultRanked }) => {
     )
     .setTimestamp();
 
-  // Add ELO changes for completed matches
   if (resultRanked.freezed && resultRanked.eloGain && resultRanked.eloLoss) {
     embed.addFields({
       name: "📈 ELO Changes",
