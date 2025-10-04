@@ -160,19 +160,15 @@ class DiscordService {
     try {
       const channel = await this.client.channels.fetch(channelId);
 
-      const components = [];
-      const buttonRow = new ActionRowBuilder();
-      if (buttons) {
-        buttonRow.addComponents(buttons);
-        components.push(buttonRow);
-      } else {
-        components.push(new ActionRowBuilder());
-      }
-
       const messageOptions = {
         content: message,
-        components,
       };
+
+      if (buttons && buttons.length > 0) {
+        const actionBuilder = new ActionRowBuilder();
+        actionBuilder.addComponents(buttons);
+        messageOptions.components = [actionBuilder];
+      }
 
       if (embed) {
         messageOptions.embeds = [embed];

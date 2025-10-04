@@ -76,25 +76,112 @@ const deleteQueue = async ({ queue }) => {
 
   const resDeleteTextChannelDisplayQueue = await discordService.deleteChannel({ channelId: queue.textChannelDisplayQueueId });
   if (!resDeleteTextChannelDisplayQueue.ok) return resDeleteTextChannelDisplayQueue;
+  queue.textChannelDisplayQueueId = null;
+
   const resDeleteTextChannelDisplayResults = await discordService.deleteChannel({ channelId: queue.textChannelDisplayResultsId });
   if (!resDeleteTextChannelDisplayResults.ok) return resDeleteTextChannelDisplayResults;
+  queue.textChannelDisplayResultsId = null;
+
   const resDeleteCategoryQueue = await discordService.deleteCategory({ categoryId: queue.categoryQueueId });
   if (!resDeleteCategoryQueue.ok) return resDeleteCategoryQueue;
+  queue.categoryQueueId = null;
 
   discordService.unregisterButtonCallback(queue.joinButtonId);
   discordService.unregisterButtonCallback(queue.leaveButtonId);
 
+  queue.joinButtonId = null;
+  queue.leaveButtonId = null;
+  queue.messageQueueId = null;
+
+  await queue.save();
+
   return { ok: true };
+};
+
+const deleteResultRanked = async ({ resultRanked }) => {
+  if (!resultRanked.guildId) return { ok: true };
+
+  const resDeleteTextChannelDisplayResult = await discordService.deleteChannel({ channelId: resultRanked.textChannelDisplayResultId });
+  if (!resDeleteTextChannelDisplayResult.ok) return resDeleteTextChannelDisplayResult;
+
+  discordService.unregisterButtonCallback(resultRanked.readyButtonId);
+
+  return { ok: true };
+};
+
+const sendFinalResultRankedMessage = async ({ resultRanked }) => {
+  if (!resultRanked.guildId) return { ok: true };
+
+  const matchId = resultRanked._id.toString().substring(0, 8);
+  const winner = resultRanked.winnerName;
+
+  const formatPlayerWithStats = (player) => {
+    const stats = `**${player.score}** pts | ${(player.kills / player.deaths).toFixed(2) || 0}K/D | ${player.flags} flags`;
+    return `• **${player.userName}**\n  ${stats}`;
+  };
+
+  const redPlayersFormatted = resultRanked.redPlayers.map(formatPlayerWithStats).join("\n");
+  const bluePlayersFormatted = resultRanked.bluePlayers.map(formatPlayerWithStats).join("\n");
+
+  const embed = new EmbedBuilder()
+    .setTitle("🏆 Match Completed 🏆")
+    .setDescription(`**Match ${matchId}** has finished!`)
+    .setColor(0xff0000)
+    .addFields(
+      {
+        name: "🎯 Result",
+        value: `**${winner} won**\n${resultRanked.redScore} - ${resultRanked.blueScore}`,
+        inline: false,
+      },
+      {
+        name: "🗺️ Map",
+        value: `**${resultRanked.map}**`,
+        inline: true,
+      },
+      {
+        name: "⏱️ Duration",
+        value: `${resultRanked.totalTimeMinutes || 0}:${String(resultRanked.totalTimeSeconds || 0).padStart(2, "0")}`,
+        inline: true,
+      },
+      {
+        name: "🔴 Red Team",
+        value: redPlayersFormatted || "• No players",
+        inline: false,
+      },
+      {
+        name: "🔵 Blue Team",
+        value: bluePlayersFormatted || "• No players",
+        inline: false,
+      },
+    )
+    .setFooter({
+      text: `Match ID: ${matchId}`,
+      iconURL: "https://cdn.discordapp.com/emojis/1234567890123456789.png",
+    })
+    .setTimestamp();
+
+  if (resultRanked.eloGain && resultRanked.eloLoss) {
+    embed.addFields({
+      name: "📈 ELO Changes",
+      value: `**Winners:** +${resultRanked.eloGain.toFixed(2)}\n**Losers:** ${resultRanked.eloLoss.toFixed(2)}`,
+      inline: false,
+    });
+  }
+
+  const resSendMessage = await discordService.sendMessage({
+    channelId: resultRanked.textChannelDisplayFinalResultId,
+    embed: embed,
+  });
+
+  return resSendMessage;
 };
 
 const displayQueue = async ({ queue }) => {
   const joinButtonId = `${queue._id}_join_queue`;
   const joinQueueButton = await discordService.createButton({ customId: joinButtonId, label: "Join Queue", style: ButtonStyle.Success });
-  registerJoinButtonCallback({ queue });
 
   const leaveButtonId = `${queue._id}_leave_queue`;
   const leaveQueueButton = await discordService.createButton({ customId: leaveButtonId, label: "Leave Queue", style: ButtonStyle.Danger });
-  registerLeaveButtonCallback({ queue });
 
   const embed = new EmbedBuilder()
     .setTitle(queue.name)
@@ -131,9 +218,12 @@ const displayQueue = async ({ queue }) => {
       channelId: queue.textChannelDisplayQueueId,
       messageId: queue.messageQueueId,
       embed: embed,
-      buttons: [joinQueueButton, leaveQueueButton],
+      // buttons: [joinQueueButton, leaveQueueButton],
     });
   }
+
+  registerJoinButtonCallback({ queue });
+  registerLeaveButtonCallback({ queue });
 
   const resSendMessage = await discordService.sendMessage({
     channelId: queue.textChannelDisplayQueueId,
@@ -159,20 +249,21 @@ const registerJoinButtonCallback = async ({ queue }) => {
 
     const resJoin = await join({ queue, user });
     if (!resJoin.ok) {
-      await interaction.reply({
+      interaction.reply({
         content: resJoin.message || "You are already in the queue!",
         ephemeral: true,
       });
       return;
     }
 
-    await displayQueue({ queue });
     await queue.save();
 
     await interaction.reply({
       content: `You have been added to the queue!`,
       ephemeral: true,
     });
+
+    await displayQueue({ queue });
   });
 };
 
@@ -195,13 +286,14 @@ const registerLeaveButtonCallback = async ({ queue }) => {
       return;
     }
 
-    await displayQueue({ queue });
     await queue.save();
 
     await interaction.reply({
       content: `You have been removed from the queue!`,
       ephemeral: true,
     });
+
+    await displayQueue({ queue });
   });
 };
 
@@ -240,4 +332,6 @@ module.exports = {
   deleteQueue,
   initCallbacksForQueues,
   displayQueue,
+  deleteResultRanked,
+  sendFinalResultRankedMessage,
 };

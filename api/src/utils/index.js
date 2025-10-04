@@ -377,12 +377,6 @@ async function updateStatPlayer(player) {
   return stat;
 }
 
-function detectMap(mapString) {
-  const mapName = mapString.split("/").pop();
-  const foundMap = enumMapsWithLabel.find((map) => map.label === mapName);
-  return foundMap ? foundMap.value : null;
-}
-
 /*
 {
   "server": "unnamed server",
@@ -438,7 +432,7 @@ const parseWebhookMessage = async (content) => {
   obj.seasonEndDate = currentSeason.endDate;
 
   obj.date = new Date();
-  obj.map = detectMap(content.map);
+  obj.map = detectMapFromServer(content.map);
   obj.scoreLimit = content.score_limit;
   obj.timeLimit = content.time_limit;
 

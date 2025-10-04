@@ -66,6 +66,7 @@ const Schema = new mongoose.Schema(
     // Discord
     guildId: { type: String, trim: true },
     categoryQueueId: { type: String, trim: true },
+    textChannelDisplayFinalResultId: { type: String, trim: true },
     textChannelDisplayResultId: { type: String, trim: true },
     messageResultId: { type: String, trim: true },
     readyButtonId: { type: String, trim: true },

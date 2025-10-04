@@ -119,6 +119,7 @@ const createGameFromQueue = async ({ queue }) => {
 
     guildId: queue.guildId,
     categoryQueueId: queue.categoryQueueId,
+    textChannelDisplayFinalResultId: queue.textChannelDisplayResultsId,
   };
 
   const newResultRanked = await ResultRankedModel.create(newResultRankedObj);
@@ -200,37 +201,70 @@ const generateResultRankedMessage = async ({ resultRanked }) => {
 
   const matchId = resultRanked._id.toString();
 
+  const winner = resultRanked.winnerName;
+  const winnerColor = resultRanked.winnerSide === "red" ? 0xff0000 : 0x0000ff;
+
+  // Format players with scores and stats for completed matches
+  const formatPlayerWithStats = (player) => {
+    if (resultRanked.freezed) {
+      const stats = `**${player.score}** pts | ${player.kills}K/${player.deaths}D | ${player.flags} flags`;
+      return `• **${player.userName}**\n  ${stats}`;
+    }
+    return `• ${player.userName}`;
+  };
+
+  const redPlayersFormatted = redPlayers.map(formatPlayerWithStats).join("\n");
+  const bluePlayersFormatted = bluePlayers.map(formatPlayerWithStats).join("\n");
+
   const embed = new EmbedBuilder()
-    .setTitle(getGameStatus({ resultRanked }))
-    .setDescription(`Match ${matchId} has ${resultRanked.freezed ? "finished" : "started"}!`)
-    .setColor(resultRanked.freezed ? 0x00ff00 : 0x0099ff)
+    .setTitle(resultRanked.freezed ? "🏆 Match Completed 🏆" : "🏆 Match In Progress 🏆")
+    .setDescription(`**Match ${matchId}** has ${resultRanked.freezed ? "finished" : "started"}!`)
+    .setColor(resultRanked.freezed ? winnerColor : 0x0099ff)
     .addFields(
       {
-        name: "Map",
-        value: resultRanked.map,
+        name: resultRanked.freezed ? "🎯 Result" : "🗺️ Map",
+        value: resultRanked.freezed ? `**${winner} won**\n${resultRanked.redScore} - ${resultRanked.blueScore}` : resultRanked.map,
+        inline: resultRanked.freezed ? false : true,
+      },
+      {
+        name: resultRanked.freezed ? "🗺️ Map" : "🔴 Red Team",
+        value: resultRanked.freezed ? `**${resultRanked.map}**` : redPlayersFormatted,
         inline: true,
       },
       {
-        name: "Red",
-        value: formatPlayers(redPlayers),
+        name: resultRanked.freezed ? "⏱️ Duration" : "🔵 Blue Team",
+        value: resultRanked.freezed
+          ? `${resultRanked.totalTimeMinutes || 0}:${String(resultRanked.totalTimeSeconds || 0).padStart(2, "0")}`
+          : bluePlayersFormatted,
         inline: true,
       },
       {
-        name: "Blue",
-        value: formatPlayers(bluePlayers),
-        inline: true,
+        name: resultRanked.freezed ? "🔴 Red Team" : "IMPORTANT",
+        value: resultRanked.freezed
+          ? redPlayersFormatted
+          : "Be sure to be in a queue server and that your discord name is the same as your ingame name.",
+        inline: resultRanked.freezed ? true : true,
       },
       {
-        name: "IMPORTANT",
-        value: "Be sure to be in a queue server and that your discord name is the same as your ingame name.",
-        inline: true,
+        name: resultRanked.freezed ? "🔵 Blue Team" : "",
+        value: resultRanked.freezed ? bluePlayersFormatted : "",
+        inline: resultRanked.freezed ? true : true,
       },
     )
     .setTimestamp();
 
+  // Add ELO changes for completed matches
+  if (resultRanked.freezed && resultRanked.eloGain && resultRanked.eloLoss) {
+    embed.addFields({
+      name: "📈 ELO Changes",
+      value: `**Winners:** +${resultRanked.eloGain} ELO\n**Losers:** ${resultRanked.eloLoss} ELO`,
+      inline: false,
+    });
+  }
+
   return {
     embed: embed,
-    message: "New queue started!",
+    message: resultRanked.freezed ? "Match completed!" : "New queue started!",
   };
 };
 
