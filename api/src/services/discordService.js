@@ -152,15 +152,19 @@ class DiscordService {
     return new ButtonBuilder().setCustomId(customId).setLabel(label).setStyle(style);
   }
 
-  async sendMessage({ channelId, message, buttons = [] }) {
+  async sendMessage({ channelId, message, buttons = null }) {
     try {
       const channel = await this.client.channels.fetch(channelId);
 
-      const buttonRow = new ActionRowBuilder().addComponents(buttons);
+      const components = [];
+      if (buttons) {
+        const buttonRow = new ActionRowBuilder().addComponents(buttons);
+        components.push(buttonRow);
+      }
 
       const messageOptions = {
         content: message,
-        components: [buttonRow],
+        components,
       };
 
       const sentMessage = await channel.send(messageOptions);
