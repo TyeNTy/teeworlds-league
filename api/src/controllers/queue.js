@@ -129,6 +129,9 @@ router.delete(
     const { id } = req.params;
     await QueueModel.findByIdAndDelete(id);
 
+    const resDeleteQueue = await deleteQueue({ queue });
+    if (!resDeleteQueue.ok) return res.status(500).send(resDeleteQueue);
+
     return res.status(200).send({ ok: true });
   }),
 );

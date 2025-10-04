@@ -1,5 +1,5 @@
 const discordService = require("../services/discordService");
-const { ButtonStyle } = require("discord.js");
+const { ButtonStyle, EmbedBuilder } = require("discord.js");
 
 const QueueModel = require("../models/queue");
 const UserModel = require("../models/user");
@@ -39,20 +39,8 @@ const createNewQueue = async ({ queue }) => {
   });
   if (!resCreateTextChannelDisplayResults.ok) return resCreateTextChannelDisplayResults;
 
-  const joinButtonId = `${queue._id}_join_queue`;
-  const joinQueueButton = await discordService.createButton({ customId: joinButtonId, label: "Join Queue", style: ButtonStyle.Success });
-  registerJoinButtonCallback({ queue });
-
-  const leaveButtonId = `${queue._id}_leave_queue`;
-  const leaveQueueButton = await discordService.createButton({ customId: leaveButtonId, label: "Leave Queue", style: ButtonStyle.Danger });
-  registerLeaveButtonCallback({ queue });
-
-  const resMessageQueue = await discordService.sendMessage({
-    channelId: resCreateTextChannelDisplayQueue.data.channel.id,
-    message: "Welcome to the queue! Use the `/join` command to join the queue.",
-    buttons: [joinQueueButton, leaveQueueButton],
-  });
-  if (!resMessageQueue.ok) return resMessageQueue;
+  const { embed, message, buttons } = await generateQueueMessage({ queue });
+  const resDisplayQueue = await displayQueue({ queue });
 
   queue.categoryQueueId = resCreateCategoryQueue.data.category.id;
   queue.textChannelDisplayQueueId = resCreateTextChannelDisplayQueue.data.channel.id;
@@ -97,7 +85,63 @@ const deleteQueue = async ({ queue }) => {
   const resDeleteCategoryQueue = await discordService.deleteCategory({ categoryId: queue.categoryQueueId });
   if (!resDeleteCategoryQueue.ok) return resDeleteCategoryQueue;
 
+  discordService.unregisterButtonCallback(queue.joinButtonId);
+  discordService.unregisterButtonCallback(queue.leaveButtonId);
+
   return { ok: true };
+};
+
+const displayQueue = async ({ queue }) => {
+  const joinButtonId = `${queue._id}_join_queue`;
+  const joinQueueButton = await discordService.createButton({ customId: joinButtonId, label: "Join Queue", style: ButtonStyle.Success });
+  registerJoinButtonCallback({ queue });
+
+  const leaveButtonId = `${queue._id}_leave_queue`;
+  const leaveQueueButton = await discordService.createButton({ customId: leaveButtonId, label: "Leave Queue", style: ButtonStyle.Danger });
+  registerLeaveButtonCallback({ queue });
+
+  const embed = new EmbedBuilder()
+    .setTitle(queue.name)
+    .setColor(0x0099ff)
+    .addFields(
+      {
+        name: "Maps",
+        value: queue.maps.join(", "),
+        inline: true,
+      },
+      {
+        name: "Mode",
+        value: queue.mode,
+        inline: true,
+      },
+      {
+        name: "Players",
+        value: queue.players.length + " / " + queue.numberOfPlayersForGame,
+        inline: true,
+      },
+      {
+        name: "IMPORTANT",
+        value: "Be sure to be in a queue server and that your discord name is the same as your ingame name.",
+        inline: true,
+      },
+    )
+    .setTimestamp();
+
+  if (queue.messageQueueId) {
+    return await discordService.updateMessage({
+      channelId: queue.textChannelDisplayQueueId,
+      messageId: queue.messageQueueId,
+      embed: embed,
+      buttons: [joinQueueButton, leaveQueueButton],
+    });
+  }
+
+  return await discordService.sendMessage({
+    channelId: queue.textChannelDisplayQueueId,
+    message: queue.name,
+    embed: embed,
+    buttons: [joinQueueButton, leaveQueueButton],
+  });
 };
 
 const registerJoinButtonCallback = async ({ queue }) => {
@@ -118,6 +162,8 @@ const registerJoinButtonCallback = async ({ queue }) => {
       });
       return;
     }
+
+    await displayQueue({ queue });
 
     await interaction.reply({
       content: `You have been added to the queue!`,
@@ -144,6 +190,8 @@ const registerLeaveButtonCallback = async ({ queue }) => {
       });
       return;
     }
+
+    await displayQueue({ queue });
 
     await interaction.reply({
       content: `You have been removed from the queue!`,
