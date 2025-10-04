@@ -58,6 +58,7 @@ const Details = () => {
     const { ok } = await api.remove(`/queue/${queueId}`);
     if (!ok) toast.error("Erreur while deleting queue");
 
+    toast.success("Queue deleted successfully");
     navigate("../../queues");
   };
 
