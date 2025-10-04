@@ -8,6 +8,7 @@ const { catchErrors } = require("../utils");
 const { enumNumberOfPlayersPerTeam, enumNumberOfPlayersForGame } = require("../enums/enumModes");
 const discordService = require("../services/discordService");
 const { createNewQueue, deleteQueue, updateQueue } = require("../utils/discord");
+const { join, leave } = require("../utils/queue");
 
 router.post(
   "/",
@@ -52,21 +53,8 @@ router.post(
     const user = req.user;
 
     const queue = await QueueModel.findById(id);
-    if (!queue) return res.status(400).send({ ok: false, message: "Queue not found" });
-    if (queue.players.some((player) => player.userId === user._id)) return res.status(400).send({ ok: false, message: "Player already in queue" });
-
-    const playerObj = {
-      userId: user._id,
-      userName: user.userName,
-      avatar: user.avatar,
-      clanId: user.clanId,
-      clanName: user.clanName,
-      elo: user.elo,
-      joinedAt: new Date(),
-    };
-
-    queue.players.push(playerObj);
-    await queue.save();
+    const resJoin = await join({ queue, user });
+    if (!resJoin.ok) return res.status(500).send(resJoin);
 
     return res.status(200).send({ ok: true, data: queue.responseModel() });
   }),
@@ -80,12 +68,8 @@ router.post(
     const user = req.user;
 
     const queue = await QueueModel.findById(id);
-    if (!queue) return res.status(400).send({ ok: false, message: "Queue not found" });
-    if (!queue.players.some((player) => player.userId.toString() === user._id.toString()))
-      return res.status(400).send({ ok: false, message: "Player not in queue" });
-
-    queue.players = queue.players.filter((player) => player.userId.toString() !== user._id.toString());
-    await queue.save();
+    const resLeave = await leave({ queue, user });
+    if (!resLeave.ok) return res.status(500).send(resLeave);
 
     return res.status(200).send({ ok: true, data: queue.responseModel() });
   }),

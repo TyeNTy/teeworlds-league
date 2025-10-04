@@ -2,6 +2,8 @@ const discordService = require("../services/discordService");
 const { ButtonStyle } = require("discord.js");
 
 const QueueModel = require("../models/queue");
+const UserModel = require("../models/user");
+const { join, leave } = require("./queue");
 
 const initCallbacksForQueues = async () => {
   const queues = await QueueModel.find({});
@@ -30,11 +32,11 @@ const createNewQueue = async ({ queue }) => {
   });
   if (!resCreateTextChannelDisplayResults.ok) return resCreateTextChannelDisplayResults;
 
-  const joinButtonId = `${queue._id}-join_queue`;
+  const joinButtonId = `${queue._id}_join_queue`;
   const joinQueueButton = await discordService.createButton({ customId: joinButtonId, label: "Join Queue", style: ButtonStyle.Success });
   registerJoinButtonCallback({ queue });
 
-  const leaveButtonId = `${queue._id}-leave_queue`;
+  const leaveButtonId = `${queue._id}_leave_queue`;
   const leaveQueueButton = await discordService.createButton({ customId: leaveButtonId, label: "Leave Queue", style: ButtonStyle.Danger });
   registerLeaveButtonCallback({ queue });
 
@@ -90,10 +92,25 @@ const deleteQueue = async ({ queue }) => {
 const registerJoinButtonCallback = async ({ queue }) => {
   const joinButtonId = queue.joinButtonId;
   discordService.registerButtonCallback(joinButtonId, async (interaction) => {
-    console.log(`User ${interaction.user.tag} clicked Join Queue button`);
+    const queueId = interaction.customId.split("_")[0];
+    const queue = await QueueModel.findById(queueId);
+    if (!queue) return { ok: false, message: "Queue not found" };
+
+    const user = await UserModel.findOne({ userName: interaction.user.globalName });
+    if (!user) return { ok: false, message: "User not found" };
+
+    const resJoin = await join({ queue, user });
+    if (!resJoin.ok) {
+      await interaction.reply({
+        content: `You are already in the queue!`,
+        ephemeral: true,
+      });
+      return;
+    }
+
     await interaction.reply({
-      content: `${interaction.user.tag} joined the queue!`,
-      ephemeral: false,
+      content: `You have been added to the queue!`,
+      ephemeral: true,
     });
   });
 };
@@ -101,7 +118,22 @@ const registerJoinButtonCallback = async ({ queue }) => {
 const registerLeaveButtonCallback = async ({ queue }) => {
   const leaveButtonId = queue.leaveButtonId;
   discordService.registerButtonCallback(leaveButtonId, async (interaction) => {
-    console.log(`User ${interaction.user.tag} clicked Leave Queue button`);
+    const queueId = interaction.customId.split("_")[0];
+    const queue = await QueueModel.findById(queueId);
+    if (!queue) return { ok: false, message: "Queue not found" };
+
+    const user = await UserModel.findOne({ userName: interaction.user.globalName });
+    if (!user) return { ok: false, message: "User not found" };
+
+    const resLeave = await leave({ queue, user });
+    if (!resLeave.ok) {
+      await interaction.reply({
+        content: `You are not in the queue!`,
+        ephemeral: true,
+      });
+      return;
+    }
+
     await interaction.reply({
       content: `${interaction.user.tag} left the queue!`,
       ephemeral: false,
