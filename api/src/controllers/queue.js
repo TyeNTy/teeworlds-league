@@ -104,6 +104,9 @@ router.put(
     const { id } = req.params;
     const body = req.body;
 
+    const queue = await QueueModel.findById(id);
+    if (!queue) return res.status(400).send({ ok: false, error: "Queue not found" });
+
     const objUpdate = {};
     if (body.name) objUpdate.name = body.name;
     if (body.maps) objUpdate.maps = body.maps;
@@ -113,9 +116,14 @@ router.put(
       objUpdate.numberOfPlayersForGame = enumNumberOfPlayersForGame[body.mode];
     }
 
-    const queue = await QueueModel.findByIdAndUpdate(id, objUpdate);
+    queue.set(objUpdate);
+    await queue.save();
 
     const resUpdateQueue = await updateQueue({ queue });
+    if (!resUpdateQueue.ok) return res.status(500).send(resUpdateQueue);
+
+    await queue.save();
+
     if (!resUpdateQueue.ok) return res.status(500).send(resUpdateQueue);
 
     return res.status(200).send({ ok: true, data: queue.responseModel() });
@@ -127,10 +135,13 @@ router.delete(
   passport.authenticate(enumUserRole.ADMIN, { session: false }),
   catchErrors(async (req, res) => {
     const { id } = req.params;
-    await QueueModel.findByIdAndDelete(id);
+    const queue = await QueueModel.findById(id);
+    if (!queue) return res.status(400).send({ ok: false, error: "Queue not found" });
 
     const resDeleteQueue = await deleteQueue({ queue });
     if (!resDeleteQueue.ok) return res.status(500).send(resDeleteQueue);
+
+    await queue.deleteOne();
 
     return res.status(200).send({ ok: true });
   }),

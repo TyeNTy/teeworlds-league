@@ -161,8 +161,9 @@ class DiscordService {
       const channel = await this.client.channels.fetch(channelId);
 
       const components = [];
+      const buttonRow = new ActionRowBuilder();
       if (buttons) {
-        const buttonRow = new ActionRowBuilder().addComponents(buttons);
+        buttonRow.addComponents(buttons);
         components.push(buttonRow);
       } else {
         components.push(new ActionRowBuilder());

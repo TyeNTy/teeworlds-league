@@ -39,21 +39,15 @@ const createNewQueue = async ({ queue }) => {
   });
   if (!resCreateTextChannelDisplayResults.ok) return resCreateTextChannelDisplayResults;
 
-  const { embed, message, buttons } = await generateQueueMessage({ queue });
-  const resDisplayQueue = await displayQueue({ queue });
-
   queue.categoryQueueId = resCreateCategoryQueue.data.category.id;
   queue.textChannelDisplayQueueId = resCreateTextChannelDisplayQueue.data.channel.id;
   queue.textChannelDisplayResultsId = resCreateTextChannelDisplayResults.data.channel.id;
-  queue.joinButtonId = joinButtonId;
-  queue.leaveButtonId = leaveButtonId;
+
+  await displayQueue({ queue });
+
   await queue.save();
 
-  return {
-    categoryQueueId: resCreateCategoryQueue.data.category.id,
-    textChannelDisplayQueueId: resCreateTextChannelDisplayQueue.data.channel.id,
-    textChannelDisplayResultsId: resCreateTextChannelDisplayResults.data.channel.id,
-  };
+  return { ok: true };
 };
 
 const updateQueue = async ({ queue }) => {
@@ -71,6 +65,8 @@ const updateQueue = async ({ queue }) => {
     name: queue.name + " - Results",
   });
   if (!resUpdateTextChannelDisplayResults.ok) return resUpdateTextChannelDisplayResults;
+
+  await displayQueue({ queue });
 
   return { ok: true };
 };
@@ -127,6 +123,9 @@ const displayQueue = async ({ queue }) => {
     )
     .setTimestamp();
 
+  queue.joinButtonId = joinButtonId;
+  queue.leaveButtonId = leaveButtonId;
+
   if (queue.messageQueueId) {
     return await discordService.updateMessage({
       channelId: queue.textChannelDisplayQueueId,
@@ -136,12 +135,16 @@ const displayQueue = async ({ queue }) => {
     });
   }
 
-  return await discordService.sendMessage({
+  const resSendMessage = await discordService.sendMessage({
     channelId: queue.textChannelDisplayQueueId,
-    message: queue.name,
     embed: embed,
     buttons: [joinQueueButton, leaveQueueButton],
   });
+  if (!resSendMessage.ok) return resSendMessage;
+
+  queue.messageQueueId = resSendMessage.data.message.id;
+
+  return resSendMessage;
 };
 
 const registerJoinButtonCallback = async ({ queue }) => {
@@ -164,6 +167,7 @@ const registerJoinButtonCallback = async ({ queue }) => {
     }
 
     await displayQueue({ queue });
+    await queue.save();
 
     await interaction.reply({
       content: `You have been added to the queue!`,
@@ -192,6 +196,7 @@ const registerLeaveButtonCallback = async ({ queue }) => {
     }
 
     await displayQueue({ queue });
+    await queue.save();
 
     await interaction.reply({
       content: `You have been removed from the queue!`,

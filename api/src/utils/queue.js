@@ -198,12 +198,6 @@ const generateResultRankedMessage = async ({ resultRanked }) => {
     return await generateResultRankedMessageNotReady({ resultRanked });
   }
 
-  if (resultRanked.readyButtonId) {
-    discordService.unregisterButtonCallback(resultRanked.readyButtonId);
-    resultRanked.readyButtonId = null;
-    await resultRanked.save();
-  }
-
   const matchId = resultRanked._id.toString();
 
   const embed = new EmbedBuilder()
