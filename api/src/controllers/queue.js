@@ -91,6 +91,24 @@ router.post(
   }),
 );
 
+router.post(
+  "/:id/discordRecreate",
+  passport.authenticate(enumUserRole.USER, { session: false }),
+  catchErrors(async (req, res) => {
+    const { id } = req.params;
+    const queue = await QueueModel.findById(id);
+    if (!queue) return res.status(400).send({ ok: false, message: "Queue not found" });
+
+    const resDelete = await deleteQueue({ queue });
+    if (!resDelete.ok) return res.status(500).send(resDelete);
+
+    const resInitNewQueue = await initNewQueue({ queue });
+    if (!resInitNewQueue.ok) return res.status(500).send(resInitNewQueue);
+
+    return res.status(200).send({ ok: true, data: queue.responseModel() });
+  }),
+);
+
 router.put(
   "/:id",
   passport.authenticate(enumUserRole.ADMIN, { session: false }),

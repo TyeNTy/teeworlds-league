@@ -103,6 +103,12 @@ const Details = () => {
     fetchGuilds();
   };
 
+  const handleDiscordRecreate = async () => {
+    const { ok } = await api.post(`/queue/${queueId}/discordRecreate`);
+    if (!ok) toast.error("Erreur while recreating Discord");
+    toast.success("Discord recreated successfully");
+  };
+
   if (loading) return <Loader />;
 
   return (
@@ -222,6 +228,11 @@ const Details = () => {
 
       {showGuildSelector && (
         <div className="mb-4 bg-white border border-gray-300 rounded-lg p-4">
+          <button
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mb-3"
+            onClick={handleDiscordRecreate}>
+            Recreate Discord
+          </button>
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-lg font-semibold">Select Discord Server</h3>
             <button className="text-gray-500 hover:text-gray-700" onClick={() => setShowGuildSelector(false)}>

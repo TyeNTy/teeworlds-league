@@ -1,4 +1,5 @@
 const discordService = require("../services/discordService");
+const { ButtonStyle } = require("discord.js");
 
 const initNewQueue = async ({ queue }) => {
   const resCreateCategoryQueue = await discordService.createCategory({ guildId: queue.guildId, name: queue.name });
@@ -18,9 +19,13 @@ const initNewQueue = async ({ queue }) => {
   });
   if (!resCreateTextChannelDisplayResults.ok) return resCreateTextChannelDisplayResults;
 
+  const joinQueueButton = await discordService.createButton({ customId: "join_queue", label: "Join Queue", style: ButtonStyle.Success });
+  const leaveQueueButton = await discordService.createButton({ customId: "leave_queue", label: "Leave Queue", style: ButtonStyle.Danger });
+
   const resMessageQueue = await discordService.sendMessage({
     channelId: resCreateTextChannelDisplayQueue.data.channel.id,
     message: "Welcome to the queue! Use the `/join` command to join the queue.",
+    buttons: [joinQueueButton, leaveQueueButton],
   });
   if (!resMessageQueue.ok) return resMessageQueue;
 
@@ -54,11 +59,11 @@ const updateQueue = async ({ queue }) => {
 };
 
 const deleteQueue = async ({ queue }) => {
-  const resDeleteTextChannelDisplayQueue = await discordService.deleteChannel(queue.textChannelDisplayQueueId);
+  const resDeleteTextChannelDisplayQueue = await discordService.deleteChannel({ channelId: queue.textChannelDisplayQueueId });
   if (!resDeleteTextChannelDisplayQueue.ok) return resDeleteTextChannelDisplayQueue;
-  const resDeleteTextChannelDisplayResults = await discordService.deleteChannel(queue.textChannelDisplayResultsId);
+  const resDeleteTextChannelDisplayResults = await discordService.deleteChannel({ channelId: queue.textChannelDisplayResultsId });
   if (!resDeleteTextChannelDisplayResults.ok) return resDeleteTextChannelDisplayResults;
-  const resDeleteCategoryQueue = await discordService.deleteCategory(queue.categoryQueueId);
+  const resDeleteCategoryQueue = await discordService.deleteCategory({ categoryId: queue.categoryQueueId });
   if (!resDeleteCategoryQueue.ok) return resDeleteCategoryQueue;
 
   return { ok: true };

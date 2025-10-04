@@ -1,4 +1,4 @@
-const { Client, GatewayIntentBits, ChannelType, Events } = require("discord.js");
+const { Client, GatewayIntentBits, ChannelType, Events, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
 const { DISCORD_CLIENT_ID, DISCORD_CLIENT_SECRET, DISCORD_BOT_TOKEN, API_URL } = require("../config");
 const enumErrorCode = require("../enums/enumErrorCode");
 
@@ -122,10 +122,22 @@ class DiscordService {
     }
   }
 
-  async sendMessage({ channelId, message }) {
+  async createButton({ customId, label, style }) {
+    return new ButtonBuilder().setCustomId(customId).setLabel(label).setStyle(style);
+  }
+
+  async sendMessage({ channelId, message, buttons = [] }) {
     try {
       const channel = await this.client.channels.fetch(channelId);
-      const sentMessage = await channel.send(message);
+
+      const buttonRow = new ActionRowBuilder().addComponents(buttons);
+
+      const messageOptions = {
+        content: message,
+        components: [buttonRow],
+      };
+
+      const sentMessage = await channel.send(messageOptions);
 
       return { ok: true, data: { message: sentMessage } };
     } catch (error) {
