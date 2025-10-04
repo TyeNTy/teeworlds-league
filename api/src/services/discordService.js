@@ -78,6 +78,29 @@ class DiscordService {
     }
   }
 
+  async updateCategory({ categoryId, name }) {
+    try {
+      const category = await this.client.channels.fetch(categoryId);
+      await category.setName(name);
+      return { ok: true, data: { category } };
+    } catch (error) {
+      console.error(`Failed to update category ${categoryId}:`, error);
+      return { ok: false, errorCode: enumErrorCode.SERVER_ERROR };
+    }
+  }
+
+  async deleteCategory({ categoryId }) {
+    try {
+      const category = await this.client.channels.fetch(categoryId);
+      await category.delete();
+
+      return { ok: true, data: { category } };
+    } catch (error) {
+      console.error(`Failed to delete category ${categoryId}:`, error);
+      return { ok: false, errorCode: enumErrorCode.SERVER_ERROR };
+    }
+  }
+
   async createTextChannel({ guildId, name, categoryId = null }) {
     try {
       const createOptions = {
@@ -153,14 +176,13 @@ class DiscordService {
     return { ok: true, data: { channel } };
   }
 
-  async deleteCategory({ categoryId }) {
+  async updateChannel({ channelId, name }) {
     try {
-      const category = await this.client.channels.fetch(categoryId);
-      await category.delete();
-
-      return { ok: true, data: { category } };
+      const channel = await this.client.channels.fetch(channelId);
+      await channel.setName(name);
+      return { ok: true, data: { channel } };
     } catch (error) {
-      console.error(`Failed to delete category ${categoryId}:`, error);
+      console.error(`Failed to update channel ${channelId}:`, error);
       return { ok: false, errorCode: enumErrorCode.SERVER_ERROR };
     }
   }

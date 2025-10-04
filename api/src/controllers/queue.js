@@ -7,7 +7,7 @@ const enumUserRole = require("../enums/enumUserRole");
 const { catchErrors } = require("../utils");
 const { enumNumberOfPlayersPerTeam, enumNumberOfPlayersForGame } = require("../enums/enumModes");
 const discordService = require("../services/discordService");
-const { initNewQueue, deleteQueue } = require("../utils/discord");
+const { initNewQueue, deleteQueue, updateQueue } = require("../utils/discord");
 
 router.post(
   "/",
@@ -108,6 +108,9 @@ router.put(
     }
 
     const queue = await QueueModel.findByIdAndUpdate(id, objUpdate);
+
+    const resUpdateQueue = await updateQueue({ queue });
+    if (!resUpdateQueue.ok) return res.status(500).send(resUpdateQueue);
 
     return res.status(200).send({ ok: true, data: queue.responseModel() });
   }),
