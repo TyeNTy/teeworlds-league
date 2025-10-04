@@ -27,6 +27,9 @@ const Schema = new mongoose.Schema(
     mode: { type: String, enum: enumModes, default: enumModes.twoVTwo },
 
     numberOfGames: { type: Number, default: 0 },
+
+    discordTokenId: { type: ObjectId, ref: "discordToken" },
+    guildId: { type: String, trim: true },
   },
   {
     timestamps: true,
@@ -43,6 +46,8 @@ Schema.methods.responseModel = function () {
     numberOfPlayersForGame: this.numberOfPlayersForGame,
     numberOfPlayersPerTeam: this.numberOfPlayersPerTeam,
     numberOfGames: this.numberOfGames,
+    discordTokenId: this.discordTokenId,
+    guildId: this.guildId,
   };
 };
 

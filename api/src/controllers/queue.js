@@ -6,6 +6,9 @@ const QueueModel = require("../models/queue");
 const enumUserRole = require("../enums/enumUserRole");
 const { catchErrors } = require("../utils");
 const { enumNumberOfPlayersPerTeam, enumNumberOfPlayersForGame } = require("../enums/enumModes");
+const discordService = require("../services/discordService");
+const DiscordTokenModel = require("../models/discordToken");
+const { APP_URL } = require("../config");
 
 router.post(
   "/",
@@ -35,7 +38,7 @@ router.post(
     const obj = {};
 
     if (body._id) obj._id = body._id;
-    
+
     const queues = await QueueModel.find(obj);
 
     return res.status(200).send({ ok: true, data: queues.map((queue) => queue.responseModel()) });
@@ -74,12 +77,13 @@ router.post(
   "/:id/leave",
   passport.authenticate(enumUserRole.USER, { session: false }),
   catchErrors(async (req, res) => {
-    const { id } = req.params
+    const { id } = req.params;
     const user = req.user;
 
     const queue = await QueueModel.findById(id);
     if (!queue) return res.status(400).send({ ok: false, message: "Queue not found" });
-    if (!queue.players.some((player) => player.userId.toString() === user._id.toString())) return res.status(400).send({ ok: false, message: "Player not in queue" });
+    if (!queue.players.some((player) => player.userId.toString() === user._id.toString()))
+      return res.status(400).send({ ok: false, message: "Player not in queue" });
 
     queue.players = queue.players.filter((player) => player.userId.toString() !== user._id.toString());
     await queue.save();
@@ -120,7 +124,5 @@ router.delete(
     return res.status(200).send({ ok: true });
   }),
 );
-
-
 
 module.exports = router;

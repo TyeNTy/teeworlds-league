@@ -1,17 +1,21 @@
 import React, { useState, useEffect } from "react";
 import api from "../../../services/api";
 import Loader from "../../../components/Loader";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import toast from "react-hot-toast";
 import { modesWithLabel } from "../../../components/utils";
 import { enumMapsWithLabel } from "../../../enums/enumMaps";
 import { useSelector } from "react-redux";
+import { FaDiscord } from "react-icons/fa";
 
 const List = () => {
   const realUser = useSelector((state) => state.Auth.user);
 
   const [queues, setQueues] = useState([]);
+  const [discordActivationCodeUrl, setDiscordActivationCodeUrl] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const codeSuccess = searchParams.get("codeSuccess");
 
   const navigate = useNavigate();
 
@@ -28,6 +32,18 @@ const List = () => {
   };
 
   useEffect(() => {
+    if (codeSuccess) {
+      toast.success("Discord code activated successfully");
+      setSearchParams({ codeSuccess: null });
+    }
+
+    const resultActivationCodeUrl = async () => {
+      const resultActivationCodeUrl = await api.get(`/discord/getActivationCodeUrl`);
+      if (!resultActivationCodeUrl.ok) return toast.error("Erreur while fetching discord activation code url");
+      setDiscordActivationCodeUrl(resultActivationCodeUrl.data.url);
+    };
+    resultActivationCodeUrl();
+
     fetchData();
     const interval = setInterval(() => {
       fetchData();
@@ -75,12 +91,22 @@ const List = () => {
       <h1 className="text-2xl font-bold text-center">Queues</h1>
 
       {realUser?.role === "ADMIN" && (
-        <button
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-          onClick={handleCreateQueue}
-        >
-          Create queue
-        </button>
+        <div className="flex justify-between items-center mb-4">
+          <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onClick={handleCreateQueue}>
+            Create queue
+          </button>
+
+          <div className="text-right">
+            <a
+              href={discordActivationCodeUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-md transition-colors duration-200 shadow-sm hover:shadow-md">
+              <FaDiscord className="w-4 h-4 mr-2" />
+              Connect Discord
+            </a>
+          </div>
+        </div>
       )}
 
       <div className="flex flex-col justify-center mt-4">
@@ -96,35 +122,19 @@ const List = () => {
           </thead>
           <tbody>
             {queues.map((queue) => (
-              <tr
-                key={queue._id}
-                className={"hover:bg-gray-100"}
-              >
-                <td 
-                  className="border px-4 py-2 cursor-pointer"
-                  onClick={() => navigate(`./${queue._id}`)}
-                >
+              <tr key={queue._id} className={"hover:bg-gray-100"}>
+                <td className="border px-4 py-2 cursor-pointer" onClick={() => navigate(`./${queue._id}`)}>
                   {queue.name}
                 </td>
-                <td 
-                  className="border px-4 py-2 cursor-pointer"
-                  onClick={() => navigate(`./${queue._id}`)}
-                >
-                  {modesWithLabel.find((m) => m.value === queue.mode)?.label ??
-                    "Unknown"}
+                <td className="border px-4 py-2 cursor-pointer" onClick={() => navigate(`./${queue._id}`)}>
+                  {modesWithLabel.find((m) => m.value === queue.mode)?.label ?? "Unknown"}
                 </td>
-                <td 
-                  className="border px-4 py-2 cursor-pointer"
-                  onClick={() => navigate(`./${queue._id}`)}
-                >
+                <td className="border px-4 py-2 cursor-pointer" onClick={() => navigate(`./${queue._id}`)}>
                   {queue.maps.map((map) => (
                     <div key={map}>{enumMapsWithLabel.find((m) => m.value === map)?.label ?? "Unknown"}</div>
                   ))}
                 </td>
-                <td 
-                  className="border px-4 py-2 cursor-pointer"
-                  onClick={() => navigate(`./${queue._id}`)}
-                >
+                <td className="border px-4 py-2 cursor-pointer" onClick={() => navigate(`./${queue._id}`)}>
                   {queue.players.length}
                 </td>
                 <td className="border px-4 py-2">
@@ -135,8 +145,7 @@ const List = () => {
                         onClick={(e) => {
                           e.stopPropagation();
                           handleJoinQueue(queue._id);
-                        }}
-                      >
+                        }}>
                         Join
                       </button>
                     )}
@@ -146,8 +155,7 @@ const List = () => {
                         onClick={(e) => {
                           e.stopPropagation();
                           handleLeaveQueue(queue._id);
-                        }}
-                      >
+                        }}>
                         Leave
                       </button>
                     )}

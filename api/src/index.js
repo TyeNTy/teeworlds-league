@@ -7,6 +7,7 @@ const cookieParser = require("cookie-parser");
 const createError = require("http-errors");
 const fs = require("fs");
 const initCron = require("./cron/intCron");
+const DiscordService = require("./services/discordService");
 
 const { PORT, SENTRY_DSN, ENVIRONMENT, APP_URL } = require("./config");
 const app = express();
@@ -43,6 +44,7 @@ app.use("/vote", require("./controllers/vote"));
 app.use("/queue", require("./controllers/queue"));
 app.use("/resultRanked", require("./controllers/resultRanked"));
 app.use("/statRanked", require("./controllers/statRanked"));
+app.use("/discord", require("./controllers/discord"));
 
 if (ENVIRONMENT === "production") {
   var https = require("https");
@@ -61,4 +63,4 @@ if (ENVIRONMENT === "production") {
 }
 
 initCron();
-
+DiscordService.init();
