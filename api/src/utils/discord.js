@@ -102,7 +102,7 @@ const registerJoinButtonCallback = async ({ queue }) => {
     const resJoin = await join({ queue, user });
     if (!resJoin.ok) {
       await interaction.reply({
-        content: `You are already in the queue!`,
+        content: resJoin.message || "You are already in the queue!",
         ephemeral: true,
       });
       return;
@@ -128,15 +128,15 @@ const registerLeaveButtonCallback = async ({ queue }) => {
     const resLeave = await leave({ queue, user });
     if (!resLeave.ok) {
       await interaction.reply({
-        content: `You are not in the queue!`,
+        content: resLeave.message || "You are not in the queue!",
         ephemeral: true,
       });
       return;
     }
 
     await interaction.reply({
-      content: `${interaction.user.tag} left the queue!`,
-      ephemeral: false,
+      content: `You have been removed from the queue!`,
+      ephemeral: true,
     });
   });
 };
