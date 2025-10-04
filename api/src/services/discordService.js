@@ -164,6 +164,8 @@ class DiscordService {
       if (buttons) {
         const buttonRow = new ActionRowBuilder().addComponents(buttons);
         components.push(buttonRow);
+      } else {
+        components.push(new ActionRowBuilder());
       }
 
       const messageOptions = {

@@ -176,6 +176,8 @@ const registerReadyButtonCallback = async ({ resultRanked }) => {
     await initResultRankedMessage({ resultRanked });
   });
 
+  await initResultRankedMessage({ resultRanked });
+
   return { ok: true };
 };
 

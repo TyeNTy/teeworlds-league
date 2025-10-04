@@ -79,9 +79,7 @@ const ready = async ({ resultRanked, user }) => {
 
   await resultRanked.save();
 
-  if (resultRanked.redPlayers.every((player) => player.isReady) && resultRanked.bluePlayers.every((player) => player.isReady)) {
-    await initResultRankedMessage({ resultRanked });
-  }
+  await initResultRankedMessage({ resultRanked });
 
   return { ok: true, data: { resultRanked, user } };
 };
@@ -135,7 +133,8 @@ const createGameFromQueue = async ({ queue }) => {
   queue.numberOfGames++;
   await queue.save();
 
-  initResultRankedMessage({ resultRanked: newResultRanked });
+  const resInitResultRankedMessage = await initResultRankedMessage({ resultRanked: newResultRanked });
+  if (!resInitResultRankedMessage.ok) return { ok: false, message: "Failed to initialize result ranked message" };
 
   return { ok: true, data: { newResultRanked, queue } };
 };
@@ -174,6 +173,8 @@ const initResultRankedMessage = async ({ resultRanked }) => {
   }
 
   await resultRanked.save();
+
+  return { ok: true };
 };
 
 const getGameStatus = ({ resultRanked }) => {
@@ -193,8 +194,14 @@ const formatPlayers = (players) => {
 const generateResultRankedMessage = async ({ resultRanked }) => {
   const { bluePlayers, redPlayers } = resultRanked;
 
-  if (resultRanked.redPlayers.some((player) => !player.isReady) && resultRanked.bluePlayers.some((player) => !player.isReady)) {
+  if (resultRanked.redPlayers.some((player) => !player.isReady) || resultRanked.bluePlayers.some((player) => !player.isReady)) {
     return await generateResultRankedMessageNotReady({ resultRanked });
+  }
+
+  if (resultRanked.readyButtonId) {
+    discordService.unregisterButtonCallback(resultRanked.readyButtonId);
+    resultRanked.readyButtonId = null;
+    await resultRanked.save();
   }
 
   const matchId = resultRanked._id.toString();
