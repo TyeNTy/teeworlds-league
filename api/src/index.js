@@ -6,6 +6,7 @@ const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const createError = require("http-errors");
 const fs = require("fs");
+const initCron = require("./cron/intCron");
 
 const { PORT, SENTRY_DSN, ENVIRONMENT, APP_URL } = require("./config");
 const app = express();
@@ -39,6 +40,9 @@ app.use("/webhook", require("./controllers/webhook"));
 app.use("/season", require("./controllers/season"));
 app.use("/event", require("./controllers/event"));
 app.use("/vote", require("./controllers/vote"));
+app.use("/queue", require("./controllers/queue"));
+app.use("/resultRanked", require("./controllers/resultRanked"));
+app.use("/statRanked", require("./controllers/statRanked"));
 
 if (ENVIRONMENT === "production") {
   var https = require("https");
@@ -56,17 +60,5 @@ if (ENVIRONMENT === "production") {
   });
 }
 
-const init = async () => {
-  // UserModal = require("./models/user");
+initCron();
 
-  // const admin = await UserModal.create({
-  //   email: "admin@email.com",
-  //   password: "admin",
-  //   role: "ADMIN",
-  //   userName: "admin",
-  // });
-
-  console.log("init");
-};
-
-init();

@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
-import api from "../../services/api";
-import Loader from "../../components/Loader";
+import api from "../../../services/api";
+import Loader from "../../../components/Loader";
 import { useNavigate } from "react-router-dom";
-import Modal from "../../components/Modal";
+import Modal from "../../../components/Modal";
 import { useSelector } from "react-redux";
 import toast from "react-hot-toast";
 import { MdDelete, MdEdit, MdAdd } from "react-icons/md";
-import enumVoteType from "../../enums/enumVote";
+import enumVoteType from "../../../enums/enumVote";
 
 const List = () => {
   const [votes, setVotes] = useState([]);
@@ -69,7 +69,7 @@ const List = () => {
       return;
     }
 
-    navigate(`/votes/${res.data.vote._id}`);
+    navigate(`./${res.data.vote._id}`);
   };
 
   const handleDelete = async (voteId) => {
@@ -261,7 +261,7 @@ const List = () => {
                       </button>
                       <button
                         className="bg-blue-500 hover:bg-blue-700 text-white p-2 rounded"
-                        onClick={() => navigate(`/votes/${vote._id}`)}
+                        onClick={() => navigate(`./${vote._id}`)}
                         title="Edit"
                       >
                         <MdEdit />

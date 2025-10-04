@@ -26,7 +26,7 @@ const Details = () => {
 
     if (data.length < 1) {
       toast.error("User not found");
-      return navigate("/users");
+      return navigate("../users");
     }
 
     setUser(data[0]);
@@ -78,7 +78,7 @@ const Details = () => {
     if (!ok) return toast.error("Erreur while deleting user");
 
     toast.success("User deleted successfully");
-    navigate("/users");
+    navigate("../../users");
   };
 
   if (loading) return <Loader />;

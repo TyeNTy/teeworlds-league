@@ -5,8 +5,9 @@ import API from "../services/api";
 import { setUser } from "../redux/auth/actions";
 import { setCurrentSeason, setSeasons } from "../redux/season/actions";
 import GCTFLogo from "../assets/gctfLeagueLogo.png";
+import { FaAngleRight } from 'react-icons/fa';
 
-const TopBar = () => {
+const TopBarLeague = () => {
   const [isOpen, setIsOpen] = React.useState(false);
   const [isLoadingSeasons, setIsLoadingSeasons] = React.useState(false);
 
@@ -66,10 +67,13 @@ const TopBar = () => {
   return (
     <div className="bg-gray-800 text-white">
       <div className="container mx-auto flex justify-between items-center py-4">
-        <div className="pl-4">
-          <Link to="/users" className="flex text-lg font-bold items-center">
+        <div className="pl-4 flex items-center">
+          <Link to="./users" className="flex text-lg font-bold items-center">
             <img src={GCTFLogo} alt="GCTF League" className="w-12 h-12" />
             gCTF League
+          </Link>
+          <Link to="/ranked" className="ml-4 text-base font-medium flex items-center">
+            Ranked <FaAngleRight className="w-4 h-4 ml-1" />
           </Link>
         </div>
 
@@ -94,8 +98,8 @@ const TopBar = () => {
               <Link
                 to={
                   currentSeason?.name?.includes("Season 2")
-                    ? "/rules/leagueSeason2"
-                    : "/rules/leagueSeason1"
+                    ? "./rules/leagueSeason2"
+                    : "./rules/leagueSeason1"
                 }
                 className="ml-2"
               >
@@ -103,32 +107,32 @@ const TopBar = () => {
               </Link>
             </div>
             <div className="flex items-center pr-4">
-              <Link to="/users" className="ml-2">
+              <Link to="./users" className="ml-2">
                 Players
               </Link>
             </div>
             <div className="flex items-center pr-4">
-              <Link to="/clans" className="ml-2">
+              <Link to="./clans" className="ml-2">
                 Clans
               </Link>
             </div>
             <div className="flex items-center pr-4">
-              <Link to="/calendar" className="ml-2">
+              <Link to="./calendar" className="ml-2">
                 Calendar
               </Link>
             </div>
             <div className="flex items-center pr-4">
-              <Link to="/results" className="ml-2">
+              <Link to="./results" className="ml-2">
                 Results
               </Link>
             </div>
             <div className="flex items-center pr-4">
-              <Link to="/stats" className="ml-2">
+              <Link to="./stats" className="ml-2">
                 Stats
               </Link>
             </div>
             <div className="flex items-center pr-4">
-              <Link to="/votes" className="ml-2">
+              <Link to="./votes" className="ml-2">
                 Votes
               </Link>
             </div>
@@ -153,7 +157,7 @@ const TopBar = () => {
                       <div className="absolute right-0 mt-2 w-48 bg-white shadow-lg z-10">
                         <button
                           className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-200"
-                          onClick={() => navigate("/users/profile")}
+                          onClick={() => navigate("./users/profile")}
                         >
                           Profile
                         </button>
@@ -183,4 +187,4 @@ const TopBar = () => {
   );
 };
 
-export default TopBar;
+export default TopBarLeague;

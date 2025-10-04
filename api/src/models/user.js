@@ -9,6 +9,7 @@ const Schema = new mongoose.Schema(
     userName: { type: String, trim: true },
 
     email: { type: String, trim: true },
+    discordId: { type: String, trim: true },
 
     role: { type: String, enum: enumUserRole, default: enumUserRole.USER },
 
@@ -18,6 +19,7 @@ const Schema = new mongoose.Schema(
     },
 
     elo: { type: Number, default: 1000 },
+    eloRanked: { type: Number, default: 1000 },
 
     password: { type: String },
     blocked: { type: Boolean, default: false },
