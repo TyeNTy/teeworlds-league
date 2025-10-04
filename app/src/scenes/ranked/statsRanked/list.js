@@ -4,13 +4,12 @@ import Loader from "../../../components/Loader";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import Player from "../../../components/Player";
-import { useSelector } from "react-redux";
 import StatColored from "../../../components/StatColored";
 
 const List = () => {
   const [statsRanked, setStatsRanked] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filters, setFilters] = useState({ sort: "winRate", asc: false });
+  const [filters, setFilters] = useState({ sort: "elo", asc: false });
 
   const navigate = useNavigate();
 

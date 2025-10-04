@@ -9,12 +9,11 @@ import { enumMapsWithLabel } from "../../../enums/enumMaps";
 import { useSelector } from "react-redux";
 
 const List = () => {
-  const currentSeason = useSelector((state) => state.Season.currentSeason);
   const realUser = useSelector((state) => state.Auth.user);
 
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filters, setFilters] = useState({ seasonId: currentSeason._id });
+  const [filters, setFilters] = useState({});
   const [open, setOpen] = useState(false);
   const [newPost, setNewPost] = useState({
     date: new Date().toISOString().split("T")[0],
@@ -24,27 +23,23 @@ const List = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (currentSeason) {
-      const fetchData = async () => {
-        const { ok, data } = await api.post(`/resultRanked/search`, {
-          ...filters,
-          seasonId: currentSeason._id,
-          seasonName: currentSeason.name,
-        });
-        if (!ok) toast.error("Erreur while fetching results");
+    const fetchData = async () => {
+      const { ok, data } = await api.post(`/resultRanked/search`, {
+        ...filters,
+      });
+      if (!ok) toast.error("Erreur while fetching results");
 
-        let filteredData = data;
-        if (realUser?.role !== "ADMIN") {
-          filteredData = data.filter((result) => result.freezed);
-        }
+      let filteredData = data;
+      if (realUser?.role !== "ADMIN") {
+        filteredData = data.filter((result) => result.freezed);
+      }
 
-        setResults(filteredData);
-        setLoading(false);
-      };
+      setResults(filteredData);
+      setLoading(false);
+    };
 
-      fetchData();
-    }
-  }, [filters, currentSeason]);
+    fetchData();
+  }, [filters]);
 
   const handleCreateResult = async () => {
     const { ok, data, errorCode, errorData } = await api.post(
@@ -76,13 +71,13 @@ const List = () => {
     navigate(`./${data._id}`);
   };
 
-  if (loading || !currentSeason) return <Loader />;
+  if (loading) return <Loader />;
 
   return (
     <div className="p-4">
       <h1 className="text-2xl font-bold text-center">Results</h1>
 
-      {realUser?.role === "ADMIN" && currentSeason?.isActive && (
+      {realUser?.role === "ADMIN" && (
         <button
           className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
           onClick={() => setOpen(true)}
@@ -119,33 +114,50 @@ const List = () => {
                 onClick={() => navigate(`./${result._id}`)}
               >
                 <td className="border px-4 py-2">
-                  {result.date.split("T")[0]}
+                  {new Date(result.date).toLocaleString("en-GB", {
+                    year: "numeric",
+                    month: "2-digit",
+                    day: "2-digit",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    second: "2-digit",
+                    hour12: false,
+                  })}
                 </td>
                 <td className="border px-4 py-2">
                   {modesWithLabel.find((m) => m.value === result.mode)?.label ??
                     "Unknown"}
                 </td>
                 <td className="border px-4 py-2">
-                  {enumMapsWithLabel.find((m) => m.value === result.map)?.label ?? "Unknown"}
+                  {enumMapsWithLabel.find((m) => m.value === result.map)
+                    ?.label ?? "Unknown"}
                 </td>
                 {result.isForfeit ? (
                   result.winnerSide === "red" ? (
                     <>
-                      <td className="border px-4 py-2 text-green-500">{`${result.redEloBefore.toFixed(2)}`}</td>
+                      <td className="border px-4 py-2 text-green-500">{`${result.redEloBefore.toFixed(
+                        2
+                      )}`}</td>
                       <td className="border px-4 py-2">
                         <span className="text-green-500">1000</span> -{" "}
                         <span className="text-red-500">Forfeit</span>
                       </td>
-                      <td className="border px-4 py-2 text-red-500">{`${result.blueEloBefore.toFixed(2)} (Forfeit)`}</td>
+                      <td className="border px-4 py-2 text-red-500">{`${result.blueEloBefore.toFixed(
+                        2
+                      )} (Forfeit)`}</td>
                     </>
                   ) : (
                     <>
-                      <td className="border px-4 py-2 text-red-500">{`${result.redEloBefore.toFixed(2)} (Forfeit)`}</td>
+                      <td className="border px-4 py-2 text-red-500">{`${result.redEloBefore.toFixed(
+                        2
+                      )} (Forfeit)`}</td>
                       <td className="border px-4 py-2">
                         <span className="text-red-500">Forfeit</span> -{" "}
                         <span className="text-green-500">1000</span>
                       </td>
-                      <td className="border px-4 py-2 text-green-500">{`${result.blueEloBefore.toFixed(2)}`}</td>
+                      <td className="border px-4 py-2 text-green-500">{`${result.blueEloBefore.toFixed(
+                        2
+                      )}`}</td>
                     </>
                   )
                 ) : (
@@ -204,7 +216,7 @@ const List = () => {
                   </>
                 )}
                 <td className="border px-4 py-2">{result.winnerName}</td>
-                {realUser?.role === "ADMIN" && currentSeason?.isActive && (
+                {realUser?.role === "ADMIN" && (
                   <td className="border px-4 py-2">
                     <span
                       className={
