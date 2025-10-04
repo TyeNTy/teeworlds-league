@@ -1,15 +1,5 @@
-const {
-  Client,
-  GatewayIntentBits,
-  ChannelType,
-  Events,
-  ActionRowBuilder,
-  ButtonBuilder,
-  ButtonStyle,
-  InteractionType,
-  EmbedBuilder,
-} = require("discord.js");
-const { DISCORD_CLIENT_ID, DISCORD_CLIENT_SECRET, DISCORD_BOT_TOKEN, API_URL } = require("../config");
+const { Client, GatewayIntentBits, ChannelType, Events, ActionRowBuilder, ButtonBuilder } = require("discord.js");
+const { DISCORD_CLIENT_ID, DISCORD_BOT_TOKEN } = require("../config");
 const enumErrorCode = require("../enums/enumErrorCode");
 
 class DiscordService {
@@ -190,7 +180,7 @@ class DiscordService {
     }
   }
 
-  async updateMessage({ channelId, messageId, message: newMessage, embed = null }) {
+  async updateMessage({ channelId, messageId, message: newMessage, embed = null, buttons = null }) {
     try {
       const channel = await this.client.channels.fetch(channelId);
       const message = await channel.messages.fetch(messageId);
@@ -201,6 +191,11 @@ class DiscordService {
 
       if (embed) {
         updateOptions.embeds = [embed];
+      }
+
+      if (buttons) {
+        const buttonRow = new ActionRowBuilder().addComponents(buttons);
+        updateOptions.components = [buttonRow];
       }
 
       await message.edit(updateOptions);

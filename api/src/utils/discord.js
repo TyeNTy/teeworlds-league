@@ -3,7 +3,8 @@ const { ButtonStyle } = require("discord.js");
 
 const QueueModel = require("../models/queue");
 const UserModel = require("../models/user");
-const { join, leave } = require("./queue");
+const { join, leave, ready, initResultRankedMessage } = require("./queue");
+const ResultRankedModel = require("../models/resultRanked");
 
 const initCallbacksForQueues = async () => {
   const queues = await QueueModel.find({});
@@ -11,6 +12,12 @@ const initCallbacksForQueues = async () => {
     registerJoinButtonCallback({ queue });
     registerLeaveButtonCallback({ queue });
   }
+
+  const resultRankeds = await ResultRankedModel.find({ freezed: false });
+  for (const resultRanked of resultRankeds) {
+    registerReadyButtonCallback({ resultRanked });
+  }
+
   return { ok: true };
 };
 
@@ -143,6 +150,33 @@ const registerLeaveButtonCallback = async ({ queue }) => {
       ephemeral: true,
     });
   });
+};
+
+const registerReadyButtonCallback = async ({ resultRanked }) => {
+  const readyButtonId = resultRanked.readyButtonId;
+  discordService.registerButtonCallback(readyButtonId, async (interaction) => {
+    const resultRankedId = interaction.customId.split("_")[0];
+    const resultRanked = await ResultRankedModel.findById(resultRankedId);
+    if (!resultRanked) return { ok: false, message: "Result ranked not found" };
+
+    const user = await UserModel.findOne({ userName: interaction.user.globalName });
+    if (!user) return { ok: false, message: "User not found" };
+
+    const resReady = await ready({ resultRanked, user });
+    if (!resReady.ok) {
+      await interaction.reply({
+        content: resReady.message || "Player not in result ranked",
+        ephemeral: true,
+      });
+      return;
+    }
+
+    await interaction.reply({ content: `You have been marked as ready!`, ephemeral: true });
+
+    await initResultRankedMessage({ resultRanked });
+  });
+
+  return { ok: true };
 };
 
 module.exports = {

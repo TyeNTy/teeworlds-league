@@ -1,7 +1,7 @@
 const UserModel = require("../models/user");
 const ResultRankedModel = require("../models/resultRanked");
 const discordService = require("../services/discordService");
-const { EmbedBuilder } = require("discord.js");
+const { EmbedBuilder, ButtonStyle } = require("discord.js");
 
 const chooseMap = (queue) => {
   return queue.maps[(Math.random() * queue.maps.length) | 0];
@@ -55,6 +55,35 @@ const leave = async ({ queue, user }) => {
   await queue.save();
 
   return { ok: true, data: { queue, user } };
+};
+
+const ready = async ({ resultRanked, user }) => {
+  if (!resultRanked) return { ok: false, message: "Result ranked not found" };
+  if (
+    !resultRanked.redPlayers.some((player) => player.userId.toString() === user._id.toString()) &&
+    !resultRanked.bluePlayers.some((player) => player.userId.toString() === user._id.toString())
+  )
+    return { ok: false, message: "Player not in result ranked" };
+
+  resultRanked.redPlayers.forEach((player) => {
+    if (player.userId.toString() === user._id.toString()) {
+      player.isReady = true;
+    }
+  });
+
+  resultRanked.bluePlayers.forEach((player) => {
+    if (player.userId.toString() === user._id.toString()) {
+      player.isReady = true;
+    }
+  });
+
+  await resultRanked.save();
+
+  if (resultRanked.redPlayers.every((player) => player.isReady) && resultRanked.bluePlayers.every((player) => player.isReady)) {
+    await initResultRankedMessage({ resultRanked });
+  }
+
+  return { ok: true, data: { resultRanked, user } };
 };
 
 const createGameFromQueue = async ({ queue }) => {
@@ -125,49 +154,55 @@ const initResultRankedMessage = async ({ resultRanked }) => {
   }
 
   if (!resultRanked.messageResultId) {
-    const { embed, message } = generateResultRankedMessage({ resultRanked });
+    const { embed, message, buttons } = await generateResultRankedMessage({ resultRanked });
     const resCreateMessageResult = await discordService.sendMessage({
       channelId: resultRanked.textChannelDisplayResultId,
       message: message,
       embed: embed,
+      buttons: buttons,
     });
     resultRanked.messageResultId = resCreateMessageResult.data.message.id;
   } else {
-    const { embed, message } = generateResultRankedMessage({ resultRanked });
-    const resUpdateMessageResult = await discordService.updateMessage({
+    const { embed, message, buttons } = await generateResultRankedMessage({ resultRanked });
+    await discordService.updateMessage({
       channelId: resultRanked.textChannelDisplayResultId,
       messageId: resultRanked.messageResultId,
       message: message,
       embed: embed,
+      buttons: buttons,
     });
   }
 
   await resultRanked.save();
 };
 
-const generateResultRankedMessage = ({ resultRanked }) => {
+const getGameStatus = ({ resultRanked }) => {
+  if (resultRanked.freezed) {
+    return "Match Completed 🏆";
+  } else if (resultRanked.blueScore > 0 || resultRanked.redScore > 0) {
+    return "Match In Progress 🏆";
+  } else {
+    return "Match Starting 🏆";
+  }
+};
+
+const formatPlayers = (players) => {
+  return players.map((player) => `• ${player.userName}`).join("\n") || "• No players";
+};
+
+const generateResultRankedMessage = async ({ resultRanked }) => {
   const { bluePlayers, redPlayers } = resultRanked;
 
-  const formatPlayers = (players) => {
-    return players.map((player) => `• ${player.userName}`).join("\n") || "• No players";
-  };
-
-  const getGameStatus = () => {
-    if (resultRanked.freezed) {
-      return "Match Completed";
-    } else if (resultRanked.blueScore > 0 || resultRanked.redScore > 0) {
-      return "Match In Progress";
-    } else {
-      return "Match Starting";
-    }
-  };
+  if (resultRanked.redPlayers.some((player) => !player.isReady) && resultRanked.bluePlayers.some((player) => !player.isReady)) {
+    return await generateResultRankedMessageNotReady({ resultRanked });
+  }
 
   const matchId = resultRanked._id.toString();
 
   const embed = new EmbedBuilder()
-    .setTitle(`${getGameStatus()} 🏆`)
+    .setTitle(getGameStatus({ resultRanked }))
     .setDescription(`Match ${matchId} has ${resultRanked.freezed ? "finished" : "started"}!`)
-    .setColor(resultRanked.freezed ? 0x00ff00 : 0x0099ff) // Green for completed, blue for in progress
+    .setColor(resultRanked.freezed ? 0x00ff00 : 0x0099ff)
     .addFields(
       {
         name: "Map",
@@ -194,8 +229,58 @@ const generateResultRankedMessage = ({ resultRanked }) => {
 
   return {
     embed: embed,
-    message: "", // No additional message content needed with embed
+    message: "New queue started!",
   };
 };
 
-module.exports = { chooseMap, choosePlayers, join, leave, createGameFromQueue };
+const generateResultRankedMessageNotReady = async ({ resultRanked }) => {
+  const readyButtonId = `${resultRanked._id}_ready`;
+  const readyButton = await discordService.createButton({ customId: readyButtonId, label: "Ready", style: ButtonStyle.Success });
+  const allPlayers = [...resultRanked.redPlayers, ...resultRanked.bluePlayers];
+
+  resultRanked.readyButtonId = readyButtonId;
+  await resultRanked.save();
+
+  discordService.registerButtonCallback(readyButtonId, async (interaction) => {
+    const resultRankedId = interaction.customId.split("_")[0];
+    const resultRanked = await ResultRankedModel.findById(resultRankedId);
+    if (!resultRanked) return { ok: false, message: "Result ranked not found" };
+
+    const user = await UserModel.findOne({ userName: interaction.user.globalName });
+    if (!user) return { ok: false, message: "User not found" };
+
+    const resReady = await ready({ resultRanked, user });
+    if (!resReady.ok) return { ok: false, message: "Player not in result ranked" };
+
+    await interaction.reply({ content: `You have been marked as ready!`, ephemeral: true });
+  });
+
+  const embed = new EmbedBuilder()
+    .setTitle(getGameStatus({ resultRanked }))
+    .setColor(0x0099ff)
+    .addFields(
+      {
+        name: "Not ready",
+        value: formatPlayers(allPlayers.filter((player) => !player.isReady)),
+        inline: true,
+      },
+      {
+        name: "Ready",
+        value: formatPlayers(allPlayers.filter((player) => player.isReady)),
+        inline: true,
+      },
+      {
+        name: "IMPORTANT",
+        value: "Be sure to be in a queue server and that your discord name is the same as your ingame name.",
+        inline: true,
+      },
+    );
+
+  return {
+    embed: embed,
+    message: "Players are not ready!",
+    buttons: [readyButton],
+  };
+};
+
+module.exports = { chooseMap, choosePlayers, join, leave, ready, createGameFromQueue, initResultRankedMessage };
