@@ -1,6 +1,7 @@
 const UserModel = require("../models/user");
 const ResultRankedModel = require("../models/resultRanked");
 const discordService = require("../services/discordService");
+const { EmbedBuilder } = require("discord.js");
 
 const chooseMap = (queue) => {
   return queue.maps[(Math.random() * queue.maps.length) | 0];
@@ -116,7 +117,7 @@ const initResultRankedMessage = async ({ resultRanked }) => {
   if (!resultRanked.textChannelDisplayResultId) {
     const resCreateTextChannelDisplayResults = await discordService.createTextChannel({
       guildId: resultRanked.guildId,
-      name: resultRanked.queueName + " - Results",
+      name: "queue_" + resultRanked.id.toString(),
       categoryId: resultRanked.categoryQueueId,
     });
 
@@ -124,20 +125,77 @@ const initResultRankedMessage = async ({ resultRanked }) => {
   }
 
   if (!resultRanked.messageResultId) {
+    const { embed, message } = generateResultRankedMessage({ resultRanked });
     const resCreateMessageResult = await discordService.sendMessage({
       channelId: resultRanked.textChannelDisplayResultId,
-      message: "Test result for now",
+      message: message,
+      embed: embed,
     });
     resultRanked.messageResultId = resCreateMessageResult.data.message.id;
   } else {
+    const { embed, message } = generateResultRankedMessage({ resultRanked });
     const resUpdateMessageResult = await discordService.updateMessage({
       channelId: resultRanked.textChannelDisplayResultId,
       messageId: resultRanked.messageResultId,
-      message: "Test result for now",
+      message: message,
+      embed: embed,
     });
   }
 
   await resultRanked.save();
+};
+
+const generateResultRankedMessage = ({ resultRanked }) => {
+  const { bluePlayers, redPlayers } = resultRanked;
+
+  const formatPlayers = (players) => {
+    return players.map((player) => `• ${player.userName}`).join("\n") || "• No players";
+  };
+
+  const getGameStatus = () => {
+    if (resultRanked.freezed) {
+      return "Match Completed";
+    } else if (resultRanked.blueScore > 0 || resultRanked.redScore > 0) {
+      return "Match In Progress";
+    } else {
+      return "Match Starting";
+    }
+  };
+
+  const matchId = resultRanked._id.toString();
+
+  const embed = new EmbedBuilder()
+    .setTitle(`${getGameStatus()} 🏆`)
+    .setDescription(`Match ${matchId} has ${resultRanked.freezed ? "finished" : "started"}!`)
+    .setColor(resultRanked.freezed ? 0x00ff00 : 0x0099ff) // Green for completed, blue for in progress
+    .addFields(
+      {
+        name: "Map",
+        value: resultRanked.map,
+        inline: true,
+      },
+      {
+        name: "Red",
+        value: formatPlayers(redPlayers),
+        inline: true,
+      },
+      {
+        name: "Blue",
+        value: formatPlayers(bluePlayers),
+        inline: true,
+      },
+      {
+        name: "IMPORTANT",
+        value: "Be sure to be in a queue server and that your discord name is the same as your ingame name.",
+        inline: true,
+      },
+    )
+    .setTimestamp();
+
+  return {
+    embed: embed,
+    message: "", // No additional message content needed with embed
+  };
 };
 
 module.exports = { chooseMap, choosePlayers, join, leave, createGameFromQueue };

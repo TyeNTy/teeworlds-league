@@ -1,4 +1,14 @@
-const { Client, GatewayIntentBits, ChannelType, Events, ActionRowBuilder, ButtonBuilder, ButtonStyle, InteractionType } = require("discord.js");
+const {
+  Client,
+  GatewayIntentBits,
+  ChannelType,
+  Events,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  InteractionType,
+  EmbedBuilder,
+} = require("discord.js");
 const { DISCORD_CLIENT_ID, DISCORD_CLIENT_SECRET, DISCORD_BOT_TOKEN, API_URL } = require("../config");
 const enumErrorCode = require("../enums/enumErrorCode");
 
@@ -152,7 +162,7 @@ class DiscordService {
     return new ButtonBuilder().setCustomId(customId).setLabel(label).setStyle(style);
   }
 
-  async sendMessage({ channelId, message, buttons = null }) {
+  async sendMessage({ channelId, message, buttons = null, embed = null }) {
     try {
       const channel = await this.client.channels.fetch(channelId);
 
@@ -167,6 +177,10 @@ class DiscordService {
         components,
       };
 
+      if (embed) {
+        messageOptions.embeds = [embed];
+      }
+
       const sentMessage = await channel.send(messageOptions);
 
       return { ok: true, data: { message: sentMessage } };
@@ -176,11 +190,20 @@ class DiscordService {
     }
   }
 
-  async updateMessage({ channelId, messageId, message: newMessage }) {
+  async updateMessage({ channelId, messageId, message: newMessage, embed = null }) {
     try {
       const channel = await this.client.channels.fetch(channelId);
       const message = await channel.messages.fetch(messageId);
-      await message.edit(newMessage);
+
+      const updateOptions = {
+        content: newMessage,
+      };
+
+      if (embed) {
+        updateOptions.embeds = [embed];
+      }
+
+      await message.edit(updateOptions);
 
       return { ok: true, data: { message } };
     } catch (error) {
