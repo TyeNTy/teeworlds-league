@@ -1,5 +1,6 @@
 const UserModel = require("../models/user");
 const ResultRankedModel = require("../models/resultRanked");
+const discordService = require("../services/discordService");
 
 const chooseMap = (queue) => {
   return queue.maps[(Math.random() * queue.maps.length) | 0];
@@ -87,6 +88,9 @@ const createGameFromQueue = async ({ queue }) => {
 
     mode: queue.mode,
     map: chooseMap(queue),
+
+    guildId: queue.guildId,
+    categoryQueueId: queue.categoryQueueId,
   };
 
   const newResultRanked = await ResultRankedModel.create(newResultRankedObj);
@@ -101,7 +105,39 @@ const createGameFromQueue = async ({ queue }) => {
   queue.numberOfGames++;
   await queue.save();
 
+  initResultRankedMessage({ resultRanked: newResultRanked });
+
   return { ok: true, data: { newResultRanked, queue } };
+};
+
+const initResultRankedMessage = async ({ resultRanked }) => {
+  if (!resultRanked.guildId) return { ok: true };
+
+  if (!resultRanked.textChannelDisplayResultId) {
+    const resCreateTextChannelDisplayResults = await discordService.createTextChannel({
+      guildId: resultRanked.guildId,
+      name: resultRanked.queueName + " - Results",
+      categoryId: resultRanked.categoryQueueId,
+    });
+
+    resultRanked.textChannelDisplayResultId = resCreateTextChannelDisplayResults.data.channel.id;
+  }
+
+  if (!resultRanked.messageResultId) {
+    const resCreateMessageResult = await discordService.sendMessage({
+      channelId: resultRanked.textChannelDisplayResultId,
+      message: "Test result for now",
+    });
+    resultRanked.messageResultId = resCreateMessageResult.data.message.id;
+  } else {
+    const resUpdateMessageResult = await discordService.updateMessage({
+      channelId: resultRanked.textChannelDisplayResultId,
+      messageId: resultRanked.messageResultId,
+      message: "Test result for now",
+    });
+  }
+
+  await resultRanked.save();
 };
 
 module.exports = { chooseMap, choosePlayers, join, leave, createGameFromQueue };

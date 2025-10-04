@@ -62,6 +62,8 @@ const createNewQueue = async ({ queue }) => {
 };
 
 const updateQueue = async ({ queue }) => {
+  if (!queue.guildId) return { ok: true };
+
   const resUpdateCategoryQueue = await discordService.updateCategory({ categoryId: queue.categoryQueueId, name: queue.name });
   if (!resUpdateCategoryQueue.ok) return resUpdateCategoryQueue;
   const resUpdateTextChannelDisplayQueue = await discordService.updateChannel({
@@ -79,6 +81,8 @@ const updateQueue = async ({ queue }) => {
 };
 
 const deleteQueue = async ({ queue }) => {
+  if (!queue.guildId) return { ok: true };
+
   const resDeleteTextChannelDisplayQueue = await discordService.deleteChannel({ channelId: queue.textChannelDisplayQueueId });
   if (!resDeleteTextChannelDisplayQueue.ok) return resDeleteTextChannelDisplayQueue;
   const resDeleteTextChannelDisplayResults = await discordService.deleteChannel({ channelId: queue.textChannelDisplayResultsId });

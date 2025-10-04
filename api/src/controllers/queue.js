@@ -5,7 +5,7 @@ const passport = require("passport");
 const QueueModel = require("../models/queue");
 const enumUserRole = require("../enums/enumUserRole");
 const { catchErrors } = require("../utils");
-const { enumNumberOfPlayersPerTeam, enumNumberOfPlayersForGame } = require("../enums/enumModes");
+const { enumNumberOfPlayersPerTeam, enumNumberOfPlayersForGame, enumModes } = require("../enums/enumModes");
 const discordService = require("../services/discordService");
 const { createNewQueue, deleteQueue, updateQueue } = require("../utils/discord");
 const { join, leave } = require("../utils/queue");
@@ -16,7 +16,11 @@ router.post(
   catchErrors(async (req, res) => {
     const body = req.body;
 
-    const obj = {};
+    const obj = {
+      mode: enumModes.twoVTwo,
+      numberOfPlayersPerTeam: enumNumberOfPlayersPerTeam[enumModes.twoVTwo],
+      numberOfPlayersForGame: enumNumberOfPlayersForGame[enumModes.twoVTwo],
+    };
 
     if (body.maps) obj.maps = body.maps;
     if (body.mode) {
@@ -158,6 +162,8 @@ router.put(
     if (!guilds.has(guildId)) {
       return res.status(400).send({ ok: false, error: "Guild not found or bot not in guild" });
     }
+
+    queue.guildId = guildId;
 
     const resCreateNewQueue = await createNewQueue({ queue });
     if (!resCreateNewQueue.ok) return res.status(500).send(resCreateNewQueue);

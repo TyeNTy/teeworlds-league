@@ -60,6 +60,12 @@ const Schema = new mongoose.Schema(
 
     freezed: { type: Boolean, default: false },
     freezedAt: { type: Date },
+
+    // Discord
+    guildId: { type: String, trim: true },
+    categoryQueueId: { type: String, trim: true },
+    textChannelDisplayResultId: { type: String, trim: true },
+    messageResultId: { type: String, trim: true },
   },
   {
     timestamps: true,
