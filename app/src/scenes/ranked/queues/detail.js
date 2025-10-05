@@ -148,8 +148,8 @@ const Details = () => {
           className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
           id="mode"
           name="mode"
-          onChange={(e) => setQueue({ ...queue, mode: e.target.value })}
-          value={queue.mode}
+          onChange={(e) => setQueue({ ...queue, modeId: e.target.value })}
+          value={queue.modeId}
           disabled={!canEdit}>
           <option value="" disabled>
             Select a mode
