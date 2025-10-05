@@ -21,7 +21,7 @@ router.post(
     if (webhookToken !== WEBHOOK_RANKED_TOKEN) return res.status(200).send();
 
     res.status(200).send();
-    const resMessage = await parseWebhookMessage(body);
+    const resMessage = await parseWebhookMessage(body.content);
     if (!resMessage.ok) {
       webhook.ok = false;
       webhook.endpointResult = JSON.stringify(resMessage);
