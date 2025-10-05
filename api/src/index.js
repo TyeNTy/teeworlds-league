@@ -4,7 +4,6 @@ const express = require("express");
 const morgan = require("morgan");
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
-const createError = require("http-errors");
 const fs = require("fs");
 const initCron = require("./cron/intCron");
 const DiscordService = require("./services/discordService");
@@ -65,5 +64,8 @@ if (ENVIRONMENT === "production") {
 }
 
 initCron();
-DiscordService.init();
-initCallbacksForQueues();
+DiscordService.init().then(() => {
+  initCallbacksForQueues().then(() => {
+    console.log("Callbacks for queues initialized");
+  });
+});

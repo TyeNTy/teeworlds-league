@@ -177,6 +177,8 @@ async function updateAllStatsResultRanked(resultRanked) {
   const allPlayers = resultRanked.redPlayers.concat(resultRanked.bluePlayers);
   const users = await UserModel.find({ _id: { $in: allPlayers.map((p) => p.userId) } });
   for (const user of users) await updateStatPlayerRanked({ player: user, mode });
+
+  return { ok: true };
 }
 
 async function updateStatResultRanked(resultRanked) {
