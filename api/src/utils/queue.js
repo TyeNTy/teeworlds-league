@@ -1,5 +1,6 @@
 const UserModel = require("../models/user");
 const ResultRankedModel = require("../models/resultRanked");
+const StatRankedModel = require("../models/statRanked");
 const discordService = require("../services/discordService");
 const { EmbedBuilder, ButtonStyle } = require("discord.js");
 
@@ -93,18 +94,50 @@ const createGameFromQueue = async ({ queue }) => {
   const blueRealPlayers = await UserModel.find({ _id: { $in: bluePlayers.map((player) => player.userId) } });
   const redRealPlayers = await UserModel.find({ _id: { $in: redPlayers.map((player) => player.userId) } });
 
-  const bluePlayersObj = blueRealPlayers.map((player) => ({
-    userId: player._id,
-    userName: player.userName,
-    avatar: player.avatar,
-    eloBefore: player.eloRanked,
-  }));
-  const redPlayersObj = redRealPlayers.map((player) => ({
-    userId: player._id,
-    userName: player.userName,
-    avatar: player.avatar,
-    eloBefore: player.eloRanked,
-  }));
+  const bluePlayersObj = await Promise.all(
+    blueRealPlayers.map(async (player) => {
+      let statRanked = await StatRankedModel.findOne({ userId: player._id, modeId: queue.modeId });
+
+      if (!statRanked) {
+        statRanked = await StatRankedModel.create({
+          userId: player._id,
+          elo: player.elo,
+
+          modeId: queue.modeId,
+          modeName: queue.modeName,
+        });
+      }
+
+      return {
+        userId: player._id,
+        userName: player.userName,
+        avatar: player.avatar,
+        eloBefore: statRanked.elo,
+      };
+    }),
+  );
+  const redPlayersObj = await Promise.all(
+    redRealPlayers.map(async (player) => {
+      let statRanked = await StatRankedModel.findOne({ userId: player._id, modeId: queue.modeId });
+
+      if (!statRanked) {
+        statRanked = await StatRankedModel.create({
+          userId: player._id,
+          elo: player.elo,
+
+          modeId: queue.modeId,
+          modeName: queue.modeName,
+        });
+      }
+
+      return {
+        userId: player._id,
+        userName: player.userName,
+        avatar: player.avatar,
+        eloBefore: statRanked.elo,
+      };
+    }),
+  );
 
   const newResultRankedObj = {
     queueId: queue._id,

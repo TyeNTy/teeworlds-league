@@ -111,8 +111,15 @@ const parseWebhookMessage = async (content) => {
     bluePlayers: { $elemMatch: { userName: bluePlayers.map((player) => player.userName) } },
     freezed: false,
   });
-
   if (!resultRanked) return { ok: false, errorCode: "RESULT_RANKED_NOT_FOUND" };
+
+  for (const player of redPlayers) {
+    player.eloBefore = resultRanked.redPlayers.find((p) => p.userId.toString() === player.userId.toString()).eloBefore;
+  }
+
+  for (const player of bluePlayers) {
+    player.eloBefore = resultRanked.bluePlayers.find((p) => p.userId.toString() === player.userId.toString()).eloBefore;
+  }
 
   resultRanked.set({
     ...obj,
@@ -169,7 +176,7 @@ async function updateAllStatsResultRanked(resultRanked) {
 
   const allPlayers = resultRanked.redPlayers.concat(resultRanked.bluePlayers);
   const users = await UserModel.find({ _id: { $in: allPlayers.map((p) => p.userId) } });
-  for (const user of users) await updateStatPlayerRanked({ user, mode });
+  for (const user of users) await updateStatPlayerRanked({ player: user, mode });
 }
 
 async function updateStatResultRanked(resultRanked) {
@@ -453,20 +460,12 @@ const computeEloResultRanked = async (resultRanked) => {
 
   let winnerElo = 0;
   let looserElo = 0;
-  let winnerPlayers = [];
-  let looserPlayers = [];
   for (const player of winnerResultPlayers) {
-    const realPlayer = await UserModel.findById(player.userId);
-    winnerElo += realPlayer.eloRanked;
-    player.eloBefore = realPlayer.eloRanked;
-    winnerPlayers.push(realPlayer);
+    winnerElo += player.eloBefore;
   }
 
   for (const player of looserResultPlayers) {
-    const realPlayer = await UserModel.findById(player.userId);
-    looserElo += realPlayer.eloRanked;
-    player.eloBefore = realPlayer.eloRanked;
-    looserPlayers.push(realPlayer);
+    looserElo += player.eloBefore;
   }
 
   let eloWinnerBefore = winnerElo / winnerResultPlayers.length;
@@ -494,22 +493,26 @@ const computeEloResultRanked = async (resultRanked) => {
     resultRanked.redEloGain = eloLoss;
   }
 
-  for (const player of winnerPlayers) {
-    player.eloRanked += eloGain;
-    await player.save();
-  }
-
-  for (const player of looserPlayers) {
-    player.eloRanked += eloLoss;
-    await player.save();
-  }
-
   for (const player of winnerResultPlayers) {
-    player.eloAfter = player.eloBefore + eloGain;
+    const eloAfter = player.eloBefore + eloGain;
+    player.eloAfter = eloAfter;
+    const statRanked = await StatRankedModel.findOne({ userId: player.userId, modeId: resultRanked.modeId });
+
+    if (statRanked) {
+      statRanked.set({ elo: eloAfter });
+      await statRanked.save();
+    }
   }
 
   for (const player of looserResultPlayers) {
-    player.eloAfter = player.eloBefore + eloLoss;
+    const eloAfter = player.eloBefore + eloLoss;
+    player.eloAfter = eloAfter;
+    const statRanked = await StatRankedModel.findOne({ userId: player.userId, modeId: resultRanked.modeId });
+
+    if (statRanked) {
+      statRanked.set({ elo: eloAfter });
+      await statRanked.save();
+    }
   }
 
   resultRanked.eloGain = eloGain;
@@ -518,24 +521,6 @@ const computeEloResultRanked = async (resultRanked) => {
   resultRanked.freezedAt = new Date();
 
   await resultRanked.save();
-
-  for (const player of winnerPlayers) {
-    const statRanked = await StatRankedModel.findOne({ userId: player._id, modeId: resultRanked.modeId });
-
-    if (statRanked) {
-      statRanked.set({ elo: player.eloRanked });
-      await statRanked.save();
-    }
-  }
-
-  for (const player of looserPlayers) {
-    const statRanked = await StatRankedModel.findOne({ userId: player._id, modeId: resultRanked.modeId });
-
-    if (statRanked) {
-      statRanked.set({ elo: player.eloRanked });
-      await statRanked.save();
-    }
-  }
 
   return resultRanked;
 };

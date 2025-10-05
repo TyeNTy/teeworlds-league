@@ -31,22 +31,19 @@ const Details = () => {
 
   return (
     <div className="p-4">
-      <h1 className="text-2xl font-bold text-center">
-        Stat of {statRanked.userName}
-      </h1>
+      <h1 className="text-2xl font-bold text-center">Stat of {statRanked.userName}</h1>
 
       {realUser?.role === "ADMIN" && (
         <button
           className="ml-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
           onClick={async () => {
-            const res = await API.post(`/statRanked/updateStatPlayer/${statRanked.userId}`);
+            const res = await API.post(`/statRanked/updateStatPlayer/${statRanked._id}`);
             if (res.ok) {
               toast.success("Stat updated");
               return setStatRanked(res.data);
             }
             return toast.error("Error while updating stat");
-          }}
-        >
+          }}>
           Sync
         </button>
       )}
@@ -60,9 +57,7 @@ const Details = () => {
             <StatCard
               title="Highest K/D Ratio"
               value={statRanked.highestKdRatio}
-              onClick={() =>
-                navigate(`../../results/${statRanked.highestKdRatioResultId}`)
-              }
+              onClick={() => navigate(`../../results/${statRanked.highestKdRatioResultId}`)}
             />
             <StatCard title="Total Score" value={statRanked.totalScore} />
             <StatCard title="Total Flags" value={statRanked.totalFlags} />
@@ -99,14 +94,8 @@ const Details = () => {
               value={statRanked.highestScore}
               onClick={() => navigate(`../../results/${statRanked.highestScoreResultId}`)}
             />
-            <StatCard
-              title="Avg. Winning Result"
-              value={statRanked.averageWinningScore}
-            />
-            <StatCard
-              title="Avg. Losing Result"
-              value={statRanked.averageLosingScore}
-            />
+            <StatCard title="Avg. Winning Result" value={statRanked.averageWinningScore} />
+            <StatCard title="Avg. Losing Result" value={statRanked.averageLosingScore} />
           </div>
           <h2 className="text-xl font-bold text-center pt-3">Games</h2>
           <h3 className="text-lg font-bold pt-3">Global</h3>
@@ -129,9 +118,7 @@ const Details = () => {
             <StatCard
               title="Highest Result"
               value={statRanked.highestRedTeamScore}
-              onClick={() =>
-                navigate(`../../results/${statRanked.highestRedTeamScoreResultId}`)
-              }
+              onClick={() => navigate(`../../results/${statRanked.highestRedTeamScoreResultId}`)}
             />
           </div>
 
@@ -147,9 +134,7 @@ const Details = () => {
             <StatCard
               title="Highest Result"
               value={statRanked.highestBlueTeamScore}
-              onClick={() =>
-                navigate(`../../results/${statRanked.highestBlueTeamScoreResultId}`)
-              }
+              onClick={() => navigate(`../../results/${statRanked.highestBlueTeamScoreResultId}`)}
             />
           </div>
         </div>
@@ -162,20 +147,13 @@ const StatCard = ({ title, value, onClick }) => {
   if (typeof value === "number") value = value.toFixed(2).replace(/\.0+$/, "");
 
   return onClick ? (
-    <div
-      className="flex flex-col bg-white shadow-lg rounded-lg p-6 space-y-2 cursor-pointer"
-      onClick={onClick}
-    >
-      <span className="text-gray-600 font-medium text-sm uppercase tracking-wide">
-        {title}
-      </span>
+    <div className="flex flex-col bg-white shadow-lg rounded-lg p-6 space-y-2 cursor-pointer" onClick={onClick}>
+      <span className="text-gray-600 font-medium text-sm uppercase tracking-wide">{title}</span>
       <span className="text-3xl font-bold text-gray-900">{value}</span>
     </div>
   ) : (
     <div className="flex flex-col bg-white shadow-lg rounded-lg p-6 space-y-2">
-      <span className="text-gray-600 font-medium text-sm uppercase tracking-wide">
-        {title}
-      </span>
+      <span className="text-gray-600 font-medium text-sm uppercase tracking-wide">{title}</span>
       <span className="text-3xl font-bold text-gray-900">{value}</span>
     </div>
   );
