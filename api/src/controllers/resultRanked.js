@@ -13,6 +13,7 @@ router.post(
     const obj = {};
 
     if (req.body._id) obj._id = req.body._id;
+    if (req.body.modeId) obj.modeId = req.body.modeId;
 
     const results = await ResultRankedModel.find(obj, null, { sort: { date: -1 } });
     return res.status(200).send({ ok: true, data: results.map((result) => result.responseModel()) });
