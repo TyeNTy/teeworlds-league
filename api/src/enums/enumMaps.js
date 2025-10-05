@@ -21,7 +21,7 @@ const enumMapsWithLabel = [
   { value: enumMaps.ctf_5, label: "ctf5" },
   { value: enumMaps.ctf_5, label: "ctf5_spikes" },
   { value: enumMaps.ctf_cryochasm, label: "ctf_cryochasm" },
-  { value: enumMaps.ctf_5_limited, label: "ctf_5_limited" },
+  { value: enumMaps.ctf_5_limited, label: "ctf5_limited" },
   { value: enumMaps.ctf_duskwood, label: "ctf_duskwood" },
   { value: enumMaps.ctf_tantum, label: "ctf_tantum" },
   { value: enumMaps.ctf_mine, label: "ctf_mine" },
