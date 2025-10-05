@@ -26,6 +26,9 @@ const Schema = new mongoose.Schema(
     maps: { type: [String], default: [enumMaps.ctf_5, enumMaps.ctf_duskwood, enumMaps.ctf_cryochasm, enumMaps.ctf_mars, enumMaps.ctf_moon] },
     mode: { type: String, enum: enumModes, default: enumModes.twoVTwo },
 
+    modeId: { type: ObjectId },
+    modeName: { type: String, trim: true },
+
     numberOfGames: { type: Number, default: 0 },
 
     // Discord
@@ -49,6 +52,8 @@ Schema.methods.responseModel = function () {
     players: this.players,
     maps: this.maps,
     mode: this.mode,
+    modeId: this.modeId,
+    modeName: this.modeName,
     numberOfPlayersForGame: this.numberOfPlayersForGame,
     numberOfPlayersPerTeam: this.numberOfPlayersPerTeam,
     numberOfGames: this.numberOfGames,
