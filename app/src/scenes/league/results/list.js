@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
-import api from "../../services/api";
-import Loader from "../../components/Loader";
+import api from "../../../services/api";
+import Loader from "../../../components/Loader";
 import { useNavigate } from "react-router-dom";
-import Modal from "../../components/Modal";
+import Modal from "../../../components/Modal";
 import toast from "react-hot-toast";
-import { maps, modes } from "../../components/utils";
+import { modesWithLabel } from "../../../components/utils";
+import { enumMapsWithLabel } from "../../../enums/enumMaps";
 import { useSelector } from "react-redux";
 
 const List = () => {
@@ -72,7 +73,7 @@ const List = () => {
 
     setOpen(false);
     toast.success("Result created");
-    navigate(`/results/${data._id}`);
+    navigate(`./${data._id}`);
   };
 
   if (loading || !currentSeason) return <Loader />;
@@ -115,17 +116,17 @@ const List = () => {
                     ? "cursor-pointer hover:bg-gray-100"
                     : "cursor-pointer hover:bg-gray-100 opacity-50"
                 }
-                onClick={() => navigate(`/results/${result._id}`)}
+                onClick={() => navigate(`./${result._id}`)}
               >
                 <td className="border px-4 py-2">
                   {result.date.split("T")[0]}
                 </td>
                 <td className="border px-4 py-2">
-                  {modes.find((m) => m.value === result.mode)?.label ??
+                  {modesWithLabel.find((m) => m.value === result.mode)?.label ??
                     "Unknown"}
                 </td>
                 <td className="border px-4 py-2">
-                  {maps.find((m) => m.value === result.map)?.label ?? "Unknown"}
+                  {enumMapsWithLabel.find((m) => m.value === result.map)?.label ?? "Unknown"}
                 </td>
                 {result.isForfeit ? (
                   result.winnerSide === "red" ? (

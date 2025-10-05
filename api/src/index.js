@@ -6,8 +6,11 @@ const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const createError = require("http-errors");
 const fs = require("fs");
+const initCron = require("./cron/intCron");
+const DiscordService = require("./services/discordService");
 
 const { PORT, SENTRY_DSN, ENVIRONMENT, APP_URL } = require("./config");
+const { initCallbacksForQueues } = require("./utils/discord");
 const app = express();
 
 if (ENVIRONMENT === "development") {
@@ -39,6 +42,11 @@ app.use("/webhook", require("./controllers/webhook"));
 app.use("/season", require("./controllers/season"));
 app.use("/event", require("./controllers/event"));
 app.use("/vote", require("./controllers/vote"));
+app.use("/queue", require("./controllers/queue"));
+app.use("/resultRanked", require("./controllers/resultRanked"));
+app.use("/statRanked", require("./controllers/statRanked"));
+app.use("/mode", require("./controllers/mode"));
+app.use("/discord", require("./controllers/discord"));
 
 if (ENVIRONMENT === "production") {
   var https = require("https");
@@ -56,17 +64,6 @@ if (ENVIRONMENT === "production") {
   });
 }
 
-const init = async () => {
-  // UserModal = require("./models/user");
-
-  // const admin = await UserModal.create({
-  //   email: "admin@email.com",
-  //   password: "admin",
-  //   role: "ADMIN",
-  //   userName: "admin",
-  // });
-
-  console.log("init");
-};
-
-init();
+initCron();
+DiscordService.init();
+initCallbacksForQueues();
