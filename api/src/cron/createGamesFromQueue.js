@@ -6,9 +6,10 @@ const createGamesFromQueue = async () => {
   const queues = await QueueModel.find({});
 
   for (const queue of queues) {
-    createGameFromQueue({ queue });
+    const resCreateGameFromQueue = await createGameFromQueue({ queue });
+    if (!resCreateGameFromQueue.ok) continue;
 
-    displayQueue({ queue });
+    await displayQueue({ queue });
   }
 };
 

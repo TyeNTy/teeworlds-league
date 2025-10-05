@@ -3,6 +3,7 @@ const router = express.Router();
 const passport = require("passport");
 
 const QueueModel = require("../models/queue");
+const ModeModel = require("../models/mode");
 const enumUserRole = require("../enums/enumUserRole");
 const { catchErrors } = require("../utils");
 const { enumNumberOfPlayersPerTeam, enumNumberOfPlayersForGame, enumModes } = require("../enums/enumModes");
@@ -29,6 +30,11 @@ router.post(
       obj.numberOfPlayersForGame = enumNumberOfPlayersForGame[body.mode];
     }
     if (body.name) obj.name = body.name;
+
+    const defaultMode = await ModeModel.findOne({});
+    if (!defaultMode) return res.status(400).send({ ok: false, message: "Default mode not found" });
+    obj.modeId = defaultMode._id;
+    obj.modeName = defaultMode.name;
 
     const queue = await QueueModel.create(obj);
     return res.status(200).send({ ok: true, data: queue.responseModel() });
@@ -118,6 +124,13 @@ router.put(
       objUpdate.mode = body.mode;
       objUpdate.numberOfPlayersPerTeam = enumNumberOfPlayersPerTeam[body.mode];
       objUpdate.numberOfPlayersForGame = enumNumberOfPlayersForGame[body.mode];
+    }
+    if (body.modeId) {
+      const mode = await ModeModel.findById(body.modeId);
+      if (!mode) return res.status(400).send({ ok: false, message: "Mode not found" });
+
+      objUpdate.modeId = mode._id;
+      objUpdate.modeName = mode.name;
     }
 
     queue.set(objUpdate);

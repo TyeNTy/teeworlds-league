@@ -9,25 +9,42 @@ import StatColored from "../../../components/StatColored";
 const List = () => {
   const [statsRanked, setStatsRanked] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingModes, setLoadingModes] = useState(true);
+  const [modes, setModes] = useState([]);
   const [filters, setFilters] = useState({ sort: "elo", asc: false });
 
   const navigate = useNavigate();
 
+  const getModes = async () => {
+    setLoadingModes(true);
+    const { ok, data } = await api.post(`/mode/search`, { sort: "name", asc: true });
+    if (!ok) return toast.error("Erreur while fetching modes");
+    setModes(data);
+
+    const firstMode = data[0];
+    setFilters({ ...filters, modeId: firstMode._id });
+    setLoadingModes(false);
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
-      const { ok, data } = await api.post(`/statRanked/search`, {
-        ...filters,
-      });
+    getModes();
+  }, []);
+
+  useEffect(() => {
+    if (loadingModes) return;
+
+    const fetchStatsRanked = async () => {
+      const { ok, data } = await api.post(`/statRanked/search`, filters);
       if (!ok) return toast.error("Erreur while fetching stats");
 
       setStatsRanked(data);
       setLoading(false);
     };
 
-    fetchData();
+    fetchStatsRanked();
   }, [filters]);
 
-  if (loading) return <Loader />;
+  if (loading || loadingModes) return <Loader />;
 
   return (
     <div className="p-4">
@@ -50,6 +67,14 @@ const List = () => {
           placeholder="Search by clan name"
           onChange={(e) => setFilters({ ...filters, clanName: e.target.value })}
         />
+        <label className="mr-2">Mode</label>
+        <select className="border p-2 mr-2" value={filters.modeId} onChange={(e) => setFilters({ ...filters, modeId: e.target.value })}>
+          {modes.map((mode) => (
+            <option key={mode._id} value={mode._id}>
+              {mode.name}
+            </option>
+          ))}
+        </select>
       </div>
 
       <div className="flex flex-col justify-center overflow-x-auto">
@@ -78,23 +103,16 @@ const List = () => {
                       sort: key,
                       asc: !filters.asc,
                     })
-                  }
-                >
+                  }>
                   {label}
-                  {filters.sort === key && (
-                    <span>{filters.asc ? " ▲" : " ▼"}</span>
-                  )}
+                  {filters.sort === key && <span>{filters.asc ? " ▲" : " ▼"}</span>}
                 </th>
               ))}
             </tr>
           </thead>
           <tbody>
             {statsRanked.map((statRanked) => (
-              <tr
-                key={statRanked._id}
-                onClick={() => navigate(`./${statRanked._id}`)}
-                className={"cursor-pointer hover:bg-gray-100"}
-              >
+              <tr key={statRanked._id} onClick={() => navigate(`./${statRanked._id}`)} className={"cursor-pointer hover:bg-gray-100"}>
                 <td className="border px-2 py-2">
                   <Player
                     player={{
@@ -108,53 +126,25 @@ const List = () => {
                 <td className="border px-2 py-2">{statRanked.numberWins}</td>
                 <td className="border px-2 py-2">{statRanked.numberLosses}</td>
                 <td className="border px-2 py-2">
-                  <StatColored
-                    value={statRanked.winRate.toFixed(2)}
-                    min={0}
-                    max={1}
-                  />
+                  <StatColored value={statRanked.winRate.toFixed(2)} min={0} max={1} />
                 </td>
                 <td className="border px-2 py-2">
-                  <StatColored
-                    value={statRanked.averageKills.toFixed(2)}
-                    min={0}
-                    max={150}
-                  />
+                  <StatColored value={statRanked.averageKills.toFixed(2)} min={0} max={150} />
                 </td>
                 <td className="border px-2 py-2">
-                  <StatColored
-                    value={statRanked.averageDeaths.toFixed(2)}
-                    min={0}
-                    max={150}
-                  />
+                  <StatColored value={statRanked.averageDeaths.toFixed(2)} min={0} max={150} />
                 </td>
                 <td className="border px-2 py-2">
-                  <StatColored
-                    value={statRanked.kdRatio.toFixed(2)}
-                    min={0.7}
-                    max={1.3}
-                  />
+                  <StatColored value={statRanked.kdRatio.toFixed(2)} min={0.7} max={1.3} />
                 </td>
                 <td className="border px-2 py-2">
-                  <StatColored
-                    value={statRanked.averageFlags.toFixed(2)}
-                    min={0}
-                    max={10}
-                  />
+                  <StatColored value={statRanked.averageFlags.toFixed(2)} min={0} max={10} />
                 </td>
                 <td className="border px-2 py-2">
-                  <StatColored
-                    value={statRanked.averageScore.toFixed(2)}
-                    min={30}
-                    max={170}
-                  />
+                  <StatColored value={statRanked.averageScore.toFixed(2)} min={30} max={170} />
                 </td>
                 <td className="border px-2 py-2">
-                  <StatColored
-                    value={statRanked.elo.toFixed(2)}
-                    min={500}
-                    max={1500}
-                  />
+                  <StatColored value={statRanked.elo.toFixed(2)} min={500} max={1500} />
                 </td>
               </tr>
             ))}

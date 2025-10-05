@@ -4,15 +4,16 @@ const passport = require("passport");
 const enumUserRole = require("../enums/enumUserRole");
 const UserModel = require("../models/user");
 const ResultRankedModel = require("../models/resultRanked");
-const {catchErrors, parseDiscordMessage} = require("../utils");
+const { catchErrors, parseDiscordMessage } = require("../utils");
 const { forfeitResultRanked, unforfeitResultRanked, updateAllStatsResultRanked, updateStatResultRanked } = require("../utils/resultRanked");
 
 router.post(
   "/search",
   catchErrors(async (req, res) => {
     const obj = {};
-    
+
     if (req.body._id) obj._id = req.body._id;
+    if (req.body.modeId) obj.modeId = req.body.modeId;
 
     const results = await ResultRankedModel.find(obj, null, { sort: { date: -1 } });
     return res.status(200).send({ ok: true, data: results.map((result) => result.responseModel()) });
@@ -94,11 +95,14 @@ router.post(
     if (resultRanked.bluePlayers.find((p) => p.userId.toString() === player._id.toString()))
       return res.status(400).send({ ok: false, message: "Player already in blue team" });
 
+    const statRanked = await StatRankedModel.findOne({ userId: player._id, modeId: resultRanked.modeId });
+    if (!statRanked) return res.status(400).send({ ok: false, message: "Stat not found" });
+
     resultRanked.redPlayers.push({
       userId: player._id,
       userName: player.userName,
       avatar: player.avatar,
-      eloBefore: player.eloRanked,
+      eloBefore: statRanked.elo,
     });
     await resultRanked.save();
 
@@ -120,6 +124,9 @@ router.post(
     const player = await UserModel.findById(body.playerId);
     if (!player) return res.status(400).send({ ok: false, message: "Player not found" });
 
+    const statRanked = await StatRankedModel.findOne({ userId: player._id, modeId: resultRanked.modeId });
+    if (!statRanked) return res.status(400).send({ ok: false, message: "Stat not found" });
+
     if (resultRanked.redPlayers.find((p) => p.userId.toString() === player._id.toString()))
       return res.status(400).send({ ok: false, message: "Player already in red team" });
     if (resultRanked.bluePlayers.find((p) => p.userId.toString() === player._id.toString()))
@@ -129,7 +136,7 @@ router.post(
       userId: player._id,
       userName: player.userName,
       avatar: player.avatar,
-      eloBefore: player.eloRanked,
+      eloBefore: statRanked.elo,
     });
     await resultRanked.save();
 

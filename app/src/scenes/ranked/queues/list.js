@@ -95,6 +95,7 @@ const List = () => {
             <tr>
               <th className="px-4 py-2">Name</th>
               <th className="px-4 py-2">Mode</th>
+              <th className="px-4 py-2">Detailed Mode</th>
               <th className="px-4 py-2">Maps</th>
               <th className="px-4 py-2">Players in queue</th>
               <th className="px-4 py-2">Actions</th>
@@ -102,21 +103,16 @@ const List = () => {
           </thead>
           <tbody>
             {queues.map((queue) => (
-              <tr key={queue._id} className={"hover:bg-gray-100"}>
-                <td className="border px-4 py-2 cursor-pointer" onClick={() => navigate(`./${queue._id}`)}>
-                  {queue.name}
-                </td>
-                <td className="border px-4 py-2 cursor-pointer" onClick={() => navigate(`./${queue._id}`)}>
-                  {modesWithLabel.find((m) => m.value === queue.mode)?.label ?? "Unknown"}
-                </td>
-                <td className="border px-4 py-2 cursor-pointer" onClick={() => navigate(`./${queue._id}`)}>
+              <tr key={queue._id} className={"hover:bg-gray-100"} onClick={() => navigate(`./${queue._id}`)}>
+                <td className="border px-4 py-2 cursor-pointer">{queue.name}</td>
+                <td className="border px-4 py-2 cursor-pointer">{queue.modeName}</td>
+                <td className="border px-4 py-2 cursor-pointer">{modesWithLabel.find((m) => m.value === queue.mode)?.label ?? "Unknown"}</td>
+                <td className="border px-4 py-2 cursor-pointer">
                   {queue.maps.map((map) => (
                     <div key={map}>{enumMapsWithLabel.find((m) => m.value === map)?.label ?? "Unknown"}</div>
                   ))}
                 </td>
-                <td className="border px-4 py-2 cursor-pointer" onClick={() => navigate(`./${queue._id}`)}>
-                  {queue.players.length}
-                </td>
+                <td className="border px-4 py-2 cursor-pointer">{queue.players.length}</td>
                 <td className="border px-4 py-2">
                   <div className="flex space-x-2">
                     {canJoinQueue(queue) && (

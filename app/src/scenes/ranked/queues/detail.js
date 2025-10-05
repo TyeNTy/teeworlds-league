@@ -13,6 +13,7 @@ import { FaDiscord } from "react-icons/fa";
 const Details = () => {
   const [loading, setLoading] = useState(true);
   const [queue, setQueue] = useState({});
+  const [modes, setModes] = useState([]);
   const [canEdit, setCanEdit] = useState(false);
   const [guilds, setGuilds] = useState([]);
   const [loadingGuilds, setLoadingGuilds] = useState(false);
@@ -48,7 +49,15 @@ const Details = () => {
         console.error("Error fetching bot invite URL:", error);
       }
     };
+
+    const fetchModes = async () => {
+      const { ok, data } = await api.post(`/mode/search`, { sort: "name", asc: true });
+      if (!ok) toast.error("Erreur while fetching modes");
+      setModes(data);
+    };
+
     fetchBotInviteUrl();
+    fetchModes();
   }, []);
 
   const handleDelete = async () => {
@@ -139,11 +148,32 @@ const Details = () => {
           className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
           id="mode"
           name="mode"
+          onChange={(e) => setQueue({ ...queue, modeId: e.target.value })}
+          value={queue.modeId}
+          disabled={!canEdit}>
+          <option value="" disabled>
+            Select a mode
+          </option>
+          {modes.map((mode) => (
+            <option key={mode._id} value={mode._id}>
+              {mode.name}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div className="mb-4">
+        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="detailedMode">
+          Detailed Mode
+        </label>
+        <select
+          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+          id="detailedMode"
+          name="detailedMode"
           onChange={(e) => setQueue({ ...queue, mode: e.target.value })}
           value={queue.mode}
           disabled={!canEdit}>
           <option value="" disabled>
-            Select a mode
+            Select a detailed mode
           </option>
           {modesWithLabel.map((mode) => (
             <option key={mode.value} value={mode.value}>

@@ -5,7 +5,7 @@ import API from "../services/api";
 import { setUser } from "../redux/auth/actions";
 import { setCurrentSeason, setSeasons } from "../redux/season/actions";
 import GCTFLogo from "../assets/gctfLeagueLogo.png";
-import { FaAngleRight } from 'react-icons/fa';
+import { FaAngleRight } from "react-icons/fa";
 
 const TopBarRanked = () => {
   const [isOpen, setIsOpen] = React.useState(false);
@@ -45,9 +45,7 @@ const TopBarRanked = () => {
       if (!res.ok) return;
       API.setToken(null);
       dispatch(setUser(null));
-      const redirect = window.location.pathname.includes("/profile")
-        ? "/"
-        : window.location.pathname;
+      const redirect = window.location.pathname.includes("/profile") ? "/" : window.location.pathname;
       navigate(redirect);
     } catch (error) {
       console.log(error);
@@ -56,9 +54,7 @@ const TopBarRanked = () => {
 
   const handleSeasonChange = (e) => {
     const selectedSeasonId = e.target.value;
-    const selectedSeason = seasons.find(
-      (season) => season._id === selectedSeasonId
-    );
+    const selectedSeason = seasons.find((season) => season._id === selectedSeasonId);
     if (selectedSeason) {
       dispatch(setCurrentSeason(selectedSeason));
     }
@@ -99,45 +95,38 @@ const TopBarRanked = () => {
                 Queues
               </Link>
             </div>
+            {user?.role === "ADMIN" && (
+              <div className="flex items-center pr-4">
+                <Link to="./modes" className="ml-2">
+                  Modes
+                </Link>
+              </div>
+            )}
             <div className="border-r border-gray-600 h-6 mx-4" />
             <ul className="flex flex-col items-center">
               <li className="flex items-center pr-4">
                 {user ? (
                   <div className="relative">
-                    <button
-                      onClick={() => setIsOpen(!isOpen)}
-                      className="flex items-center text-white focus:outline-none"
-                    >
+                    <button onClick={() => setIsOpen(!isOpen)} className="flex items-center text-white focus:outline-none">
                       <span className="ml-2">{user.userName}</span>
-                      <img
-                        src={user.avatar}
-                        alt={user.userName}
-                        className="w-8 h-8 rounded-full ml-2"
-                      />
+                      <img src={user.avatar} alt={user.userName} className="w-8 h-8 rounded-full ml-2" />
                     </button>
 
                     {isOpen && (
                       <div className="absolute right-0 mt-2 w-48 bg-white shadow-lg z-10">
                         <button
                           className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-200"
-                          onClick={() => navigate("./users/profile")}
-                        >
+                          onClick={() => navigate("./users/profile")}>
                           Profile
                         </button>
-                        <button
-                          className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-200"
-                          onClick={handleLogout}
-                        >
+                        <button className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-200" onClick={handleLogout}>
                           Logout
                         </button>
                       </div>
                     )}
                   </div>
                 ) : (
-                  <Link
-                    to={`/auth/signin?redirectUrl=${window.location.pathname}`}
-                    className="ml-2"
-                  >
+                  <Link to={`/auth/signin?redirectUrl=${window.location.pathname}`} className="ml-2">
                     Log in
                   </Link>
                 )}
