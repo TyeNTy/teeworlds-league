@@ -253,7 +253,7 @@ const registerJoinButtonCallback = async ({ queue }) => {
     const queue = await QueueModel.findById(queueId);
     if (!queue) return { ok: false, message: "Queue not found" };
 
-    const user = await UserModel.findOne({ userName: interaction.user.globalName });
+    const user = await UserModel.findOne({ userName: interaction.member.displayName });
     if (!user) return { ok: false, message: "User not found" };
 
     const resJoin = await join({ queue, user });
@@ -283,7 +283,7 @@ const registerLeaveButtonCallback = async ({ queue }) => {
     const queue = await QueueModel.findById(queueId);
     if (!queue) return { ok: false, message: "Queue not found" };
 
-    const user = await UserModel.findOne({ userName: interaction.user.globalName });
+    const user = await UserModel.findOne({ userName: interaction.member.displayName });
     if (!user) return { ok: false, message: "User not found" };
 
     const resLeave = await leave({ queue, user });
@@ -313,7 +313,7 @@ const registerReadyButtonCallback = async ({ resultRanked }) => {
     const resultRanked = await ResultRankedModel.findById(resultRankedId);
     if (!resultRanked) return { ok: false, message: "Result ranked not found" };
 
-    const user = await UserModel.findOne({ userName: interaction.user.globalName });
+    const user = await UserModel.findOne({ userName: interaction.member.displayName });
     if (!user) return { ok: false, message: "User not found" };
 
     const resReady = await ready({ resultRanked, user });

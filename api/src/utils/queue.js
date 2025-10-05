@@ -333,7 +333,7 @@ const generateResultRankedMessageNotReady = async ({ resultRanked }) => {
     const resultRanked = await ResultRankedModel.findById(resultRankedId);
     if (!resultRanked) return { ok: false, message: "Result ranked not found" };
 
-    const user = await UserModel.findOne({ userName: interaction.user.globalName });
+    const user = await UserModel.findOne({ userName: interaction.member.displayName });
     if (!user) return { ok: false, message: "User not found" };
 
     const resReady = await ready({ resultRanked, user });
