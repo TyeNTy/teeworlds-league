@@ -112,7 +112,7 @@ const List = () => {
       <PaginatedTable
         filters={filters}
         setFilters={setFilters}
-        titles={["Date", "Mode", "Map", "ELO Red", "Score", "ELO Blue", "Winner", realUser?.role === "ADMIN" && "Status"]}
+        titles={["Date", "Mode", "Map", "ELO Red", "Score", "ELO Blue", "Winner", "Status"]}
         elements={results.map((result) => ({
           _id: result._id,
           date: result.date,
@@ -184,7 +184,7 @@ const List = () => {
               }
             },
             (element) => element.winnerName,
-            (element) => realUser?.role === "ADMIN" && (element.freezed ? "Validated" : "Not validated"),
+            (element) => (element.freezed ? "Validated" : "Not validated"),
           ],
           className: result.freezed ? "cursor-pointer hover:bg-gray-100" : "cursor-pointer hover:bg-gray-100 opacity-50",
           onClick: () => navigate(`./${result._id}`),

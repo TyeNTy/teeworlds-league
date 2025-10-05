@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 
 const PaginatedTable = ({ filters, setFilters, titles, elements, total }) => {
   const [page, setPage] = useState(1);
-  const [numberPerPage, setNumberPerPage] = useState(50);
+  const [numberPerPage, setNumberPerPage] = useState(25);
 
   const addPage = () => {
     if (page + 1 > Math.ceil(total / numberPerPage)) return;
@@ -36,8 +36,8 @@ const PaginatedTable = ({ filters, setFilters, titles, elements, total }) => {
             className="border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             value={numberPerPage}
             onChange={(e) => changeNumberPerPage(e.target.value)}>
-            <option value={1}>1</option>
             <option value={10}>10</option>
+            <option value={25}>25</option>
             <option value={50}>50</option>
           </select>
           <span className="text-sm text-gray-600">per page</span>

@@ -18,7 +18,6 @@ router.get(
 
 router.post(
   "/search",
-  passport.authenticate(enumUserRole.ADMIN, { session: false }),
   catchErrors(async (req, res) => {
     const body = req.body;
 
