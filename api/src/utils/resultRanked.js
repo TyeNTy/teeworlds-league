@@ -1,6 +1,7 @@
 const UserModel = require("../models/user");
 const ResultRankedModel = require("../models/resultRanked");
 const StatRankedModel = require("../models/statRanked");
+const ModeModel = require("../models/mode");
 const { computeElo } = require(".");
 const { detectMapFromServer } = require("./map");
 
@@ -159,13 +160,16 @@ async function unforfeitResultRanked(resultRanked) {
 }
 
 async function updateAllStatsResultRanked(resultRanked) {
+  const mode = await ModeModel.findById(resultRanked.modeId);
+  if (!mode) return { ok: false, errorCode: "MODE_NOT_FOUND" };
+
   await updateStatResultRanked(resultRanked);
 
   await computeEloResultRanked(resultRanked);
 
   const allPlayers = resultRanked.redPlayers.concat(resultRanked.bluePlayers);
   const users = await UserModel.find({ _id: { $in: allPlayers.map((p) => p.userId) } });
-  for (const user of users) await updateStatPlayerRanked(user);
+  for (const user of users) await updateStatPlayerRanked({ user, mode });
 }
 
 async function updateStatResultRanked(resultRanked) {
@@ -201,9 +205,9 @@ async function updateStatResultRanked(resultRanked) {
   await resultRanked.save();
 }
 
-async function updateStatPlayerRanked(player) {
-  const redResultsRanked = await ResultRankedModel.find({ redPlayers: { $elemMatch: { userId: player._id } }, freezed: true });
-  const blueResultsRanked = await ResultRankedModel.find({ bluePlayers: { $elemMatch: { userId: player._id } }, freezed: true });
+async function updateStatPlayerRanked({ player, mode }) {
+  const redResultsRanked = await ResultRankedModel.find({ redPlayers: { $elemMatch: { userId: player._id } }, freezed: true, modeId: mode._id });
+  const blueResultsRanked = await ResultRankedModel.find({ bluePlayers: { $elemMatch: { userId: player._id } }, freezed: true, modeId: mode._id });
   const allResultsRanked = [...redResultsRanked, ...blueResultsRanked];
 
   const numberGames = allResultsRanked.length;
@@ -343,12 +347,15 @@ async function updateStatPlayerRanked(player) {
     }
   }
 
-  let statRanked = await StatRankedModel.findOne({ userId: player._id });
+  let statRanked = await StatRankedModel.findOne({ userId: player._id, modeId: mode._id });
 
   if (!statRanked) {
     statRanked = new StatRankedModel({
       userId: player._id,
       elo: player.elo,
+
+      modeId: mode._id,
+      modeName: mode.name,
     });
   }
 
@@ -513,7 +520,7 @@ const computeEloResultRanked = async (resultRanked) => {
   await resultRanked.save();
 
   for (const player of winnerPlayers) {
-    const statRanked = await StatRankedModel.findOne({ userId: player._id });
+    const statRanked = await StatRankedModel.findOne({ userId: player._id, modeId: resultRanked.modeId });
 
     if (statRanked) {
       statRanked.set({ elo: player.eloRanked });
@@ -522,7 +529,7 @@ const computeEloResultRanked = async (resultRanked) => {
   }
 
   for (const player of looserPlayers) {
-    const statRanked = await StatRankedModel.findOne({ userId: player._id });
+    const statRanked = await StatRankedModel.findOne({ userId: player._id, modeId: resultRanked.modeId });
 
     if (statRanked) {
       statRanked.set({ elo: player.eloRanked });

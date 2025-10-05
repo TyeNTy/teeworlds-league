@@ -28,6 +28,9 @@ const Schema = new mongoose.Schema(
     numberFromQueue: { type: Number, default: 0 },
     queueName: { type: String, trim: true },
 
+    modeId: { type: ObjectId },
+    modeName: { type: String, trim: true },
+
     date: { type: Date, default: Date.now },
     mode: { type: String, trim: true, default: enumModes.twoVTwo },
     map: { type: String, trim: true, default: enumMaps.ctf_5 },

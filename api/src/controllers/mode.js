@@ -3,6 +3,7 @@ const router = express.Router();
 const passport = require("passport");
 
 const ModeModel = require("../models/mode");
+const QueueModel = require("../models/queue");
 const enumUserRole = require("../enums/enumUserRole");
 const { catchErrors, updateStatPlayer } = require("../utils");
 
@@ -71,6 +72,10 @@ router.delete(
   passport.authenticate(enumUserRole.ADMIN, { session: false }),
   catchErrors(async (req, res) => {
     const { id } = req.params;
+
+    const queue = await QueueModel.findOne({ modeId: id });
+    if (queue) return res.status(400).send({ ok: false, message: "Mode is used in a queue" });
+
     await ModeModel.findByIdAndDelete(id);
     return res.status(200).send({ ok: true, message: "Mode deleted successfully" });
   }),

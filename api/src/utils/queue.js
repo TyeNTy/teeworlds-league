@@ -111,6 +111,9 @@ const createGameFromQueue = async ({ queue }) => {
     numberFromQueue: queue.numberOfGames,
     queueName: queue.name,
 
+    modeId: queue.modeId,
+    modeName: queue.modeName,
+
     bluePlayers: bluePlayersObj,
     redPlayers: redPlayersObj,
 
