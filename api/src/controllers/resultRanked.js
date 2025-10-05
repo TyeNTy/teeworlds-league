@@ -7,16 +7,28 @@ const ResultRankedModel = require("../models/resultRanked");
 const { catchErrors, parseDiscordMessage } = require("../utils");
 const { forfeitResultRanked, unforfeitResultRanked, updateAllStatsResultRanked, updateStatResultRanked } = require("../utils/resultRanked");
 
+router.get(
+  "/:id",
+  catchErrors(async (req, res) => {
+    const resultRanked = await ResultRankedModel.findById(req.params.id);
+    return res.status(200).send({ ok: true, data: resultRanked.responseModel() });
+  }),
+);
+
 router.post(
   "/search",
   catchErrors(async (req, res) => {
     const obj = {};
 
+    const numberPerPage = req.body.numberPerPage || 50;
+    const page = req.body.page || 1;
+
     if (req.body._id) obj._id = req.body._id;
     if (req.body.modeId) obj.modeId = req.body.modeId;
 
-    const results = await ResultRankedModel.find(obj, null, { sort: { date: -1 } });
-    return res.status(200).send({ ok: true, data: results.map((result) => result.responseModel()) });
+    const total = await ResultRankedModel.countDocuments(obj);
+    const results = await ResultRankedModel.find(obj, null, { sort: { date: -1 }, skip: (page - 1) * numberPerPage, limit: numberPerPage });
+    return res.status(200).send({ ok: true, data: { resultsRanked: results.map((result) => result.responseModel()), numberPerPage, page, total } });
   }),
 );
 
