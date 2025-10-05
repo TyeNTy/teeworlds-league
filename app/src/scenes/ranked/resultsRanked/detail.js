@@ -34,17 +34,14 @@ const Details = () => {
   };
 
   const get = async () => {
-    const { ok, data } = await api.post(`/resultRanked/search`, { _id: resultRankedId });
+    const { ok, data } = await api.get(`/resultRanked/${resultRankedId}`);
     if (!ok) return toast.error("Erreur while fetching result");
 
-    if (data.length !== 1) return toast.error("Result not found");
-    setResultRanked(data[0]);
+    setResultRanked(data);
 
     await getPlayers();
 
-    setCanEdit(
-      realUser?.role === "ADMIN" && !data[0].freezed
-    );
+    setCanEdit(realUser?.role === "ADMIN" && !data.freezed);
 
     setCanUpdate(false);
     setLoading(false);
@@ -72,11 +69,8 @@ const Details = () => {
       });
       if (!ok) return toast.error("Erreur while adding red player");
 
-      const newPlayers = data.redPlayers.filter(
-        (p) => p.userId === playerSelected._id
-      );
-      if (newPlayers.length === 0)
-        return toast.error("Error, there is no player returned");
+      const newPlayers = data.redPlayers.filter((p) => p.userId === playerSelected._id);
+      if (newPlayers.length === 0) return toast.error("Error, there is no player returned");
       const newPlayer = newPlayers[0];
 
       setResultRanked({
@@ -90,11 +84,8 @@ const Details = () => {
       });
       if (!ok) return toast.error("Erreur while adding blue player");
 
-      const newPlayers = data.bluePlayers.filter(
-        (p) => p.userId === playerSelected._id
-      );
-      if (newPlayers.length === 0)
-        return toast.error("Error, there is no player returned");
+      const newPlayers = data.bluePlayers.filter((p) => p.userId === playerSelected._id);
+      if (newPlayers.length === 0) return toast.error("Error, there is no player returned");
       const newPlayer = newPlayers[0];
 
       setResultRanked({
@@ -107,9 +98,7 @@ const Details = () => {
   };
 
   const handleDeletePlayer = async (player) => {
-    const approved = window.confirm(
-      "Are you sure you want to remove this player ?"
-    );
+    const approved = window.confirm("Are you sure you want to remove this player ?");
     if (!approved) return;
 
     const { ok } = await api.post(`/resultRanked/${resultRankedId}/removePlayer`, {
@@ -141,9 +130,7 @@ const Details = () => {
   };
 
   const handleDelete = async () => {
-    const approved = window.confirm(
-      "Are you sure you want to delete this result ?"
-    );
+    const approved = window.confirm("Are you sure you want to delete this result ?");
     if (!approved) return;
 
     const { ok } = await api.remove(`/resultRanked/${resultRankedId}`);
@@ -159,9 +146,7 @@ const Details = () => {
   };
 
   const handleFreeze = async () => {
-    const approved = window.confirm(
-      "Are you sure you want to freeze this result ? You won't be able to edit it anymore."
-    );
+    const approved = window.confirm("Are you sure you want to freeze this result ? You won't be able to edit it anymore.");
     if (!approved) return;
 
     const { ok, data } = await api.post(`/resultRanked/${resultRankedId}/freeze`);
@@ -172,9 +157,7 @@ const Details = () => {
   };
 
   const handleForfeit = async (side) => {
-    const approved = window.confirm(
-      `Are you sure you want to declare forfeit for the ${side} side ?`
-    );
+    const approved = window.confirm(`Are you sure you want to declare forfeit for the ${side} side ?`);
 
     if (!approved) return;
 
@@ -188,9 +171,7 @@ const Details = () => {
   };
 
   const handleUnforfeit = async (side) => {
-    const approved = window.confirm(
-      `Are you sure you want to remove forfeit for the ${side} side ?`
-    );
+    const approved = window.confirm(`Are you sure you want to remove forfeit for the ${side} side ?`);
 
     if (!approved) return;
 
@@ -207,10 +188,7 @@ const Details = () => {
     <div className="p-4">
       <h1 className="text-2xl font-bold text-center">Result details</h1>
       <div className="mb-4">
-        <label
-          className="block text-gray-700 text-sm font-bold mt-2"
-          htmlFor="date"
-        >
+        <label className="block text-gray-700 text-sm font-bold mt-2" htmlFor="date">
           Date
         </label>
         <input
@@ -223,10 +201,7 @@ const Details = () => {
           placeholder="Name of the clan"
           disabled={!canEdit}
         />
-        <label
-          className="block text-gray-700 text-sm font-bold mt-2"
-          htmlFor="mode"
-        >
+        <label className="block text-gray-700 text-sm font-bold mt-2" htmlFor="mode">
           Mode
         </label>
         <select
@@ -235,8 +210,7 @@ const Details = () => {
           name="mode"
           onChange={handleChange}
           value={resultRanked.mode}
-          disabled={!canEdit}
-        >
+          disabled={!canEdit}>
           <option value="" disabled>
             Select a mode
           </option>
@@ -246,10 +220,7 @@ const Details = () => {
             </option>
           ))}
         </select>
-        <label
-          className="block text-gray-700 text-sm font-bold mt-2"
-          htmlFor="timeLimit"
-        >
+        <label className="block text-gray-700 text-sm font-bold mt-2" htmlFor="timeLimit">
           Time limit
         </label>
         <input
@@ -263,10 +234,7 @@ const Details = () => {
           placeholder="Time limit in minutes"
           disabled={!canEdit}
         />
-        <label
-          className="block text-gray-700 text-sm font-bold mt-2"
-          htmlFor="scoreLimit"
-        >
+        <label className="block text-gray-700 text-sm font-bold mt-2" htmlFor="scoreLimit">
           Score limit
         </label>
         <input
@@ -282,10 +250,7 @@ const Details = () => {
         />
       </div>
       <div className="mb-4">
-        <label
-          className="block text-gray-700 text-sm font-bold mt-2"
-          htmlFor="map"
-        >
+        <label className="block text-gray-700 text-sm font-bold mt-2" htmlFor="map">
           Map
         </label>
         <select
@@ -294,8 +259,7 @@ const Details = () => {
           name="map"
           onChange={handleChange}
           value={resultRanked.map}
-          disabled={!canEdit}
-        >
+          disabled={!canEdit}>
           <option value="" disabled>
             Select a map
           </option>
@@ -329,16 +293,14 @@ const Details = () => {
                 resultRanked.winnerSide === "blue" ? (
                   <button
                     className="ml-2 bg-green-500 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                    onClick={() => handleUnforfeit("red")}
-                  >
+                    onClick={() => handleUnforfeit("red")}>
                     Unforfeit
                   </button>
                 ) : null
               ) : (
                 <button
                   className="ml-2 bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                  onClick={() => handleForfeit("red")}
-                >
+                  onClick={() => handleForfeit("red")}>
                   Forfeit
                 </button>
               )
@@ -349,24 +311,12 @@ const Details = () => {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead>
                   <tr>
-                    <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
-                    </th>
-                    <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Player
-                    </th>
-                    <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Score
-                    </th>
-                    <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Nb. Flags
-                    </th>
-                    <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Kills
-                    </th>
-                    <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Deaths
-                    </th>
+                    <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Player</th>
+                    <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Score</th>
+                    <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nb. Flags</th>
+                    <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kills</th>
+                    <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Deaths</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -374,13 +324,7 @@ const Details = () => {
                     <tr key={player._id}>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {canEdit && (
-                          <MdDelete
-                            size={20}
-                            color="red"
-                            className="cursor-pointer"
-                            onClick={() => handleDeletePlayer(player)}
-                            disabled={!canEdit}
-                          />
+                          <MdDelete size={20} color="red" className="cursor-pointer" onClick={() => handleDeletePlayer(player)} disabled={!canEdit} />
                         )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -452,8 +396,7 @@ const Details = () => {
                   setIsRed(true);
                   getPlayers();
                   setOpen(true);
-                }}
-              >
+                }}>
                 Add red player
               </button>
             )}
@@ -479,16 +422,14 @@ const Details = () => {
                 resultRanked.winnerSide === "red" ? (
                   <button
                     className="ml-2 bg-green-500 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                    onClick={() => handleUnforfeit("blue")}
-                  >
+                    onClick={() => handleUnforfeit("blue")}>
                     Unforfeit
                   </button>
                 ) : null
               ) : (
                 <button
                   className="ml-2 bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                  onClick={() => handleForfeit("blue")}
-                >
+                  onClick={() => handleForfeit("blue")}>
                   Forfeit
                 </button>
               )
@@ -499,38 +440,19 @@ const Details = () => {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead>
                   <tr>
-                    <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
-                    </th>
-                    <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Player
-                    </th>
-                    <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Score
-                    </th>
-                    <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Nb. Flags
-                    </th>
-                    <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Kills
-                    </th>
-                    <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Deaths
-                    </th>
+                    <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Player</th>
+                    <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Score</th>
+                    <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nb. Flags</th>
+                    <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kills</th>
+                    <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Deaths</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {resultRanked.bluePlayers.map((player) => (
                     <tr key={player._id}>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {canEdit && (
-                          <MdDelete
-                            size={20}
-                            color="red"
-                            className="cursor-pointer"
-                            onClick={() => handleDeletePlayer(player)}
-                          />
-                        )}
+                        {canEdit && <MdDelete size={20} color="red" className="cursor-pointer" onClick={() => handleDeletePlayer(player)} />}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         <Player
@@ -601,8 +523,7 @@ const Details = () => {
                   setIsRed(false);
                   getPlayers();
                   setOpen(true);
-                }}
-              >
+                }}>
                 Add blue player
               </button>
             )}
@@ -613,23 +534,20 @@ const Details = () => {
         <div className="flex items-center justify-between">
           <button
             className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-            onClick={handleDelete}
-          >
+            onClick={handleDelete}>
             Delete
           </button>
           <div className="flex items-center">
             {canUpdate ? (
               <button
                 className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline ml-2"
-                onClick={handleSubmit}
-              >
+                onClick={handleSubmit}>
                 Update
               </button>
             ) : (
               <button
                 className="bg-orange-500 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                onClick={handleFreeze}
-              >
+                onClick={handleFreeze}>
                 Freeze game
               </button>
             )}
@@ -639,10 +557,7 @@ const Details = () => {
 
       <Modal isOpen={open} onClose={() => setOpen(false)} title="Add player">
         <div className="mb-4">
-          <label
-            className="block text-gray-700 text-sm font-bold mb-2"
-            htmlFor="name"
-          >
+          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="name">
             Name
           </label>
           <select
@@ -650,25 +565,21 @@ const Details = () => {
             id="playerId"
             name="playerId"
             value={playerSelected?._id ?? ""}
-            onChange={(e) =>
-              setPlayerSelected(players.find((player) => player._id === e.target.value)
-            )}
-          >
+            onChange={(e) => setPlayerSelected(players.find((player) => player._id === e.target.value))}>
             <option value="" disabled>
               Select a player
             </option>
-              {players.map((player) => (
-                <option key={player._id} value={player._id}>
-                  {player.userName}
-                </option>
-              ))}
+            {players.map((player) => (
+              <option key={player._id} value={player._id}>
+                {player.userName}
+              </option>
+            ))}
           </select>
         </div>
         <div className="flex items-center justify-between">
           <button
             className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-            onClick={() => handleAddPlayer()}
-          >
+            onClick={() => handleAddPlayer()}>
             Add player
           </button>
         </div>

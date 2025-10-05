@@ -7,6 +7,7 @@ import toast from "react-hot-toast";
 import { modesWithLabel } from "../../../components/utils";
 import { enumMapsWithLabel } from "../../../enums/enumMaps";
 import { useSelector } from "react-redux";
+import PaginatedTable from "../../../components/PaginatedTable";
 
 const List = () => {
   const realUser = useSelector((state) => state.Auth.user);
@@ -15,7 +16,10 @@ const List = () => {
   const [loading, setLoading] = useState(true);
   const [loadingModesRanked, setLoadingModesRanked] = useState(true);
   const [modesRanked, setModesRanked] = useState([]);
-  const [filters, setFilters] = useState({});
+  const [numberPerPage, setNumberPerPage] = useState(50);
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [filters, setFilters] = useState({ numberPerPage, page });
   const [open, setOpen] = useState(false);
   const [newPost, setNewPost] = useState({
     date: new Date().toISOString().split("T")[0],
@@ -43,17 +47,19 @@ const List = () => {
     if (loadingModesRanked) return;
 
     const fetchData = async () => {
-      const { ok, data } = await api.post(`/resultRanked/search`, {
-        ...filters,
-      });
+      const { ok, data } = await api.post(`/resultRanked/search`, filters);
       if (!ok) toast.error("Erreur while fetching results");
 
-      let filteredData = data;
+      let filteredData = data.resultsRanked;
       if (realUser?.role !== "ADMIN") {
-        filteredData = data.filter((result) => result.freezed);
+        filteredData = filteredData.filter((result) => result.freezed);
       }
 
       setResults(filteredData);
+
+      setPage(data.page);
+      setTotal(data.total);
+
       setLoading(false);
     };
 
@@ -103,90 +109,89 @@ const List = () => {
         </select>
       </div>
 
-      <div className="flex flex-col justify-center mt-4">
-        <table className="table-auto w-full">
-          <thead>
-            <tr>
-              <th className="px-4 py-2">Date</th>
-              <th className="px-4 py-2">Mode</th>
-              <th className="px-4 py-2">Map</th>
-              <th className="px-4 py-2">ELO Red</th>
-              <th className="px-4 py-2">Score</th>
-              <th className="px-4 py-2">ELO Blue</th>
-              <th className="px-4 py-2">Winner</th>
-              {realUser?.role === "ADMIN" && <th className="px-4 py-2">Status</th>}
-            </tr>
-          </thead>
-          <tbody>
-            {results.map((result) => (
-              <tr
-                key={result._id}
-                className={result.freezed ? "cursor-pointer hover:bg-gray-100" : "cursor-pointer hover:bg-gray-100 opacity-50"}
-                onClick={() => navigate(`./${result._id}`)}>
-                <td className="border px-4 py-2">
-                  {new Date(result.date).toLocaleString("en-GB", {
-                    year: "numeric",
-                    month: "2-digit",
-                    day: "2-digit",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    second: "2-digit",
-                    hour12: false,
-                  })}
-                </td>
-                <td className="border px-4 py-2">{modesWithLabel.find((m) => m.value === result.mode)?.label ?? "Unknown"}</td>
-                <td className="border px-4 py-2">{enumMapsWithLabel.find((m) => m.value === result.map)?.label ?? "Unknown"}</td>
-                {result.isForfeit ? (
-                  result.winnerSide === "red" ? (
-                    <>
-                      <td className="border px-4 py-2 text-green-500">{`${result.redEloBefore.toFixed(2)}`}</td>
-                      <td className="border px-4 py-2">
-                        <span className="text-green-500">1000</span> - <span className="text-red-500">Forfeit</span>
-                      </td>
-                      <td className="border px-4 py-2 text-red-500">{`${result.blueEloBefore.toFixed(2)} (Forfeit)`}</td>
-                    </>
-                  ) : (
-                    <>
-                      <td className="border px-4 py-2 text-red-500">{`${result.redEloBefore.toFixed(2)} (Forfeit)`}</td>
-                      <td className="border px-4 py-2">
-                        <span className="text-red-500">Forfeit</span> - <span className="text-green-500">1000</span>
-                      </td>
-                      <td className="border px-4 py-2 text-green-500">{`${result.blueEloBefore.toFixed(2)}`}</td>
-                    </>
-                  )
-                ) : (
-                  <>
-                    <td className={result.winnerSide === "red" ? "border px-4 py-2 text-green-500" : "border px-4 py-2 text-red-500"}>{`${
-                      result.freezed
-                        ? `${result.redEloBefore.toFixed(2)} (${
-                            result.winnerSide === "red" ? "+" + result.redEloGain.toFixed(2) : result.redEloGain.toFixed(2)
-                          })`
-                        : ""
-                    }`}</td>
-                    <td className="border px-4 py-2">
-                      <span className={result.winnerSide === "red" ? "text-green-500" : "text-red-500"}>{Number(result.redScore)}</span> -{" "}
-                      <span className={result.winnerSide === "blue" ? "text-green-500" : "text-red-500"}>{Number(result.blueScore)}</span>
-                    </td>
-                    <td className={result.winnerSide === "blue" ? "border px-4 py-2 text-green-500" : "border px-4 py-2 text-red-500"}>{`${
-                      result.freezed
-                        ? `${result.blueEloBefore.toFixed(2)} (${
-                            result.winnerSide === "blue" ? "+" + result.blueEloGain.toFixed(2) : result.blueEloGain.toFixed(2)
-                          })`
-                        : ""
-                    }`}</td>
-                  </>
-                )}
-                <td className="border px-4 py-2">{result.winnerName}</td>
-                {realUser?.role === "ADMIN" && (
-                  <td className="border px-4 py-2">
-                    <span className={result.freezed ? "text-green-500" : "text-red-500"}>{result.freezed ? "Validated" : "Not validated"}</span>
-                  </td>
-                )}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <PaginatedTable
+        filters={filters}
+        setFilters={setFilters}
+        titles={["Date", "Mode", "Map", "ELO Red", "Score", "ELO Blue", "Winner", realUser?.role === "ADMIN" && "Status"]}
+        elements={results.map((result) => ({
+          _id: result._id,
+          date: result.date,
+          mode: result.mode,
+          map: result.map,
+          redEloBefore: result.redEloBefore,
+          redScore: result.redScore,
+          blueEloBefore: result.blueEloBefore,
+          blueScore: result.blueScore,
+          winnerName: result.winnerName,
+          freezed: result.freezed,
+          winnerSide: result.winnerSide,
+          redEloGain: result.redEloGain,
+          blueEloGain: result.blueEloGain,
+          isForfeit: result.isForfeit,
+          renderFunctions: [
+            (element) =>
+              new Date(element.date).toLocaleString("en-GB", {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit",
+                hour12: false,
+              }),
+            (element) => modesWithLabel.find((m) => m.value === element.mode)?.label ?? "Unknown",
+            (element) => enumMapsWithLabel.find((m) => m.value === element.map)?.label ?? "Unknown",
+            (element) => {
+              if (element.isForfeit) {
+                return element.winnerSide === "red"
+                  ? { content: `${element.redEloBefore.toFixed(2)}`, className: "text-green-500" }
+                  : { content: `${element.redEloBefore.toFixed(2)} (Forfeit)`, className: "text-red-500" };
+              } else {
+                const eloChange = element.freezed
+                  ? ` (${element.winnerSide === "red" ? "+" + element.redEloGain.toFixed(2) : element.redEloGain.toFixed(2)})`
+                  : "";
+                return {
+                  content: element.freezed ? `${element.redEloBefore.toFixed(2)}${eloChange}` : "",
+                  className: element.winnerSide === "red" ? "text-green-500" : "text-red-500",
+                };
+              }
+            },
+            (element) => {
+              if (element.isForfeit) {
+                return element.winnerSide === "red"
+                  ? { content: "1000 - Forfeit", className: "text-green-500" }
+                  : { content: "Forfeit - 1000", className: "text-red-500" };
+              } else {
+                return {
+                  content: `${Number(element.redScore)} - ${Number(element.blueScore)}`,
+                  className: "",
+                };
+              }
+            },
+            (element) => {
+              if (element.isForfeit) {
+                return element.winnerSide === "blue"
+                  ? { content: `${element.blueEloBefore.toFixed(2)}`, className: "text-green-500" }
+                  : { content: `${element.blueEloBefore.toFixed(2)} (Forfeit)`, className: "text-red-500" };
+              } else {
+                const eloChange = element.freezed
+                  ? ` (${element.winnerSide === "blue" ? "+" + element.blueEloGain.toFixed(2) : element.blueEloGain.toFixed(2)})`
+                  : "";
+                return {
+                  content: element.freezed ? `${element.blueEloBefore.toFixed(2)}${eloChange}` : "",
+                  className: element.winnerSide === "blue" ? "text-green-500" : "text-red-500",
+                };
+              }
+            },
+            (element) => element.winnerName,
+            (element) => realUser?.role === "ADMIN" && (element.freezed ? "Validated" : "Not validated"),
+          ],
+          className: result.freezed ? "cursor-pointer hover:bg-gray-100" : "cursor-pointer hover:bg-gray-100 opacity-50",
+          onClick: () => navigate(`./${result._id}`),
+        }))}
+        total={total}
+      />
+
       <Modal isOpen={open} onClose={() => setOpen(false)} title="Post result">
         <div className="flex flex-col">
           <label className="text-sm font-bold">Date</label>
