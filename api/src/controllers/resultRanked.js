@@ -6,6 +6,7 @@ const UserModel = require("../models/user");
 const ResultRankedModel = require("../models/resultRanked");
 const { catchErrors, parseDiscordMessage } = require("../utils");
 const { forfeitResultRanked, unforfeitResultRanked, updateAllStatsResultRanked, updateStatResultRanked } = require("../utils/resultRanked");
+const { deleteResultRanked } = require("../utils/discord");
 
 router.get(
   "/:id",
@@ -223,6 +224,25 @@ router.post(
     await unforfeitResultRanked(resultRanked);
 
     return res.status(200).send({ ok: true, data: resultRanked.responseModel() });
+  }),
+);
+
+router.delete(
+  "/:id",
+  passport.authenticate(enumUserRole.ADMIN, { session: false }),
+  catchErrors(async (req, res) => {
+    const { id } = req.params;
+
+    const resultRanked = await ResultRankedModel.findById(id);
+    if (!resultRanked) return res.status(400).send({ ok: false, message: "Result not found" });
+    if (resultRanked.freezed) return res.status(400).send({ ok: false, message: "Result already frozen" });
+
+    const resDeleteResultRanked = await deleteResultRanked({ resultRanked });
+    if (!resDeleteResultRanked.ok) return res.status(500).send(resDeleteResultRanked);
+
+    await resultRanked.deleteOne();
+
+    return res.status(200).send({ ok: true });
   }),
 );
 
