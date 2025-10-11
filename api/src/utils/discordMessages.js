@@ -67,6 +67,16 @@ const discordMessageQueue = async ({ queue }) => {
 };
 
 const discordMessageResultRanked = async ({ resultRanked }) => {
+  if (resultRanked.freezed && !resultRanked.hasBeenVoted) {
+    return await discordMessageResultRankedFreezed({ resultRanked });
+  }
+  if (resultRanked.freezed && resultRanked.hasBeenVoted && resultRanked.hasBeenCanceled) {
+    return await discordMessageResultRankedCanceled({ resultRanked });
+  }
+  if (resultRanked.freezed && resultRanked.hasBeenVoted && !resultRanked.hasBeenCanceled) {
+    return await discordMessageResultRankedVoted({ resultRanked });
+  }
+
   const { bluePlayers, redPlayers } = resultRanked;
 
   const matchId = resultRanked._id.toString();
@@ -157,6 +167,158 @@ const discordMessageResultRanked = async ({ resultRanked }) => {
   }
 
   return obj;
+};
+
+const discordMessageResultRankedFreezed = async ({ resultRanked }) => {
+  const { bluePlayers, redPlayers } = resultRanked;
+
+  const matchId = resultRanked._id.toString();
+
+  const winner = resultRanked.winnerName;
+  const winnerColor = resultRanked.winnerSide === "red" ? 0xff0000 : 0x0000ff;
+
+  const redPlayersFormatted = redPlayers.map((player) => formatPlayerWithStats({ player, resultRanked })).join("\n");
+  const bluePlayersFormatted = bluePlayers.map((player) => formatPlayerWithStats({ player, resultRanked })).join("\n");
+
+  const embed = new EmbedBuilder()
+    .setTitle("🏆 Match Completed 🏆")
+    .setDescription(`**Match ${matchId}** has finished!`)
+    .setColor(resultRanked.freezed ? winnerColor : 0x0099ff)
+    .addFields(
+      {
+        name: "🎯 Result",
+        value: `**${winner} won**\n${resultRanked.redScore} - ${resultRanked.blueScore}`,
+        inline: false,
+      },
+      {
+        name: "🗺️ Map",
+        value: `**${resultRanked.map}**`,
+        inline: true,
+      },
+      {
+        name: "⏱️ Duration",
+        value: `${resultRanked.totalTimeMinutes || 0}:${String(resultRanked.totalTimeSeconds || 0).padStart(2, "0")}`,
+        inline: true,
+      },
+      {
+        name: "🔴 Red Team",
+        value: redPlayersFormatted,
+        inline: true,
+      },
+      {
+        name: "🔵 Blue Team",
+        value: bluePlayersFormatted,
+        inline: true,
+      },
+    )
+    .setTimestamp();
+
+  if (resultRanked.eloGain && resultRanked.eloLoss) {
+    embed.addFields({
+      name: "📈 ELO Changes",
+      value: `**Winners:** +${resultRanked.eloGain} ELO\n**Losers:** ${resultRanked.eloLoss} ELO`,
+      inline: false,
+    });
+  }
+
+  return {
+    embed: embed,
+  };
+};
+
+const discordMessageResultRankedVoted = async ({ resultRanked }) => {
+  const { bluePlayers, redPlayers } = resultRanked;
+
+  const matchId = resultRanked._id.toString();
+
+  const winner = resultRanked.winnerName;
+  const winnerColor = resultRanked.winnerSide === "red" ? 0xff0000 : 0x0000ff;
+
+  const redPlayersFormatted = formatPlayers(redPlayers);
+  const bluePlayersFormatted = formatPlayers(bluePlayers);
+
+  const embed = new EmbedBuilder()
+    .setTitle("🏆 Match Completed 🏆")
+    .setDescription(`**Match ${matchId}** has finished!`)
+    .setColor(winnerColor)
+    .addFields(
+      {
+        name: "🎯 Result",
+        value: `**${winner} won**`,
+        inline: false,
+      },
+      {
+        name: "🗺️ Map",
+        value: `**${resultRanked.map}**`,
+        inline: true,
+      },
+      {
+        name: "🔴 Red Team",
+        value: redPlayersFormatted,
+        inline: true,
+      },
+      {
+        name: "🔵 Blue Team",
+        value: bluePlayersFormatted,
+        inline: true,
+      },
+    )
+    .setTimestamp();
+
+  if (resultRanked.eloGain && resultRanked.eloLoss) {
+    embed.addFields({
+      name: "📈 ELO Changes",
+      value: `**Winners:** +${resultRanked.eloGain} ELO\n**Losers:** ${resultRanked.eloLoss} ELO`,
+      inline: false,
+    });
+  }
+
+  return {
+    embed: embed,
+  };
+};
+
+const discordMessageResultRankedCanceled = async ({ resultRanked }) => {
+  const { bluePlayers, redPlayers } = resultRanked;
+
+  const matchId = resultRanked._id.toString();
+
+  const winnerColor = 0x0000ff;
+
+  const redPlayersFormatted = formatPlayers(redPlayers);
+  const bluePlayersFormatted = formatPlayers(bluePlayers);
+
+  const embed = new EmbedBuilder()
+    .setTitle("🏆 Match Canceled 🏆")
+    .setDescription(`**Match ${matchId}** has been canceled!`)
+    .setColor(winnerColor)
+    .addFields(
+      {
+        name: "🎯 Reason",
+        value: `**Match canceled by vote !**`,
+        inline: false,
+      },
+      {
+        name: "🗺️ Map",
+        value: `**${resultRanked.map}**`,
+        inline: true,
+      },
+      {
+        name: "🔴 Red Team",
+        value: redPlayersFormatted,
+        inline: true,
+      },
+      {
+        name: "🔵 Blue Team",
+        value: bluePlayersFormatted,
+        inline: true,
+      },
+    )
+    .setTimestamp();
+
+  return {
+    embed: embed,
+  };
 };
 
 const discordMessageResultRankedNotReady = async ({ resultRanked }) => {
