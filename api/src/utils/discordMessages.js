@@ -2,9 +2,21 @@ const { EmbedBuilder, ButtonBuilder, ButtonStyle, MessageFlags } = require("disc
 const discordService = require("../services/discordService");
 const ResultRankedModel = require("../models/resultRanked");
 const UserModel = require("../models/user");
-const { ready, arePlayersReady, join, leave } = require("./resultRanked");
+const {
+  ready,
+  arePlayersReady,
+  join,
+  leave,
+  voteCancel,
+  voteRed,
+  voteBlue,
+  updateAllStatsResultRanked,
+  arePlayersVotedRed,
+  deleteResultRankedDiscord,
+  arePlayersVotedBlue,
+  arePlayersVotedCancel,
+} = require("./resultRanked");
 const QueueModel = require("../models/queue");
-const { catchErrors } = require(".");
 
 const discordMessageQueue = async ({ queue }) => {
   const joinButtonId = `${queue._id}_join_queue`;
@@ -54,7 +66,7 @@ const discordMessageQueue = async ({ queue }) => {
   };
 };
 
-const discordMessageResultRanked = ({ resultRanked }) => {
+const discordMessageResultRanked = async ({ resultRanked }) => {
   const { bluePlayers, redPlayers } = resultRanked;
 
   const matchId = resultRanked._id.toString();
@@ -110,9 +122,41 @@ const discordMessageResultRanked = ({ resultRanked }) => {
     });
   }
 
-  return {
+  const obj = {
     embed: embed,
   };
+
+  if (!resultRanked.freezed) {
+    const voteRedButtonId = `${resultRanked._id}_vote_red`;
+    const voteBlueButtonId = `${resultRanked._id}_vote_blue`;
+    const voteCancelButtonId = `${resultRanked._id}_vote_cancel`;
+
+    obj.buttons = [
+      createButton({ customId: voteRedButtonId, label: "Red", style: ButtonStyle.Success }),
+      createButton({ customId: voteBlueButtonId, label: "Blue", style: ButtonStyle.Success }),
+      createButton({ customId: voteCancelButtonId, label: "Cancel", style: ButtonStyle.Danger }),
+    ];
+
+    discordService.registerButtonCallback(voteRedButtonId, voteRedResultRankedButtonCallBack);
+    discordService.registerButtonCallback(voteBlueButtonId, voteBlueResultRankedButtonCallBack);
+    discordService.registerButtonCallback(voteCancelButtonId, cancelResultRankedButtonCallBack);
+
+    resultRanked.voteCancelButtonId = voteCancelButtonId;
+    resultRanked.voteRedButtonId = voteRedButtonId;
+    resultRanked.voteBlueButtonId = voteBlueButtonId;
+
+    await resultRanked.save();
+
+    const redVoteField = formatRedVotes({ resultRanked });
+    const blueVoteField = formatBlueVotes({ resultRanked });
+    const cancelVoteField = formatCancelVotes({ resultRanked });
+
+    embed.addFields(redVoteField);
+    embed.addFields(blueVoteField);
+    embed.addFields(cancelVoteField);
+  }
+
+  return obj;
 };
 
 const discordMessageResultRankedNotReady = async ({ resultRanked }) => {
@@ -189,6 +233,57 @@ const formatPlayerWithStats = ({ player, resultRanked }) => {
     return `• **${player.userName}**\n  ${stats}`;
   }
   return `• ${player.userName}`;
+};
+
+const formatRedVotes = ({ resultRanked }) => {
+  const allPlayers = [...resultRanked.redPlayers, ...resultRanked.bluePlayers];
+  const votedPlayers = allPlayers.filter((player) => player.voteRed);
+
+  const field = {
+    name: "Red Votes (" + votedPlayers.length + " / " + allPlayers.length + ")",
+    value: votedPlayers.map((player) => `• ${player.userName}`).join("\n"),
+    inline: false,
+  };
+
+  if (votedPlayers.length === 0) {
+    field.value = "• No players";
+  }
+
+  return field;
+};
+
+const formatBlueVotes = ({ resultRanked }) => {
+  const allPlayers = [...resultRanked.redPlayers, ...resultRanked.bluePlayers];
+  const votedPlayers = allPlayers.filter((player) => player.voteBlue);
+
+  const field = {
+    name: "Blue Votes (" + votedPlayers.length + " / " + allPlayers.length + ")",
+    value: votedPlayers.map((player) => `• ${player.userName}`).join("\n"),
+    inline: false,
+  };
+
+  if (votedPlayers.length === 0) {
+    field.value = "• No players";
+  }
+
+  return field;
+};
+
+const formatCancelVotes = ({ resultRanked }) => {
+  const allPlayers = [...resultRanked.redPlayers, ...resultRanked.bluePlayers];
+  const votedPlayers = allPlayers.filter((player) => player.voteCancel);
+
+  const field = {
+    name: "Cancel Votes (" + votedPlayers.length + " / " + allPlayers.length + ")",
+    value: votedPlayers.map((player) => `• ${player.userName}`).join("\n"),
+    inline: false,
+  };
+
+  if (votedPlayers.length === 0) {
+    field.value = "• No players";
+  }
+
+  return field;
 };
 
 const createButton = ({ customId, label, style }) => {
@@ -304,12 +399,143 @@ const readyButtonCallBack = async (interaction) => {
 
       const resSendMessage = await discordService.sendMessage({
         channelId: resultRanked.textChannelDisplayResultId,
-        ...discordMessageResultRanked({ resultRanked }),
+        ...(await discordMessageResultRanked({ resultRanked })),
       });
       resultRanked.messageResultId = resSendMessage.data.message.id;
 
       await resultRanked.save();
     }
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+const cancelResultRankedButtonCallBack = async (interaction) => {
+  try {
+    const resultRankedId = interaction.customId.split("_")[0];
+    const resultRanked = await ResultRankedModel.findById(resultRankedId);
+    if (!resultRanked) return { ok: false, message: "Game not found" };
+
+    const user = await UserModel.findOne({ discordId: interaction.member.id });
+    if (!user) return { ok: false, message: "User not found" };
+
+    const resVoteCancel = await voteCancel({ resultRanked, user });
+    if (!resVoteCancel.ok) return { ok: false, message: "Player not in result ranked" };
+
+    await interaction.reply({ content: `You have voted to cancel the game!`, flags: [MessageFlags.Ephemeral] });
+
+    if (arePlayersVotedCancel({ resultRanked })) {
+      resultRanked.hasBeenVoted = true;
+      resultRanked.hasBeenVotedAt = new Date();
+
+      resultRanked.hasBeenCanceled = true;
+
+      await updateAllStatsResultRanked(resultRanked);
+
+      await deleteResultRankedDiscord({ resultRanked });
+
+      await discordService.sendMessage({
+        channelId: resultRanked.textChannelDisplayFinalResultId,
+        ...(await discordMessageResultRanked({ resultRanked })),
+      });
+
+      return;
+    }
+
+    const discordMessage = await discordMessageResultRanked({ resultRanked });
+    await discordService.updateMessage({
+      channelId: resultRanked.textChannelDisplayResultId,
+      messageId: resultRanked.messageResultId,
+      ...discordMessage,
+    });
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+const voteRedResultRankedButtonCallBack = async (interaction) => {
+  try {
+    const resultRankedId = interaction.customId.split("_")[0];
+    const resultRanked = await ResultRankedModel.findById(resultRankedId);
+    if (!resultRanked) return { ok: false, message: "Game not found" };
+
+    const user = await UserModel.findOne({ discordId: interaction.member.id });
+    if (!user) return { ok: false, message: "User not found" };
+
+    const resVoteRed = await voteRed({ resultRanked, user });
+    if (!resVoteRed.ok) return { ok: false, message: "Player not in result ranked" };
+
+    await interaction.reply({ content: `You have voted for the red team!`, flags: [MessageFlags.Ephemeral] });
+
+    if (arePlayersVotedRed({ resultRanked })) {
+      resultRanked.hasBeenVoted = true;
+      resultRanked.hasBeenVotedAt = new Date();
+
+      resultRanked.redScore = 1000;
+      resultRanked.blueScore = 0;
+
+      await updateAllStatsResultRanked(resultRanked);
+
+      await deleteResultRankedDiscord({ resultRanked });
+
+      await discordService.sendMessage({
+        channelId: resultRanked.textChannelDisplayFinalResultId,
+        ...(await discordMessageResultRanked({ resultRanked })),
+      });
+
+      return;
+    }
+
+    const discordMessage = await discordMessageResultRanked({ resultRanked });
+    await discordService.updateMessage({
+      channelId: resultRanked.textChannelDisplayResultId,
+      messageId: resultRanked.messageResultId,
+      ...discordMessage,
+    });
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+const voteBlueResultRankedButtonCallBack = async (interaction) => {
+  try {
+    const resultRankedId = interaction.customId.split("_")[0];
+    const resultRanked = await ResultRankedModel.findById(resultRankedId);
+    if (!resultRanked) return { ok: false, message: "Game not found" };
+
+    const user = await UserModel.findOne({ discordId: interaction.member.id });
+    if (!user) return { ok: false, message: "User not found" };
+
+    const resVoteBlue = await voteBlue({ resultRanked, user });
+    if (!resVoteBlue.ok) return { ok: false, message: "Player not in result ranked" };
+
+    await interaction.reply({ content: `You have voted for the blue team!`, flags: [MessageFlags.Ephemeral] });
+
+    if (arePlayersVotedBlue({ resultRanked })) {
+      resultRanked.hasBeenVoted = true;
+      resultRanked.hasBeenVotedAt = new Date();
+
+      resultRanked.blueScore = 1000;
+      resultRanked.redScore = 0;
+
+      await updateAllStatsResultRanked(resultRanked);
+
+      await deleteResultRankedDiscord({ resultRanked });
+
+      await discordService.sendMessage({
+        channelId: resultRanked.textChannelDisplayFinalResultId,
+        ...(await discordMessageResultRanked({ resultRanked })),
+      });
+
+      return;
+    }
+
+    const discordMessage = await discordMessageResultRanked({ resultRanked });
+    await discordService.updateMessage({
+      channelId: resultRanked.textChannelDisplayResultId,
+      messageId: resultRanked.messageResultId,
+      ...discordMessage,
+    });
   } catch (error) {
     console.error(error);
   }
@@ -328,4 +554,7 @@ module.exports = {
   readyButtonCallBack,
   joinQueueButtonCallBack,
   leaveQueueButtonCallBack,
+  cancelResultRankedButtonCallBack,
+  voteRedResultRankedButtonCallBack,
+  voteBlueResultRankedButtonCallBack,
 };
