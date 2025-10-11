@@ -12,6 +12,7 @@ const PlayerSchema = new mongoose.Schema({
   avatar: { type: String, trim: true },
   clanId: { type: ObjectId },
   clanName: { type: String, trim: true },
+  discordId: { type: String, trim: true },
   elo: { type: Number },
   joinedAt: { type: Date, default: Date.now },
 });
@@ -57,7 +58,6 @@ Schema.methods.responseModel = function () {
     numberOfPlayersForGame: this.numberOfPlayersForGame,
     numberOfPlayersPerTeam: this.numberOfPlayersPerTeam,
     numberOfGames: this.numberOfGames,
-    discordTokenId: this.discordTokenId,
     guildId: this.guildId,
   };
 };

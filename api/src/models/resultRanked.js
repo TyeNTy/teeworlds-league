@@ -10,6 +10,8 @@ const PlayerSchema = new mongoose.Schema({
   userName: { type: String, trim: true },
   avatar: { type: String, trim: true },
 
+  discordId: { type: String, trim: true },
+
   score: { type: Number, default: 0 },
   kills: { type: Number, default: 0 },
   deaths: { type: Number, default: 0 },
@@ -71,6 +73,7 @@ const Schema = new mongoose.Schema(
     categoryQueueId: { type: String, trim: true },
     textChannelDisplayFinalResultId: { type: String, trim: true },
     textChannelDisplayResultId: { type: String, trim: true },
+    messageReadyId: { type: String, trim: true },
     messageResultId: { type: String, trim: true },
     readyButtonId: { type: String, trim: true },
     voiceRedChannelId: { type: String, trim: true },

@@ -7,9 +7,12 @@ const cookieParser = require("cookie-parser");
 const fs = require("fs");
 const initCron = require("./cron/intCron");
 const DiscordService = require("./services/discordService");
+const QueueModel = require("./models/queue");
+const ResultRankedModel = require("./models/resultRanked");
 
 const { PORT, SENTRY_DSN, ENVIRONMENT, APP_URL } = require("./config");
-const { initCallbacksForQueues } = require("./utils/discord");
+const discordService = require("./services/discordService");
+const { joinQueueButtonCallBack, leaveQueueButtonCallBack, readyButtonCallBack } = require("./utils/discordMessages");
 const app = express();
 
 if (ENVIRONMENT === "development") {
@@ -65,6 +68,25 @@ if (ENVIRONMENT === "production") {
 
 initCron();
 DiscordService.init().then(() => {
+  const initCallbacksForQueues = async () => {
+    const queues = await QueueModel.find({});
+    for (const queue of queues) {
+      if (queue.guildId) {
+        discordService.registerButtonCallback(queue.joinButtonId, joinQueueButtonCallBack);
+        discordService.registerButtonCallback(queue.leaveButtonId, leaveQueueButtonCallBack);
+      }
+    }
+
+    const resultRankeds = await ResultRankedModel.find({ freezed: false });
+    for (const resultRanked of resultRankeds) {
+      if (resultRanked.guildId) {
+        discordService.registerButtonCallback(resultRanked.readyButtonId, readyButtonCallBack);
+      }
+    }
+
+    return { ok: true };
+  };
+
   initCallbacksForQueues().then(() => {
     console.log("Callbacks for queues initialized");
   });

@@ -8,8 +8,96 @@ const enumUserRole = require("../enums/enumUserRole");
 const { catchErrors } = require("../utils");
 const { enumNumberOfPlayersPerTeam, enumNumberOfPlayersForGame, enumModes } = require("../enums/enumModes");
 const discordService = require("../services/discordService");
-const { createNewQueue, deleteQueue, updateQueue, displayQueue } = require("../utils/discord");
-const { join, leave } = require("../utils/queue");
+const { join, leave } = require("../utils/resultRanked");
+const { discordMessageQueue } = require("../utils/discordMessages");
+
+const createNewQueue = async ({ queue }) => {
+  const resCreateCategoryQueue = await discordService.createCategory({ guildId: queue.guildId, name: queue.name });
+  if (!resCreateCategoryQueue.ok) return resCreateCategoryQueue;
+
+  const resCreateTextChannelDisplayQueue = await discordService.createTextChannel({
+    guildId: queue.guildId,
+    name: queue.name + " - Queue",
+    categoryId: resCreateCategoryQueue.data.category.id,
+  });
+  if (!resCreateTextChannelDisplayQueue.ok) return resCreateTextChannelDisplayQueue;
+
+  const resCreateTextChannelDisplayResults = await discordService.createTextChannel({
+    guildId: queue.guildId,
+    name: queue.name + " - Results",
+    categoryId: resCreateCategoryQueue.data.category.id,
+  });
+  if (!resCreateTextChannelDisplayResults.ok) return resCreateTextChannelDisplayResults;
+
+  queue.categoryQueueId = resCreateCategoryQueue.data.category.id;
+  queue.textChannelDisplayQueueId = resCreateTextChannelDisplayQueue.data.channel.id;
+  queue.textChannelDisplayResultsId = resCreateTextChannelDisplayResults.data.channel.id;
+
+  const discordMessage = await discordMessageQueue({ queue });
+  const resSendMessage = await discordService.sendMessage({
+    channelId: queue.textChannelDisplayQueueId,
+    ...discordMessage,
+  });
+
+  queue.messageQueueId = resSendMessage.data.message.id;
+
+  await queue.save();
+
+  return { ok: true };
+};
+
+const updateQueue = async ({ queue }) => {
+  if (!queue.guildId) return { ok: true };
+
+  const resUpdateCategoryQueue = await discordService.updateCategory({ categoryId: queue.categoryQueueId, name: queue.name });
+  if (!resUpdateCategoryQueue.ok) return resUpdateCategoryQueue;
+  const resUpdateTextChannelDisplayQueue = await discordService.updateChannel({
+    channelId: queue.textChannelDisplayQueueId,
+    name: queue.name + " - Queue",
+  });
+  if (!resUpdateTextChannelDisplayQueue.ok) return resUpdateTextChannelDisplayQueue;
+  const resUpdateTextChannelDisplayResults = await discordService.updateChannel({
+    channelId: queue.textChannelDisplayResultsId,
+    name: queue.name + " - Results",
+  });
+  if (!resUpdateTextChannelDisplayResults.ok) return resUpdateTextChannelDisplayResults;
+
+  const discordMessage = await discordMessageQueue({ queue });
+  await discordService.updateMessage({
+    channelId: queue.textChannelDisplayQueueId,
+    messageId: queue.messageQueueId,
+    ...discordMessage,
+  });
+
+  return { ok: true };
+};
+
+const deleteQueue = async ({ queue }) => {
+  if (!queue.guildId) return { ok: true };
+
+  const resDeleteTextChannelDisplayQueue = await discordService.deleteChannel({ channelId: queue.textChannelDisplayQueueId });
+  if (!resDeleteTextChannelDisplayQueue.ok) return resDeleteTextChannelDisplayQueue;
+  queue.textChannelDisplayQueueId = null;
+
+  const resDeleteTextChannelDisplayResults = await discordService.deleteChannel({ channelId: queue.textChannelDisplayResultsId });
+  if (!resDeleteTextChannelDisplayResults.ok) return resDeleteTextChannelDisplayResults;
+  queue.textChannelDisplayResultsId = null;
+
+  const resDeleteCategoryQueue = await discordService.deleteCategory({ categoryId: queue.categoryQueueId });
+  if (!resDeleteCategoryQueue.ok) return resDeleteCategoryQueue;
+  queue.categoryQueueId = null;
+
+  discordService.unregisterButtonCallback(queue.joinButtonId);
+  discordService.unregisterButtonCallback(queue.leaveButtonId);
+
+  queue.joinButtonId = null;
+  queue.leaveButtonId = null;
+  queue.messageQueueId = null;
+
+  await queue.save();
+
+  return { ok: true };
+};
 
 router.post(
   "/",
@@ -66,7 +154,14 @@ router.post(
     const resJoin = await join({ queue, user });
     if (!resJoin.ok) return res.status(500).send(resJoin);
 
-    await displayQueue({ queue });
+    if (queue.guildId) {
+      const discordMessage = await discordMessageQueue({ queue });
+      await discordService.updateMessage({
+        channelId: queue.textChannelDisplayQueueId,
+        messageId: queue.messageQueueId,
+        ...discordMessage,
+      });
+    }
 
     return res.status(200).send({ ok: true, data: queue.responseModel() });
   }),
@@ -83,7 +178,14 @@ router.post(
     const resLeave = await leave({ queue, user });
     if (!resLeave.ok) return res.status(500).send(resLeave);
 
-    await displayQueue({ queue });
+    if (queue.guildId) {
+      const discordMessage = await discordMessageQueue({ queue });
+      await discordService.updateMessage({
+        channelId: queue.textChannelDisplayQueueId,
+        messageId: queue.messageQueueId,
+        ...discordMessage,
+      });
+    }
 
     return res.status(200).send({ ok: true, data: queue.responseModel() });
   }),

@@ -4,6 +4,7 @@ const StatRankedModel = require("../models/statRanked");
 const ModeModel = require("../models/mode");
 const { computeElo } = require(".");
 const { detectMapFromServer } = require("./map");
+const discordService = require("../services/discordService");
 
 /*
 {
@@ -202,10 +203,10 @@ async function updateStatResultRanked(resultRanked) {
     resultRanked.looserName = "Red";
     resultRanked.looserSide = "red";
   } else {
-    resultRanked.winnerName = null;
+    resultRanked.winnerName = "Equality";
     resultRanked.winnerSide = null;
 
-    resultRanked.looserName = null;
+    resultRanked.looserName = "Equality";
     resultRanked.looserSide = null;
   }
 
@@ -527,6 +528,92 @@ const computeEloResultRanked = async (resultRanked) => {
   return resultRanked;
 };
 
+const ready = async ({ resultRanked, user }) => {
+  if (!resultRanked) return { ok: false, message: "Result ranked not found" };
+  if (
+    !resultRanked.redPlayers.some((player) => player.userId.toString() === user._id.toString()) &&
+    !resultRanked.bluePlayers.some((player) => player.userId.toString() === user._id.toString())
+  )
+    return { ok: false, message: "Player not in result ranked" };
+
+  resultRanked.redPlayers.forEach((player) => {
+    if (player.userId.toString() === user._id.toString()) {
+      player.isReady = true;
+    }
+  });
+
+  resultRanked.bluePlayers.forEach((player) => {
+    if (player.userId.toString() === user._id.toString()) {
+      player.isReady = true;
+    }
+  });
+
+  await resultRanked.save();
+
+  return { ok: true, data: { resultRanked, user } };
+};
+
+const join = async ({ queue, user }) => {
+  if (!queue) return { ok: false, message: "Queue not found" };
+  if (queue.players.some((player) => player.userId.toString() === user._id.toString())) return { ok: false, message: "Player already in queue" };
+
+  const resultRanked = await ResultRankedModel.findOne({
+    freezed: false,
+    $or: [{ "redPlayers.userId": user._id }, { "bluePlayers.userId": user._id }],
+  });
+  if (resultRanked) return { ok: false, message: "You are already in a game" };
+
+  const playerObj = {
+    userId: user._id,
+    userName: user.userName,
+    avatar: user.avatar,
+    clanId: user.clanId,
+    clanName: user.clanName,
+    discordId: user.discordId,
+    elo: user.elo,
+    joinedAt: new Date(),
+  };
+
+  queue.players.push(playerObj);
+  await queue.save();
+
+  return { ok: true, data: { queue, user } };
+};
+
+const leave = async ({ queue, user }) => {
+  if (!queue) return { ok: false, message: "Queue not found" };
+  if (!queue.players.some((player) => player.userId.toString() === user._id.toString())) return { ok: false, message: "Player not in queue" };
+
+  queue.players = queue.players.filter((player) => player.userId.toString() !== user._id.toString());
+  await queue.save();
+
+  return { ok: true, data: { queue, user } };
+};
+
+const arePlayersReady = ({ resultRanked }) => {
+  return resultRanked.redPlayers.every((player) => player.isReady) && resultRanked.bluePlayers.every((player) => player.isReady);
+};
+
+const deleteResultRankedDiscord = async ({ resultRanked }) => {
+  if (!resultRanked.guildId) return { ok: true };
+
+  const resDeleteTextChannelDisplayResult = await discordService.deleteChannel({ channelId: resultRanked.textChannelDisplayResultId });
+  if (!resDeleteTextChannelDisplayResult.ok) return resDeleteTextChannelDisplayResult;
+  resultRanked.textChannelDisplayResultId = null;
+
+  const resDeleteVoiceRedChannel = await discordService.deleteChannel({ channelId: resultRanked.voiceRedChannelId });
+  if (!resDeleteVoiceRedChannel.ok) return resDeleteVoiceRedChannel;
+  resultRanked.voiceRedChannelId = null;
+
+  const resDeleteVoiceBlueChannel = await discordService.deleteChannel({ channelId: resultRanked.voiceBlueChannelId });
+  if (!resDeleteVoiceBlueChannel.ok) return resDeleteVoiceBlueChannel;
+  resultRanked.voiceBlueChannelId = null;
+
+  discordService.unregisterButtonCallback(resultRanked.readyButtonId);
+
+  return { ok: true };
+};
+
 module.exports = {
   forfeitResultRanked,
   unforfeitResultRanked,
@@ -535,4 +622,9 @@ module.exports = {
   updateStatPlayerRanked,
   computeEloResultRanked,
   parseWebhookMessage,
+  ready,
+  arePlayersReady,
+  join,
+  leave,
+  deleteResultRankedDiscord,
 };

@@ -2,9 +2,10 @@ const express = require("express");
 const router = express.Router();
 const { catchErrors, updateStatResult } = require("../utils");
 const { WEBHOOK_TOKEN, WEBHOOK_RANKED_TOKEN } = require("../config");
-const { updateAllStatsResultRanked, parseWebhookMessage } = require("../utils/resultRanked");
-const { sendFinalResultRankedMessage, deleteResultRanked } = require("../utils/discord");
+const { updateAllStatsResultRanked, parseWebhookMessage, deleteResultRankedDiscord } = require("../utils/resultRanked");
 const WebhookModel = require("../models/webhooks");
+const { discordMessageResultRanked } = require("../utils/discordMessages");
+const discordService = require("../services/discordService");
 
 router.post(
   "/resultRanked/:webhookToken",
@@ -46,19 +47,20 @@ router.post(
       await webhook.save();
       return;
     }
-    const resDeleteResultRanked = await deleteResultRanked({ resultRanked });
+    const resDeleteResultRanked = await deleteResultRankedDiscord({ resultRanked });
     if (!resDeleteResultRanked.ok) {
       webhook.ok = false;
       webhook.endpointResult = JSON.stringify(resDeleteResultRanked);
       await webhook.save();
       return;
     }
-    const resSendMessage = await sendFinalResultRankedMessage({ resultRanked });
-    if (!resSendMessage.ok) {
-      webhook.ok = false;
-      webhook.endpointResult = JSON.stringify(resSendMessage);
-      await webhook.save();
-      return;
+
+    if (resultRanked.guildId) {
+      const discordMessage = discordMessageResultRanked({ resultRanked });
+      await discordService.sendMessage({
+        channelId: resultRanked.textChannelDisplayFinalResultId,
+        ...discordMessage,
+      });
     }
 
     webhook.ok = true;

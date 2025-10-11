@@ -1,4 +1,4 @@
-const { Client, GatewayIntentBits, ChannelType, Events, ActionRowBuilder, ButtonBuilder } = require("discord.js");
+const { Client, GatewayIntentBits, ChannelType, Events, ActionRowBuilder, ButtonBuilder, MessageFlags } = require("discord.js");
 const { DISCORD_CLIENT_ID, DISCORD_BOT_TOKEN } = require("../config");
 const enumErrorCode = require("../enums/enumErrorCode");
 
@@ -38,13 +38,13 @@ class DiscordService {
           } catch (error) {
             console.error(`Error handling button interaction ${interaction.customId}:`, error);
             if (!interaction.replied && !interaction.deferred) {
-              await interaction.reply({ content: "An error occurred while processing your request.", ephemeral: true });
+              await interaction.reply({ content: "An error occurred while processing your request.", flags: [MessageFlags.Ephemeral] });
             }
           }
         } else {
           console.warn(`No callback found for button: ${interaction.customId}`);
           if (!interaction.replied && !interaction.deferred) {
-            await interaction.reply({ content: "This button is not configured.", ephemeral: true });
+            await interaction.reply({ content: "This button is not configured.", flags: [MessageFlags.Ephemeral] });
           }
         }
       });
@@ -152,8 +152,44 @@ class DiscordService {
     }
   }
 
-  async createButton({ customId, label, style }) {
-    return new ButtonBuilder().setCustomId(customId).setLabel(label).setStyle(style);
+  async createPrivateMessageChannel({ userId }) {
+    try {
+      const user = await this.client.users.fetch(userId);
+      await user.createDM();
+
+      return { ok: true };
+    } catch (error) {
+      console.error(`Failed to create private message channel ${userId}:`, error);
+      return { ok: false, errorCode: enumErrorCode.SERVER_ERROR };
+    }
+  }
+
+  async sendPrivateMessage({ userId, message, buttons = null, embed = null }) {
+    try {
+      const user = await this.client.users.fetch(userId);
+      await user.send(message);
+
+      const messageOptions = {
+        content: message,
+      };
+
+      if (buttons && buttons.length > 0) {
+        const actionBuilder = new ActionRowBuilder();
+        actionBuilder.addComponents(buttons);
+        messageOptions.components = [actionBuilder];
+      }
+
+      if (embed) {
+        messageOptions.embeds = [embed];
+      }
+
+      const sentMessage = await user.send(messageOptions);
+
+      return { ok: true, data: { message: sentMessage } };
+    } catch (error) {
+      console.error(`Failed to send private message to ${userId}:`, error);
+      return { ok: false, errorCode: enumErrorCode.SERVER_ERROR };
+    }
   }
 
   async sendMessage({ channelId, message, buttons = null, embed = null }) {
