@@ -216,21 +216,44 @@ async function updateStatResultRanked(resultRanked) {
 }
 
 async function updateStatPlayerRanked({ player, mode }) {
-  const redResultsRanked = await ResultRankedModel.find({
+  let redResultsRanked = await ResultRankedModel.find({
     redPlayers: { $elemMatch: { userId: player._id } },
     freezed: true,
-    hasBeenVoted: false,
     modeId: mode._id,
   });
-  const blueResultsRanked = await ResultRankedModel.find({
+  let blueResultsRanked = await ResultRankedModel.find({
     bluePlayers: { $elemMatch: { userId: player._id } },
     freezed: true,
-    hasBeenVoted: false,
     modeId: mode._id,
   });
-  const allResultsRanked = [...redResultsRanked, ...blueResultsRanked];
+  let allResultsRanked = [...redResultsRanked, ...blueResultsRanked];
 
-  const numberGames = allResultsRanked.length;
+  let numberGames = allResultsRanked.length;
+
+  let redWins = redResultsRanked.filter((result) => result.winnerSide === "red");
+  let blueWins = blueResultsRanked.filter((result) => result.winnerSide === "blue");
+
+  const numberRedWins = redWins.length;
+  const numberBlueWins = blueWins.length;
+  const numberWins = numberRedWins + numberBlueWins;
+
+  const numberRedLosses = redResultsRanked.filter((result) => result.winnerSide === "blue").length;
+  const numberBlueLosses = blueResultsRanked.filter((result) => result.winnerSide === "red").length;
+  const numberLosses = numberRedLosses + numberBlueLosses;
+
+  let redWinRate = numberRedWins / redResultsRanked.length;
+  let blueWinRate = numberBlueWins / blueResultsRanked.length;
+  let winRate = numberWins / numberGames;
+
+  redResultsRanked = redResultsRanked.filter((result) => !result.hasBeenVoted);
+  blueResultsRanked = blueResultsRanked.filter((result) => !result.hasBeenVoted);
+  allResultsRanked = allResultsRanked.filter((result) => !result.hasBeenVoted);
+  numberGames = allResultsRanked.length;
+
+  redWins = redResultsRanked.filter((result) => !result.hasBeenVoted);
+  blueWins = blueResultsRanked.filter((result) => !result.hasBeenVoted);
+  const allWins = [...redWins, ...blueWins];
+
   const redTotalScore = redResultsRanked.reduce((acc, result) => {
     const playerResult = result.redPlayers.find((p) => p.userId.toString() === player._id.toString());
     return acc + playerResult.score;
@@ -279,18 +302,6 @@ async function updateStatPlayerRanked({ player, mode }) {
   let blueKdRatio = blueTotalKills / blueTotalDeaths;
   let kdRatio = totalKills / totalDeaths;
 
-  const redWins = redResultsRanked.filter((result) => result.winnerSide === "red");
-  const blueWins = blueResultsRanked.filter((result) => result.winnerSide === "blue");
-  const allWins = [...redWins, ...blueWins];
-
-  const numberRedWins = redWins.length;
-  const numberBlueWins = blueWins.length;
-  const numberWins = numberRedWins + numberBlueWins;
-
-  const numberRedLosses = redResultsRanked.filter((result) => result.winnerSide === "blue").length;
-  const numberBlueLosses = blueResultsRanked.filter((result) => result.winnerSide === "red").length;
-  const numberLosses = numberRedLosses + numberBlueLosses;
-
   let averageRedTeamScore = redTotalScore / redResultsRanked.length;
   let averageBlueTeamScore = blueTotalScore / blueResultsRanked.length;
 
@@ -304,10 +315,6 @@ async function updateStatPlayerRanked({ player, mode }) {
   }, 0);
   let averageWinningScore = winningTotalScore / numberWins;
   let averageLosingScore = losingTotalScore / numberLosses;
-
-  let redWinRate = numberRedWins / redResultsRanked.length;
-  let blueWinRate = numberBlueWins / blueResultsRanked.length;
-  let winRate = numberWins / numberGames;
 
   let highestScore = 0;
   let highestScoreResultId = null;
