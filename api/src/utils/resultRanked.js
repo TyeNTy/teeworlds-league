@@ -218,11 +218,13 @@ async function updateStatResultRanked(resultRanked) {
 async function updateStatPlayerRanked({ player, mode }) {
   let redResultsRanked = await ResultRankedModel.find({
     redPlayers: { $elemMatch: { userId: player._id } },
+    hasBeenCanceled: false,
     freezed: true,
     modeId: mode._id,
   });
   let blueResultsRanked = await ResultRankedModel.find({
     bluePlayers: { $elemMatch: { userId: player._id } },
+    hasBeenCanceled: false,
     freezed: true,
     modeId: mode._id,
   });
