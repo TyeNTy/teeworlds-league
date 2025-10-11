@@ -8,6 +8,7 @@ import { modesWithLabel } from "../../../components/utils";
 import { enumMapsWithLabel } from "../../../enums/enumMaps";
 import { useSelector } from "react-redux";
 import PaginatedTable from "../../../components/PaginatedTable";
+import { displayDateWithTimeUntilNow } from "../../../utils/date";
 
 const List = () => {
   const realUser = useSelector((state) => state.Auth.user);
@@ -129,16 +130,7 @@ const List = () => {
           blueEloGain: result.blueEloGain,
           isForfeit: result.isForfeit,
           renderFunctions: [
-            (element) =>
-              new Date(element.date).toLocaleString("en-GB", {
-                year: "numeric",
-                month: "2-digit",
-                day: "2-digit",
-                hour: "2-digit",
-                minute: "2-digit",
-                second: "2-digit",
-                hour12: false,
-              }),
+            (element) => displayDateWithTimeUntilNow(new Date(element.date)),
             (element) => modesWithLabel.find((m) => m.value === element.mode)?.label ?? "Unknown",
             (element) => enumMapsWithLabel.find((m) => m.value === element.map)?.label ?? "Unknown",
             (element) => {
