@@ -167,7 +167,6 @@ class DiscordService {
   async sendPrivateMessage({ userId, message, buttons = null, embed = null }) {
     try {
       const user = await this.client.users.fetch(userId);
-      await user.send(message);
 
       const messageOptions = {
         content: message,
