@@ -142,9 +142,9 @@ const discordMessageResultRanked = async ({ resultRanked }) => {
     const voteCancelButtonId = `${resultRanked._id}_vote_cancel`;
 
     obj.buttons = [
-      createButton({ customId: voteRedButtonId, label: "Red", style: ButtonStyle.Success }),
-      createButton({ customId: voteBlueButtonId, label: "Blue", style: ButtonStyle.Success }),
-      createButton({ customId: voteCancelButtonId, label: "Cancel", style: ButtonStyle.Danger }),
+      createButton({ customId: voteRedButtonId, label: "Vote Red", style: ButtonStyle.Danger }),
+      createButton({ customId: voteBlueButtonId, label: "Vote Blue", style: ButtonStyle.Primary }),
+      createButton({ customId: voteCancelButtonId, label: "Vote Cancel", style: ButtonStyle.Secondary }),
     ];
 
     discordService.registerButtonCallback(voteRedButtonId, voteRedResultRankedButtonCallBack);
