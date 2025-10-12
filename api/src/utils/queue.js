@@ -4,6 +4,19 @@ const StatRankedModel = require("../models/statRanked");
 const discordService = require("../services/discordService");
 const { discordMessageResultRankedNotReady, discordPrivateMessageNewQueue, discordMessageQueue } = require("./discordMessages");
 
+const { Mutex } = require("./mutex");
+
+const queueMutex = new Mutex();
+
+const withQueueLock = async (fn) => {
+  const release = await queueMutex.lock();
+  try {
+    return await fn();
+  } finally {
+    release();
+  }
+};
+
 const createGameFromQueue = async ({ queue }) => {
   const players = queue.players;
   if (players.length < queue.numberOfPlayersForGame) return { ok: false, message: "Not enough players in queue" };

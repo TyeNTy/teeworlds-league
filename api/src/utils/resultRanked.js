@@ -6,6 +6,8 @@ const { computeElo } = require(".");
 const { detectMapFromServer } = require("./map");
 const discordService = require("../services/discordService");
 
+const { withQueueLock } = require("./queue");
+
 /*
 {
   "server": "unnamed server",
