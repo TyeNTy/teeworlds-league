@@ -201,7 +201,7 @@ router.post(
 
       await discordService.sendMessage({
         channelId: resultRanked.textChannelDisplayFinalResultId,
-        ...discordMessageResultRanked({ resultRanked }),
+        ...(await discordMessageResultRanked({ resultRanked })),
       });
     }
 

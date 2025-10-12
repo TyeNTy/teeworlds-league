@@ -224,8 +224,12 @@ router.put(
     if (body.maps) objUpdate.maps = body.maps;
     if (body.mode) {
       objUpdate.mode = body.mode;
-      objUpdate.numberOfPlayersPerTeam = enumNumberOfPlayersPerTeam[body.mode];
-      objUpdate.numberOfPlayersForGame = enumNumberOfPlayersForGame[body.mode];
+    }
+    if (body.numberOfPlayersPerTeam) {
+      objUpdate.numberOfPlayersPerTeam = body.numberOfPlayersPerTeam;
+    }
+    if (body.numberOfPlayersForGame) {
+      objUpdate.numberOfPlayersForGame = body.numberOfPlayersForGame;
     }
     if (body.modeId) {
       const mode = await ModeModel.findById(body.modeId);

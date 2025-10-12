@@ -183,6 +183,36 @@ const Details = () => {
         </select>
       </div>
       <div className="mb-4">
+        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="numberOfPlayersPerTeam">
+          Number of players per team
+        </label>
+        <input
+          type="number"
+          id="numberOfPlayersPerTeam"
+          name="numberOfPlayersPerTeam"
+          value={queue.numberOfPlayersPerTeam}
+          onChange={(e) => setQueue({ ...queue, numberOfPlayersPerTeam: e.target.value })}
+          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+          placeholder="Number of players per team"
+          disabled={!canEdit}
+        />
+      </div>
+      <div className="mb-4">
+        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="numberOfPlayersForGame">
+          Number of players for game
+        </label>
+        <input
+          type="number"
+          id="numberOfPlayersForGame"
+          name="numberOfPlayersForGame"
+          value={queue.numberOfPlayersForGame}
+          onChange={(e) => setQueue({ ...queue, numberOfPlayersForGame: e.target.value })}
+          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+          placeholder="Number of players for game"
+          disabled={!canEdit}
+        />
+      </div>
+      <div className="mb-4">
         <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="maps">
           Maps
         </label>

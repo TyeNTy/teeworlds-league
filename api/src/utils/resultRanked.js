@@ -185,7 +185,7 @@ async function updateAllStatsResultRanked(resultRanked) {
 async function updateStatResultRanked(resultRanked) {
   resultRanked.totalTime = resultRanked.totalTimeMinutes * 60 + resultRanked.totalTimeSeconds;
 
-  if (resultRanked.isForfeit) {
+  if (resultRanked.isForfeit || resultRanked.hasBeenCanceled) {
     await resultRanked.save();
     return;
   }
@@ -216,11 +216,46 @@ async function updateStatResultRanked(resultRanked) {
 }
 
 async function updateStatPlayerRanked({ player, mode }) {
-  const redResultsRanked = await ResultRankedModel.find({ redPlayers: { $elemMatch: { userId: player._id } }, freezed: true, modeId: mode._id });
-  const blueResultsRanked = await ResultRankedModel.find({ bluePlayers: { $elemMatch: { userId: player._id } }, freezed: true, modeId: mode._id });
-  const allResultsRanked = [...redResultsRanked, ...blueResultsRanked];
+  let redResultsRanked = await ResultRankedModel.find({
+    redPlayers: { $elemMatch: { userId: player._id } },
+    hasBeenCanceled: false,
+    freezed: true,
+    modeId: mode._id,
+  });
+  let blueResultsRanked = await ResultRankedModel.find({
+    bluePlayers: { $elemMatch: { userId: player._id } },
+    hasBeenCanceled: false,
+    freezed: true,
+    modeId: mode._id,
+  });
+  let allResultsRanked = [...redResultsRanked, ...blueResultsRanked];
 
-  const numberGames = allResultsRanked.length;
+  let numberGames = allResultsRanked.length;
+
+  let redWins = redResultsRanked.filter((result) => result.winnerSide === "red");
+  let blueWins = blueResultsRanked.filter((result) => result.winnerSide === "blue");
+
+  const numberRedWins = redWins.length;
+  const numberBlueWins = blueWins.length;
+  const numberWins = numberRedWins + numberBlueWins;
+
+  const numberRedLosses = redResultsRanked.filter((result) => result.winnerSide === "blue").length;
+  const numberBlueLosses = blueResultsRanked.filter((result) => result.winnerSide === "red").length;
+  const numberLosses = numberRedLosses + numberBlueLosses;
+
+  let redWinRate = numberRedWins / redResultsRanked.length;
+  let blueWinRate = numberBlueWins / blueResultsRanked.length;
+  let winRate = numberWins / numberGames;
+
+  redResultsRanked = redResultsRanked.filter((result) => !result.hasBeenVoted);
+  blueResultsRanked = blueResultsRanked.filter((result) => !result.hasBeenVoted);
+  allResultsRanked = allResultsRanked.filter((result) => !result.hasBeenVoted);
+  numberGames = allResultsRanked.length;
+
+  redWins = redResultsRanked.filter((result) => !result.hasBeenVoted);
+  blueWins = blueResultsRanked.filter((result) => !result.hasBeenVoted);
+  const allWins = [...redWins, ...blueWins];
+
   const redTotalScore = redResultsRanked.reduce((acc, result) => {
     const playerResult = result.redPlayers.find((p) => p.userId.toString() === player._id.toString());
     return acc + playerResult.score;
@@ -269,18 +304,6 @@ async function updateStatPlayerRanked({ player, mode }) {
   let blueKdRatio = blueTotalKills / blueTotalDeaths;
   let kdRatio = totalKills / totalDeaths;
 
-  const redWins = redResultsRanked.filter((result) => result.winnerSide === "red");
-  const blueWins = blueResultsRanked.filter((result) => result.winnerSide === "blue");
-  const allWins = [...redWins, ...blueWins];
-
-  const numberRedWins = redWins.length;
-  const numberBlueWins = blueWins.length;
-  const numberWins = numberRedWins + numberBlueWins;
-
-  const numberRedLosses = redResultsRanked.filter((result) => result.winnerSide === "blue").length;
-  const numberBlueLosses = blueResultsRanked.filter((result) => result.winnerSide === "red").length;
-  const numberLosses = numberRedLosses + numberBlueLosses;
-
   let averageRedTeamScore = redTotalScore / redResultsRanked.length;
   let averageBlueTeamScore = blueTotalScore / blueResultsRanked.length;
 
@@ -294,10 +317,6 @@ async function updateStatPlayerRanked({ player, mode }) {
   }, 0);
   let averageWinningScore = winningTotalScore / numberWins;
   let averageLosingScore = losingTotalScore / numberLosses;
-
-  let redWinRate = numberRedWins / redResultsRanked.length;
-  let blueWinRate = numberBlueWins / blueResultsRanked.length;
-  let winRate = numberWins / numberGames;
 
   let highestScore = 0;
   let highestScoreResultId = null;
@@ -449,6 +468,13 @@ async function updateStatPlayerRanked({ player, mode }) {
 const computeEloResultRanked = async (resultRanked) => {
   if (resultRanked.freezed) return { ok: false, errorCode: "ELO_ALREADY_COMPUTED" };
 
+  if (resultRanked.hasBeenCanceled) {
+    resultRanked.freezed = true;
+    resultRanked.freezedAt = new Date();
+    await resultRanked.save();
+    return resultRanked;
+  }
+
   let winnerResultPlayers = [];
   let looserResultPlayers = [];
   if (resultRanked.winnerSide === "red") {
@@ -594,6 +620,110 @@ const arePlayersReady = ({ resultRanked }) => {
   return resultRanked.redPlayers.every((player) => player.isReady) && resultRanked.bluePlayers.every((player) => player.isReady);
 };
 
+const arePlayersVotedRed = ({ resultRanked }) => {
+  const allPlayers = [...resultRanked.redPlayers, ...resultRanked.bluePlayers];
+  const redVotes = allPlayers.filter((player) => player.voteRed).length;
+  const totalPlayers = allPlayers.length;
+  return redVotes >= 0.5 + totalPlayers / 2;
+};
+const arePlayersVotedBlue = ({ resultRanked }) => {
+  const allPlayers = [...resultRanked.redPlayers, ...resultRanked.bluePlayers];
+  const blueVotes = allPlayers.filter((player) => player.voteBlue).length;
+  const totalPlayers = allPlayers.length;
+  return blueVotes >= 0.5 + totalPlayers / 2;
+};
+const arePlayersVotedCancel = ({ resultRanked }) => {
+  const allPlayers = [...resultRanked.redPlayers, ...resultRanked.bluePlayers];
+  const cancelVotes = allPlayers.filter((player) => player.voteCancel).length;
+  const totalPlayers = allPlayers.length;
+  return cancelVotes >= 0.5 + totalPlayers / 2;
+};
+
+const voteCancel = async ({ resultRanked, user }) => {
+  if (!resultRanked) return { ok: false, message: "Result ranked not found" };
+  if (
+    !resultRanked.redPlayers.some((player) => player.userId.toString() === user._id.toString()) &&
+    !resultRanked.bluePlayers.some((player) => player.userId.toString() === user._id.toString())
+  )
+    return { ok: false, message: "Player not in result ranked" };
+
+  resultRanked.redPlayers.forEach((player) => {
+    if (player.userId.toString() === user._id.toString()) {
+      player.voteCancel = true;
+      player.voteRed = false;
+      player.voteBlue = false;
+    }
+  });
+
+  resultRanked.bluePlayers.forEach((player) => {
+    if (player.userId.toString() === user._id.toString()) {
+      player.voteCancel = true;
+      player.voteRed = false;
+      player.voteBlue = false;
+    }
+  });
+
+  await resultRanked.save();
+
+  return { ok: true, data: { resultRanked, user } };
+};
+
+const voteRed = async ({ resultRanked, user }) => {
+  if (!resultRanked) return { ok: false, message: "Result ranked not found" };
+  if (
+    !resultRanked.redPlayers.some((player) => player.userId.toString() === user._id.toString()) &&
+    !resultRanked.bluePlayers.some((player) => player.userId.toString() === user._id.toString())
+  )
+    return { ok: false, message: "Player not in result ranked" };
+
+  resultRanked.redPlayers.forEach((player) => {
+    if (player.userId.toString() === user._id.toString()) {
+      player.voteRed = true;
+      player.voteCancel = false;
+      player.voteBlue = false;
+    }
+  });
+
+  resultRanked.bluePlayers.forEach((player) => {
+    if (player.userId.toString() === user._id.toString()) {
+      player.voteRed = true;
+      player.voteCancel = false;
+      player.voteBlue = false;
+    }
+  });
+
+  await resultRanked.save();
+  return { ok: true, data: { resultRanked, user } };
+};
+
+const voteBlue = async ({ resultRanked, user }) => {
+  if (!resultRanked) return { ok: false, message: "Result ranked not found" };
+  if (
+    !resultRanked.redPlayers.some((player) => player.userId.toString() === user._id.toString()) &&
+    !resultRanked.bluePlayers.some((player) => player.userId.toString() === user._id.toString())
+  )
+    return { ok: false, message: "Player not in result ranked" };
+
+  resultRanked.redPlayers.forEach((player) => {
+    if (player.userId.toString() === user._id.toString()) {
+      player.voteBlue = true;
+      player.voteCancel = false;
+      player.voteRed = false;
+    }
+  });
+
+  resultRanked.bluePlayers.forEach((player) => {
+    if (player.userId.toString() === user._id.toString()) {
+      player.voteBlue = true;
+      player.voteCancel = false;
+      player.voteRed = false;
+    }
+  });
+
+  await resultRanked.save();
+  return { ok: true, data: { resultRanked, user } };
+};
+
 const deleteResultRankedDiscord = async ({ resultRanked }) => {
   if (!resultRanked.guildId) return { ok: true };
 
@@ -627,4 +757,10 @@ module.exports = {
   join,
   leave,
   deleteResultRankedDiscord,
+  voteCancel,
+  voteRed,
+  voteBlue,
+  arePlayersVotedRed,
+  arePlayersVotedBlue,
+  arePlayersVotedCancel,
 };
