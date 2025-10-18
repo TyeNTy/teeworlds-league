@@ -22,6 +22,9 @@ const PlayerSchema = new mongoose.Schema({
   eloAfter: { type: Number, default: 1000 },
 
   isReady: { type: Boolean, default: false },
+  voteCancel: { type: Boolean, default: false },
+  voteRed: { type: Boolean, default: false },
+  voteBlue: { type: Boolean, default: false },
 });
 
 const Schema = new mongoose.Schema(
@@ -65,8 +68,13 @@ const Schema = new mongoose.Schema(
     redEloGain: { type: Number, default: 0 },
     blueEloGain: { type: Number, default: 0 },
 
+    hasBeenCanceled: { type: Boolean, default: false },
+
     freezed: { type: Boolean, default: false },
     freezedAt: { type: Date },
+
+    hasBeenVoted: { type: Boolean, default: false },
+    hasBeenVotedAt: { type: Date },
 
     // Discord
     guildId: { type: String, trim: true },
@@ -78,6 +86,9 @@ const Schema = new mongoose.Schema(
     readyButtonId: { type: String, trim: true },
     voiceRedChannelId: { type: String, trim: true },
     voiceBlueChannelId: { type: String, trim: true },
+    voteCancelButtonId: { type: String, trim: true },
+    voteRedButtonId: { type: String, trim: true },
+    voteBlueButtonId: { type: String, trim: true },
   },
   {
     timestamps: true,

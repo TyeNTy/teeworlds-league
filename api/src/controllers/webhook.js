@@ -56,7 +56,7 @@ router.post(
     }
 
     if (resultRanked.guildId) {
-      const discordMessage = discordMessageResultRanked({ resultRanked });
+      const discordMessage = await discordMessageResultRanked({ resultRanked });
       await discordService.sendMessage({
         channelId: resultRanked.textChannelDisplayFinalResultId,
         ...discordMessage,
