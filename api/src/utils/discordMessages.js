@@ -216,7 +216,14 @@ const getRankEmoji = (position) => {
 
 const formatLeaderboard = ({ stats }) => {
   const ranks = stats.map((stat, i) => getRankEmoji(i + 1)).join("\n");
-  const players = stats.map((stat) => `@${stat.userName}`).join("\n");
+  const players = stats
+    .map((stat) => {
+      if (stat.discordId) {
+        return `<@${stat.discordId}>`;
+      }
+      return stat.userName;
+    })
+    .join("\n");
   const ratings = stats.map((stat) => `${stat.elo.toFixed(2)} (${stat.numberWins}W/${stat.numberLosses}L)`).join("\n");
 
   return {

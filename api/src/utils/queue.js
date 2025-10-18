@@ -22,6 +22,8 @@ const createGameFromQueue = async ({ queue }) => {
           userId: player._id,
           elo: player.elo,
 
+          discordId: player.discordId,
+
           modeId: queue.modeId,
           modeName: queue.modeName,
         });
@@ -44,6 +46,8 @@ const createGameFromQueue = async ({ queue }) => {
         statRanked = await StatRankedModel.create({
           userId: player._id,
           elo: player.elo,
+
+          discordId: player.discordId,
 
           modeId: queue.modeId,
           modeName: queue.modeName,

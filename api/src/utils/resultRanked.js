@@ -392,6 +392,7 @@ async function updateStatPlayerRanked({ player, mode }) {
   if (isNaN(averageLosingScore)) averageLosingScore = 0;
 
   statRanked.set({
+    discordId: player.discordId,
     clanId: player.clanId,
     clanName: player.clanName,
     userName: player.userName,
