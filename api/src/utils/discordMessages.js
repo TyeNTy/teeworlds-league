@@ -708,6 +708,15 @@ const voteRedResultRankedButtonCallBack = async (interaction) => {
       messageId: resultRanked.messageResultId,
       ...discordMessage,
     });
+
+    const queue = await QueueModel.findById(resultRanked.queueId);
+    if (queue && queue.textChannelDisplayClassementId) {
+      await discordService.updateMessage({
+        messageId: queue.messageClassementId,
+        channelId: queue.textChannelDisplayClassementId,
+        ...(await discordMessageClassement({ queue })),
+      });
+    }
   } catch (error) {
     console.error(error);
   }
@@ -742,6 +751,15 @@ const voteBlueResultRankedButtonCallBack = async (interaction) => {
         channelId: resultRanked.textChannelDisplayFinalResultId,
         ...(await discordMessageResultRanked({ resultRanked })),
       });
+
+      const queue = await QueueModel.findById(resultRanked.queueId);
+      if (queue && queue.textChannelDisplayClassementId) {
+        await discordService.updateMessage({
+          messageId: queue.messageClassementId,
+          channelId: queue.textChannelDisplayClassementId,
+          ...(await discordMessageClassement({ queue })),
+        });
+      }
 
       return;
     }

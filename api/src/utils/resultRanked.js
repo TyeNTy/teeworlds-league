@@ -728,16 +728,13 @@ const voteBlue = async ({ resultRanked, user }) => {
 const deleteResultRankedDiscord = async ({ resultRanked }) => {
   if (!resultRanked.guildId) return { ok: true };
 
-  const resDeleteTextChannelDisplayResult = await discordService.deleteChannel({ channelId: resultRanked.textChannelDisplayResultId });
-  if (!resDeleteTextChannelDisplayResult.ok) return resDeleteTextChannelDisplayResult;
+  await discordService.deleteChannel({ channelId: resultRanked.textChannelDisplayResultId });
   resultRanked.textChannelDisplayResultId = null;
 
-  const resDeleteVoiceRedChannel = await discordService.deleteChannel({ channelId: resultRanked.voiceRedChannelId });
-  if (!resDeleteVoiceRedChannel.ok) return resDeleteVoiceRedChannel;
+  await discordService.deleteChannel({ channelId: resultRanked.voiceRedChannelId });
   resultRanked.voiceRedChannelId = null;
 
-  const resDeleteVoiceBlueChannel = await discordService.deleteChannel({ channelId: resultRanked.voiceBlueChannelId });
-  if (!resDeleteVoiceBlueChannel.ok) return resDeleteVoiceBlueChannel;
+  await discordService.deleteChannel({ channelId: resultRanked.voiceBlueChannelId });
   resultRanked.voiceBlueChannelId = null;
 
   discordService.unregisterButtonCallback(resultRanked.readyButtonId);
