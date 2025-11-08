@@ -1,24 +1,31 @@
 class Mutex {
   constructor() {
-    this.resolveCurrent = null;
-    this.current = null;
+    this.queue = [];
+    this.locked = false;
   }
 
   async acquire() {
-    while (this.current) {
-      await this.current;
-    }
-    this.current = new Promise((resolve) => {
-      this.resolveCurrent = resolve;
+    return new Promise((resolve) => {
+      // Add this acquirer to the queue in order
+      this.queue.push(resolve);
+
+      // Try to grant the lock if available
+      this._tryGrant();
     });
   }
 
-  release() {
-    this.current = null;
-    if (this.resolveCurrent) {
-      this.resolveCurrent();
+  _tryGrant() {
+    if (!this.locked && this.queue.length > 0) {
+      this.locked = true;
+      const resolve = this.queue.shift();
+      resolve();
     }
-    this.resolveCurrent = null;
+  }
+
+  release() {
+    this.locked = false;
+    // Grant to the next waiter in queue
+    this._tryGrant();
   }
 
   async runExclusive(callback) {
