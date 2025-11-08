@@ -28,9 +28,9 @@ const StageSchema = new mongoose.Schema({
 
   numberOfTeamsQualified: { type: Number, default: 0 },
 
-  results: { type: [ResultSchema], default: [] },
-  ongoingResults: { type: [ResultSchema], default: [] },
-  nextResults: { type: [ResultSchema], default: [] },
+  results: { type: [ObjectId], default: [] },
+  ongoingResults: { type: [ObjectId], default: [] },
+  nextResults: { type: [ObjectId], default: [] },
 
   classement: { type: [TeamSchema], default: [] },
   qualifiedTeams: { type: [TeamSchema], default: [] },
@@ -52,6 +52,8 @@ const Schema = new mongoose.Schema(
 
     registrationStartDate: { type: Date, default: Date.now },
     registrationEndDate: { type: Date, default: null },
+
+    numberOfServers: { type: Number, default: 1 },
 
     twitchUrls: { type: [String], default: [] },
 
