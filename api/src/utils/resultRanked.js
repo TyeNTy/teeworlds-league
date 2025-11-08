@@ -7,6 +7,7 @@ const { detectMapFromServer } = require("./map");
 const discordService = require("../services/discordService");
 
 const { freeMutexWithId } = require("./mutex");
+const { createGameFromQueue } = require("./queue");
 
 /*
 {
@@ -605,6 +606,10 @@ const join = async ({ queue, user }) => {
 
   queue.players.push(playerObj);
   await queue.save();
+
+  // check if we can create a game immediately
+  // No await, this should run in background, note that the function is protected by a mutex and would not run in parallel to this one, also it will reload the queue from DB
+  createGameFromQueue({ queue });
 
   return { ok: true, data: { queue, user } };
 };
