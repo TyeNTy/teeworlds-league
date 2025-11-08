@@ -5,10 +5,11 @@ const morgan = require("morgan");
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const fs = require("fs");
-const initCron = require("./cron/intCron");
 const DiscordService = require("./services/discordService");
 const QueueModel = require("./models/queue");
 const ResultRankedModel = require("./models/resultRanked");
+
+const { createGameFromQueue } = require("./utils/queue");
 
 const { PORT, SENTRY_DSN, ENVIRONMENT, APP_URL } = require("./config");
 const discordService = require("./services/discordService");
@@ -73,7 +74,6 @@ if (ENVIRONMENT === "production") {
   });
 }
 
-initCron();
 DiscordService.init().then(() => {
   const initCallbacksForQueues = async () => {
     const queues = await QueueModel.find({});
@@ -90,10 +90,44 @@ DiscordService.init().then(() => {
       if (resultRanked.voteBlueButtonId) discordService.registerButtonCallback(resultRanked.voteBlueButtonId, voteBlueResultRankedButtonCallBack);
     }
 
+    const createGamesFromQueues = async () => {
+      const queues = await QueueModel.find({});
+
+      for (const queue of queues) {
+        const resCreateGameFromQueue = await createGameFromQueue({ queue });
+      }
+    }
+
+    // initialize creation of games from queues every three seconds
+    // TODO: call this function when a player joins or leaves a queue instead of using setInterval
+    setInterval(createGamesFromQueues, 3000);
+
     return { ok: true };
   };
 
   initCallbacksForQueues().then(() => {
     console.log("Callbacks for queues initialized");
   });
+=======
+DiscordService.init().then(async () => {
+  await queueService.onStartup();
+  await resultRankedService.onStartup();
+});
+
+
+async function shutdown() {
+    console.log('Shutting down server...');
+    await queueService.onShutdown();
+    await resultRankedService.onShutdown();
+}
+
+process.on('SIGINT', async () => {
+  console.log('Received SIGINT, shutting down gracefully...');
+  await shutdown();
+});
+
+process.on('SIGTERM', async () => {
+  console.log('Received SIGTERM, shutting down gracefully...');
+  await shutdown();
+>>>>>>> a96bcc1 (remove cron and use setInterval in the QueueService)
 });
