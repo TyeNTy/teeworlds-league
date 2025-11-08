@@ -3,6 +3,7 @@ const router = express.Router();
 const passport = require("passport");
 const enumUserRole = require("../enums/enumUserRole");
 const UserModel = require("../models/user");
+const QueueModel = require("../models/queue");
 const ResultRankedModel = require("../models/resultRanked");
 const { catchErrors, parseDiscordMessage } = require("../utils");
 const {
@@ -13,7 +14,7 @@ const {
   deleteResultRankedDiscord,
 } = require("../utils/resultRanked");
 const discordService = require("../services/discordService");
-const { discordMessageResultRanked } = require("../utils/discordMessages");
+const { discordMessageResultRanked, discordMessageClassement } = require("../utils/discordMessages");
 
 router.get(
   "/:id",
@@ -203,6 +204,15 @@ router.post(
         channelId: resultRanked.textChannelDisplayFinalResultId,
         ...(await discordMessageResultRanked({ resultRanked })),
       });
+
+      const queue = await QueueModel.findById(resultRanked.queueId);
+      if (queue && queue.textChannelDisplayClassementId) {
+        await discordService.updateMessage({
+          messageId: queue.messageClassementId,
+          channelId: queue.textChannelDisplayClassementId,
+          ...(await discordMessageClassement({ queue })),
+        });
+      }
     }
 
     await resultRanked.save();

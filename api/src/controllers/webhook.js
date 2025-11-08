@@ -4,7 +4,7 @@ const { catchErrors, updateStatResult } = require("../utils");
 const { WEBHOOK_TOKEN, WEBHOOK_RANKED_TOKEN } = require("../config");
 const { updateAllStatsResultRanked, parseWebhookMessage, deleteResultRankedDiscord } = require("../utils/resultRanked");
 const WebhookModel = require("../models/webhooks");
-const { discordMessageResultRanked } = require("../utils/discordMessages");
+const { discordMessageResultRanked, discordMessageClassement } = require("../utils/discordMessages");
 const discordService = require("../services/discordService");
 
 router.post(
@@ -61,6 +61,15 @@ router.post(
         channelId: resultRanked.textChannelDisplayFinalResultId,
         ...discordMessage,
       });
+
+      const queue = await QueueModel.findById(resultRanked.queueId);
+      if (queue) {
+        await discordService.updateMessage({
+          channelId: queue.textChannelDisplayClassementId,
+          messageId: queue.messageClassementId,
+          ...(await discordMessageClassement({ queue })),
+        });
+      }
     }
 
     webhook.ok = true;

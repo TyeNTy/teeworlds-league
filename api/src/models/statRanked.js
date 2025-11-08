@@ -8,6 +8,8 @@ const Schema = new mongoose.Schema(
     userName: { type: String },
     avatar: { type: String },
 
+    discordId: { type: String },
+
     modeId: { type: ObjectId },
     modeName: { type: String },
 

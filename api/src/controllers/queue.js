@@ -9,11 +9,18 @@ const { catchErrors } = require("../utils");
 const { enumNumberOfPlayersPerTeam, enumNumberOfPlayersForGame, enumModes } = require("../enums/enumModes");
 const discordService = require("../services/discordService");
 const { join, leave } = require("../utils/resultRanked");
-const { discordMessageQueue } = require("../utils/discordMessages");
+const { discordMessageQueue, discordMessageClassement } = require("../utils/discordMessages");
 
 const createNewQueue = async ({ queue }) => {
   const resCreateCategoryQueue = await discordService.createCategory({ guildId: queue.guildId, name: queue.name });
   if (!resCreateCategoryQueue.ok) return resCreateCategoryQueue;
+
+  const resCreateTextChannelDisplayClassement = await discordService.createTextChannel({
+    guildId: queue.guildId,
+    name: queue.name + " - Classement",
+    categoryId: resCreateCategoryQueue.data.category.id,
+  });
+  if (!resCreateTextChannelDisplayClassement.ok) return resCreateTextChannelDisplayClassement;
 
   const resCreateTextChannelDisplayQueue = await discordService.createTextChannel({
     guildId: queue.guildId,
@@ -30,6 +37,7 @@ const createNewQueue = async ({ queue }) => {
   if (!resCreateTextChannelDisplayResults.ok) return resCreateTextChannelDisplayResults;
 
   queue.categoryQueueId = resCreateCategoryQueue.data.category.id;
+  queue.textChannelDisplayClassementId = resCreateTextChannelDisplayClassement.data.channel.id;
   queue.textChannelDisplayQueueId = resCreateTextChannelDisplayQueue.data.channel.id;
   queue.textChannelDisplayResultsId = resCreateTextChannelDisplayResults.data.channel.id;
 
@@ -39,7 +47,15 @@ const createNewQueue = async ({ queue }) => {
     ...discordMessage,
   });
 
+  const messageClassement = await discordMessageClassement({ queue });
+  const resSendMessageClassement = await discordService.sendMessage({
+    channelId: queue.textChannelDisplayClassementId,
+    ...messageClassement,
+  });
+  if (!resSendMessageClassement.ok) return resSendMessageClassement;
+
   queue.messageQueueId = resSendMessage.data.message.id;
+  queue.messageClassementId = resSendMessageClassement.data.message.id;
 
   await queue.save();
 
@@ -75,9 +91,15 @@ const updateQueue = async ({ queue }) => {
 const deleteQueue = async ({ queue }) => {
   if (!queue.guildId) return { ok: true };
 
+  const resDeleteTextChannelDisplayClassement = await discordService.deleteChannel({ channelId: queue.textChannelDisplayClassementId });
+  if (!resDeleteTextChannelDisplayClassement.ok) return resDeleteTextChannelDisplayClassement;
+  queue.textChannelDisplayClassementId = null;
+  queue.messageClassementId = null;
+
   const resDeleteTextChannelDisplayQueue = await discordService.deleteChannel({ channelId: queue.textChannelDisplayQueueId });
   if (!resDeleteTextChannelDisplayQueue.ok) return resDeleteTextChannelDisplayQueue;
   queue.textChannelDisplayQueueId = null;
+  queue.messageQueueId = null;
 
   const resDeleteTextChannelDisplayResults = await discordService.deleteChannel({ channelId: queue.textChannelDisplayResultsId });
   if (!resDeleteTextChannelDisplayResults.ok) return resDeleteTextChannelDisplayResults;
