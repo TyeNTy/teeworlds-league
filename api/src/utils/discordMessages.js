@@ -506,16 +506,42 @@ const createButton = ({ customId, label, style }) => {
   return new ButtonBuilder().setCustomId(customId).setLabel(label).setStyle(style);
 };
 
+const findQueueByInteraction = async (interaction) => {
+  const queueId = interaction.customId.split("_")[0];
+  const queue = await QueueModel.findById(queueId);
+
+  if (!queue) return { ok: false, message: "Queue not found" };
+
+  const user = await UserModel.findOne({ userName: interaction.member.displayName });
+  if (!user) return { ok: false, message: "User not found" };
+
+  return { ok: true,  data: { queue, user } };
+};
+
+const findResultRankedByInteraction = async (interaction) => {
+  const resultRankedId = interaction.customId.split("_")[0];
+  const resultRanked = await ResultRankedModel.findById(resultRankedId);
+
+  if (!resultRanked) return { ok: false, message: "Game not found" };
+
+  const user = await UserModel.findOne({ userName: interaction.member.displayName });
+  if (!user) return { ok: false, message: "User not found" };
+
+  const resReady = await ready({ resultRanked, user });
+  if (!resReady.ok) return { ok: false, message: "Player not in result ranked" };
+
+  return { ok: true,  data: { resultRanked, user } };
+};
+
 // CALLBACKS
 
 const joinQueueButtonCallBack = async (interaction) => {
   try {
-    const queueId = interaction.customId.split("_")[0];
-    const queue = await QueueModel.findById(queueId);
-    if (!queue) return { ok: false, message: "Queue not found" };
 
-    const user = await UserModel.findOne({ userName: interaction.member.displayName });
-    if (!user) return { ok: false, message: "User not found" };
+    const resExtract = findQueueByInteraction(interaction);
+    if (!resExtract.ok) return resExtract;
+
+    const { queue, user } = resExtract.data;
 
     const resJoin = await join({ queue, user });
     if (!resJoin.ok) {
@@ -560,12 +586,11 @@ const joinQueueButtonCallBack = async (interaction) => {
 
 const leaveQueueButtonCallBack = async (interaction) => {
   try {
-    const queueId = interaction.customId.split("_")[0];
-    const queue = await QueueModel.findById(queueId);
-    if (!queue) return { ok: false, message: "Queue not found" };
 
-    const user = await UserModel.findOne({ userName: interaction.member.displayName });
-    if (!user) return { ok: false, message: "User not found" };
+    const resExtract = findQueueByInteraction(interaction);
+    if (!resExtract.ok) return resExtract;
+
+    const { queue, user } = resExtract.data;
 
     const resLeave = await leave({ queue, user });
     if (!resLeave.ok) {
@@ -594,12 +619,11 @@ const leaveQueueButtonCallBack = async (interaction) => {
 
 const readyButtonCallBack = async (interaction) => {
   try {
-    const resultRankedId = interaction.customId.split("_")[0];
-    const resultRanked = await ResultRankedModel.findById(resultRankedId);
-    if (!resultRanked) return { ok: false, message: "Game not found" };
 
-    const user = await UserModel.findOne({ userName: interaction.member.displayName });
-    if (!user) return { ok: false, message: "User not found" };
+    const resExtract = findResultRankedByInteraction(interaction);
+    if (!resExtract.ok) return resExtract;
+    
+    const { resultRanked, user } = resExtract.data;
 
     const resReady = await ready({ resultRanked, user });
     if (!resReady.ok) return { ok: false, message: "Player not in result ranked" };
@@ -628,12 +652,11 @@ const readyButtonCallBack = async (interaction) => {
 
 const cancelResultRankedButtonCallBack = async (interaction) => {
   try {
-    const resultRankedId = interaction.customId.split("_")[0];
-    const resultRanked = await ResultRankedModel.findById(resultRankedId);
-    if (!resultRanked) return { ok: false, message: "Game not found" };
 
-    const user = await UserModel.findOne({ discordId: interaction.member.id });
-    if (!user) return { ok: false, message: "User not found" };
+    const resExtract = findResultRankedByInteraction(interaction);
+    if (!resExtract.ok) return resExtract;
+
+    const { resultRanked, user } = resExtract.data;
 
     const resVoteCancel = await voteCancel({ resultRanked, user });
     if (!resVoteCancel.ok) return { ok: false, message: "Player not in result ranked" };
@@ -671,12 +694,11 @@ const cancelResultRankedButtonCallBack = async (interaction) => {
 
 const voteRedResultRankedButtonCallBack = async (interaction) => {
   try {
-    const resultRankedId = interaction.customId.split("_")[0];
-    const resultRanked = await ResultRankedModel.findById(resultRankedId);
-    if (!resultRanked) return { ok: false, message: "Game not found" };
 
-    const user = await UserModel.findOne({ discordId: interaction.member.id });
-    if (!user) return { ok: false, message: "User not found" };
+    const resExtract = findResultRankedByInteraction(interaction);
+    if (!resExtract.ok) return resExtract;
+
+    const { resultRanked, user } = resExtract.data;
 
     const resVoteRed = await voteRed({ resultRanked, user });
     if (!resVoteRed.ok) return { ok: false, message: "Player not in result ranked" };
@@ -724,12 +746,11 @@ const voteRedResultRankedButtonCallBack = async (interaction) => {
 
 const voteBlueResultRankedButtonCallBack = async (interaction) => {
   try {
-    const resultRankedId = interaction.customId.split("_")[0];
-    const resultRanked = await ResultRankedModel.findById(resultRankedId);
-    if (!resultRanked) return { ok: false, message: "Game not found" };
 
-    const user = await UserModel.findOne({ discordId: interaction.member.id });
-    if (!user) return { ok: false, message: "User not found" };
+    const resExtract = findResultRankedByInteraction(interaction);
+    if (!resExtract.ok) return resExtract;
+
+    const { resultRanked, user } = resExtract.data;
 
     const resVoteBlue = await voteBlue({ resultRanked, user });
     if (!resVoteBlue.ok) return { ok: false, message: "Player not in result ranked" };
