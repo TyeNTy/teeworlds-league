@@ -3,8 +3,9 @@ const ResultRankedModel = require("../models/resultRanked");
 const StatRankedModel = require("../models/statRanked");
 const discordService = require("../services/discordService");
 const { discordMessageResultRankedNotReady, discordPrivateMessageNewQueue, discordMessageQueue } = require("./discordMessages");
+const {runExclusiveWithId} = require("./mutex");
 
-const createGameFromQueue = async ({ queue }) => {
+const createGameFromQueueWithoutLock = async ({ queue }) => {
   const players = queue.players;
   if (players.length < queue.numberOfPlayersForGame) return { ok: false, message: "Not enough players in queue" };
 
@@ -152,6 +153,14 @@ const createGameFromQueue = async ({ queue }) => {
   await newResultRanked.save();
 
   return { ok: true, data: { newResultRanked, queue } };
+};
+
+const createGameFromQueue = async ({ queue }) => { // TODO: how long does this function need to create a game?
+  return await runExclusiveWithId(queue._id.toString(), async () => {
+    const queue = await QueueModel.findById(queue._id); // refetch the queue to be sure it's up to date
+    if (!queue) return { ok: false, message: "Queue not found" };
+    return await createGameFromQueueWithoutLock({ queue });
+  });
 };
 
 const chooseMap = (queue) => {

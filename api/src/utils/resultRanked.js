@@ -6,6 +6,8 @@ const { computeElo } = require(".");
 const { detectMapFromServer } = require("./map");
 const discordService = require("../services/discordService");
 
+const { freeMutexWithId } = require("./mutex");
+
 /*
 {
   "server": "unnamed server",
@@ -738,6 +740,8 @@ const deleteResultRankedDiscord = async ({ resultRanked }) => {
   resultRanked.voiceBlueChannelId = null;
 
   discordService.unregisterButtonCallback(resultRanked.readyButtonId);
+
+  await freeMutexWithId(resultRanked._id.toString());
 
   return { ok: true };
 };

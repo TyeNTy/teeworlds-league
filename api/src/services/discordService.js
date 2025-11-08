@@ -2,6 +2,8 @@ const { Client, GatewayIntentBits, ChannelType, Events, ActionRowBuilder, Button
 const { DISCORD_CLIENT_ID, DISCORD_BOT_TOKEN } = require("../config");
 const enumErrorCode = require("../enums/enumErrorCode");
 
+const { runExclusiveWithId, freeMutexWithId } = require('../utils/mutex');
+
 class DiscordService {
   constructor() {
     this.client = null;
@@ -32,9 +34,11 @@ class DiscordService {
         if (!interaction.isButton()) return;
 
         const callback = this.buttonCallbacks.get(interaction.customId);
+
         if (callback) {
+          const id = interaction.customId.split("_")[0]; // note: this could be a queue or a resultRanked id!
           try {
-            await callback(interaction);
+            await runExclusiveWithId( id, async () => { callback(interaction) });
           } catch (error) {
             console.error(`Error handling button interaction ${interaction.customId}:`, error);
             if (!interaction.replied && !interaction.deferred) {

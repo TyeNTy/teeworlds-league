@@ -10,7 +10,7 @@ const { enumNumberOfPlayersPerTeam, enumNumberOfPlayersForGame, enumModes } = re
 const discordService = require("../services/discordService");
 const { join, leave } = require("../utils/resultRanked");
 const { discordMessageQueue, discordMessageClassement } = require("../utils/discordMessages");
-
+const { runExclusiveWithId, freeMutexWithId } = require('../utils/mutex');
 const createNewQueue = async ({ queue }) => {
   const resCreateCategoryQueue = await discordService.createCategory({ guildId: queue.guildId, name: queue.name });
   if (!resCreateCategoryQueue.ok) return resCreateCategoryQueue;
@@ -112,6 +112,8 @@ const deleteQueue = async ({ queue }) => {
   discordService.unregisterButtonCallback(queue.joinButtonId);
   discordService.unregisterButtonCallback(queue.leaveButtonId);
 
+  await freeMutexWithId(queue._id.toString());
+
   queue.joinButtonId = null;
   queue.leaveButtonId = null;
   queue.messageQueueId = null;
@@ -172,20 +174,22 @@ router.post(
     const { id } = req.params;
     const user = req.user;
 
-    const queue = await QueueModel.findById(id);
-    const resJoin = await join({ queue, user });
-    if (!resJoin.ok) return res.status(500).send(resJoin);
+    return await runExclusiveWithId(id, async () => {
+      const queue = await QueueModel.findById(id);
+      const resJoin = await join({ queue, user });
+      if (!resJoin.ok) return res.status(500).send(resJoin);
 
-    if (queue.guildId) {
-      const discordMessage = await discordMessageQueue({ queue });
-      await discordService.updateMessage({
-        channelId: queue.textChannelDisplayQueueId,
-        messageId: queue.messageQueueId,
-        ...discordMessage,
-      });
-    }
+      if (queue.guildId) {
+        const discordMessage = await discordMessageQueue({ queue });
+        await discordService.updateMessage({
+          channelId: queue.textChannelDisplayQueueId,
+          messageId: queue.messageQueueId,
+          ...discordMessage,
+        });
+      }
 
-    return res.status(200).send({ ok: true, data: queue.responseModel() });
+      return res.status(200).send({ ok: true, data: queue.responseModel() });
+    });
   }),
 );
 
@@ -196,20 +200,22 @@ router.post(
     const { id } = req.params;
     const user = req.user;
 
-    const queue = await QueueModel.findById(id);
-    const resLeave = await leave({ queue, user });
-    if (!resLeave.ok) return res.status(500).send(resLeave);
+    return await runExclusiveWithId(id, async () => {
+      const queue = await QueueModel.findById(id);
+      const resLeave = await leave({ queue, user });
+      if (!resLeave.ok) return res.status(500).send(resLeave);
 
-    if (queue.guildId) {
-      const discordMessage = await discordMessageQueue({ queue });
-      await discordService.updateMessage({
-        channelId: queue.textChannelDisplayQueueId,
-        messageId: queue.messageQueueId,
-        ...discordMessage,
-      });
-    }
+      if (queue.guildId) {
+        const discordMessage = await discordMessageQueue({ queue });
+        await discordService.updateMessage({
+          channelId: queue.textChannelDisplayQueueId,
+          messageId: queue.messageQueueId,
+          ...discordMessage,
+        });
+      }
 
-    return res.status(200).send({ ok: true, data: queue.responseModel() });
+      return res.status(200).send({ ok: true, data: queue.responseModel() });
+    });
   }),
 );
 
