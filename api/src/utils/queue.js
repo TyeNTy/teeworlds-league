@@ -11,11 +11,11 @@ const createGameFromQueueWithoutLock = async ({ queue }) => {
 
   const { bluePlayers, redPlayers } = choosePlayers(queue);
 
-  const blueRealPlayers = await UserModel.find({ _id: { $in: bluePlayers.map((player) => player.userId) } });
-  const redRealPlayers = await UserModel.find({ _id: { $in: redPlayers.map((player) => player.userId) } });
+  const allPlayers = [...bluePlayers, ...redPlayers];
+  const allRealPlayers = await UserModel.find({ _id: { $in: allPlayers.map((player) => player.userId) } });
 
-  const bluePlayersObj = await Promise.all(
-    blueRealPlayers.map(async (player) => {
+  const allPlayersObj = await Promise.all(
+    allRealPlayers.map(async (player) => {
       let statRanked = await StatRankedModel.findOne({ userId: player._id, modeId: queue.modeId });
 
       if (!statRanked) {
@@ -39,31 +39,10 @@ const createGameFromQueueWithoutLock = async ({ queue }) => {
       };
     }),
   );
-  const redPlayersObj = await Promise.all(
-    redRealPlayers.map(async (player) => {
-      let statRanked = await StatRankedModel.findOne({ userId: player._id, modeId: queue.modeId });
 
-      if (!statRanked) {
-        statRanked = await StatRankedModel.create({
-          userId: player._id,
-          elo: player.elo,
-
-          discordId: player.discordId,
-
-          modeId: queue.modeId,
-          modeName: queue.modeName,
-        });
-      }
-
-      return {
-        userId: player._id,
-        userName: player.userName,
-        avatar: player.avatar,
-        eloBefore: statRanked.elo,
-        discordId: player.discordId,
-      };
-    }),
-  );
+  const bluePlayerIds = new Set(bluePlayers.map((p) => p.userId.toString()));
+  const bluePlayersObj = allPlayersObj.filter((p) => bluePlayerIds.has(p.userId.toString()));
+  const redPlayersObj = allPlayersObj.filter((p) => !bluePlayerIds.has(p.userId.toString()));
 
   const newResultRankedObj = {
     queueId: queue._id,
@@ -86,12 +65,8 @@ const createGameFromQueueWithoutLock = async ({ queue }) => {
 
   const newResultRanked = await ResultRankedModel.create(newResultRankedObj);
 
-  for (const player of bluePlayersObj) {
-    queue.players = queue.players.filter((playerQueue) => playerQueue.userId.toString() !== player.userId.toString());
-  }
-  for (const player of redPlayersObj) {
-    queue.players = queue.players.filter((playerQueue) => playerQueue.userId.toString() !== player.userId.toString());
-  }
+  const selectedPlayerIds = new Set(allPlayersObj.map((p) => p.userId.toString()));
+  queue.players = queue.players.filter((playerQueue) => !selectedPlayerIds.has(playerQueue.userId.toString()));
 
   queue.numberOfGames++;
   await queue.save();
@@ -133,15 +108,7 @@ const createGameFromQueueWithoutLock = async ({ queue }) => {
   });
   newResultRanked.messageReadyId = resSendMessageReady.data.message.id;
 
-  for (const player of redRealPlayers) {
-    if (!player.discordId) continue;
-    const discordPrivateMessage = discordPrivateMessageNewQueue({ resultRanked: newResultRanked });
-    await discordService.sendPrivateMessage({
-      userId: player.discordId,
-      ...discordPrivateMessage,
-    });
-  }
-  for (const player of blueRealPlayers) {
+  for (const player of allRealPlayers) {
     if (!player.discordId) continue;
     const discordPrivateMessage = discordPrivateMessageNewQueue({ resultRanked: newResultRanked });
     await discordService.sendPrivateMessage({
