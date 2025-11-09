@@ -1,5 +1,3 @@
-import "isomorphic-fetch";
-
 import { API_URL } from "../config";
 import { toast } from "react-hot-toast";
 
@@ -23,8 +21,7 @@ class api {
     response.status = res.status;
 
     if (response.displayMessage ?? true) {
-      if (!response.ok)
-        toast.error(response.message || "Woops!... Something went wrong ):");
+      if (!response.ok) toast.error(response.message || "Woops!... Something went wrong ):");
       else if (response.message) {
         toast.success(response.message);
       }
@@ -46,7 +43,7 @@ class api {
               "Content-Type": "application/json",
               Authorization: `JWT ${this.token}`,
             },
-          })
+          }),
         );
 
         resolve(response);
@@ -69,7 +66,7 @@ class api {
               Authorization: `JWT ${this.token}`,
             },
             body: typeof body === "string" ? body : JSON.stringify(body),
-          })
+          }),
         );
 
         resolve(response);
@@ -89,7 +86,7 @@ class api {
             credentials: "include",
             headers: { Authorization: `JWT ${this.token}` },
             body: formData,
-          })
+          }),
         );
 
         resolve(response);
@@ -131,7 +128,7 @@ class api {
             headers: {
               Authorization: `JWT ${this.token}`,
             },
-          })
+          }),
         );
 
         resolve(response);
@@ -154,7 +151,7 @@ class api {
               Authorization: `JWT ${this.token}`,
             },
             body: typeof body === "string" ? body : JSON.stringify(body),
-          })
+          }),
         );
 
         resolve(response);
@@ -177,7 +174,7 @@ class api {
               Authorization: `JWT ${this.token}`,
             },
             body: typeof body === "string" ? body : JSON.stringify(body),
-          })
+          }),
         );
 
         if (response.status !== 200) {
