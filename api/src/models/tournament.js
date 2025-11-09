@@ -1,6 +1,9 @@
 const mongoose = require("mongoose");
 const ObjectId = mongoose.Types.ObjectId;
-const { enumTournamentStageType } = require("../enums/enumTournament");
+const { enumTournamentStageType, enumTournamentStageStatus, enumTournamentStatus } = require("../enums/enumTournament");
+const { enumNumberOfPlayersForGame } = require("../enums/enumModes");
+const { enumMaps } = require("../enums/enumMaps");
+const { enumModes } = require("../enums/enumModes");
 
 const MODELNAME = "tournament";
 
@@ -15,6 +18,7 @@ const StageSchema = new mongoose.Schema({
   name: { type: String, trim: true },
   teams: { type: [TeamSchema], default: [] },
   type: { type: String, enum: enumTournamentStageType },
+  status: { type: String, enum: enumTournamentStageStatus, default: enumTournamentStageStatus.PENDING },
 
   numberOfPlayersForGame: { type: Number, default: enumNumberOfPlayersForGame.twoVTwo },
   numberOfPlayersPerTeam: { type: Number, default: 2 },
@@ -28,9 +32,7 @@ const StageSchema = new mongoose.Schema({
 
   numberOfTeamsQualified: { type: Number, default: 0 },
 
-  results: { type: [ObjectId], default: [] },
-  ongoingResults: { type: [ObjectId], default: [] },
-  nextResults: { type: [ObjectId], default: [] },
+  details: { type: Object, default: {} },
 
   classement: { type: [TeamSchema], default: [] },
   qualifiedTeams: { type: [TeamSchema], default: [] },
@@ -46,6 +48,8 @@ const Schema = new mongoose.Schema(
   {
     name: { type: String, trim: true },
     description: { type: String, trim: true },
+
+    status: { type: String, enum: enumTournamentStatus, default: enumTournamentStatus.PENDING },
 
     startDate: { type: Date, default: Date.now },
     endDate: { type: Date, default: null },
