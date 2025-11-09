@@ -96,7 +96,7 @@ DiscordService.init().then(() => {
       for (const queue of queues) {
         const resCreateGameFromQueue = await createGameFromQueue({ queue });
       }
-    }
+    };
 
     // initialize creation of games from queues every three seconds
     // TODO: call this function when a player joins or leaves a queue instead of using setInterval
@@ -108,42 +108,19 @@ DiscordService.init().then(() => {
   initCallbacksForQueues().then(() => {
     console.log("Callbacks for queues initialized");
   });
-=======
-DiscordService.init().then(async () => {
-  await queueService.onStartup();
-  await resultRankedService.onStartup();
 });
-
 
 async function shutdown() {
-    console.log('Shutting down server...');
-    await queueService.onShutdown();
-    await resultRankedService.onShutdown();
-}
-
-process.on('SIGINT', async () => {
-  console.log('Received SIGINT, shutting down gracefully...');
-  await shutdown();
-});
-
-process.on('SIGTERM', async () => {
-  console.log('Received SIGTERM, shutting down gracefully...');
-  await shutdown();
->>>>>>> a96bcc1 (remove cron and use setInterval in the QueueService)
-});
-
-
-async function shutdown() {
-  console.log('Shutting down server...');
+  console.log("Shutting down server...");
   // TODO: Add any cleanup logic here (e.g., closing queues gracefully)
 }
 
-process.on('SIGINT', async () => {
-  console.log('Received SIGINT, shutting down gracefully...');
+process.on("SIGINT", async () => {
+  console.log("Received SIGINT, shutting down gracefully...");
   await shutdown();
 });
 
-process.on('SIGTERM', async () => {
-  console.log('Received SIGTERM, shutting down gracefully...');
+process.on("SIGTERM", async () => {
+  console.log("Received SIGTERM, shutting down gracefully...");
   await shutdown();
 });
