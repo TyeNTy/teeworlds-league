@@ -4,16 +4,119 @@ const enumErrorCode = require("../enums/enumErrorCode");
 
 const { runExclusiveWithId, freeMutexWithId } = require('../utils/mutex');
 
+class DiscordThrottledMessageUpdateHandler {
+  constructor(client, channelId, messageId, delay_ms = 500) {
+    this.client = client;
+    this.channelId = channelId;
+    this.messageId = messageId;
+    this.pendingUpdate = null;
+    this.updateTimeout = null;
+    this.delay = delay_ms;
+    this.lastUpdateTime = Date.now() - this.delay; // allow immediate first update!
+  }
+
+  update(messageOptions) {
+    this.pendingUpdate = messageOptions;
+
+    if (this.updateTimeout) {
+      clearTimeout(this.updateTimeout);
+    }
+
+    const timeSinceLastUpdate = Date.now() - this.lastUpdateTime;
+    const remainingDelay = Math.max(0, this.delay - timeSinceLastUpdate);
+
+    this.updateTimeout = setTimeout(() => {
+      this.executeUpdate();
+    }, remainingDelay);
+  }
+
+  async executeUpdate() {
+    if (!this.pendingUpdate) return;
+
+    const updateOptions = this.pendingUpdate;
+    this.pendingUpdate = null; // prevent re-entrancy
+    this.updateTimeout = null;
+
+    try {
+      const channel = await this.client.channels.fetch(this.channelId);
+      const message = await channel.messages.fetch(this.messageId);
+
+      await message.edit(updateOptions);
+
+      this.lastUpdateTime = Date.now();
+    } catch (error) {
+      console.error(`Failed to update message ${this.messageId} in channel ${this.channelId}:`, error);
+    }
+  }
+
+  destroy() {
+    if (this.updateTimeout) {
+      clearTimeout(this.updateTimeout);
+      this.updateTimeout = null;
+    }
+    this.pendingUpdate = null;
+  }
+
+  async forceUpdate() {
+    if (this.updateTimeout) {
+      clearTimeout(this.updateTimeout);
+      this.updateTimeout = null;
+    }
+    await this.executeUpdate();
+  }
+}
+
+class DiscordThrottledMessageUpdaterManager {
+  constructor(client) {
+    this.client = client;
+    this.handlers = new Map(); // key: "channelId_messageId", value: DiscordMessageUpdater
+  }
+
+  queueUpdate(channelId, messageId, messageOptions) {
+    const key = `${channelId}_${messageId}`;
+    if (!this.handlers.has(key)) {
+      const updater = new DiscordThrottledMessageUpdateHandler(this.client, channelId, messageId);
+      this.handlers.set(key, updater);
+    }
+    const updater = this.handlers.get(key);
+    updater.update(messageOptions);
+  }
+
+  onMessageDelete(channelId, messageId) {
+    const key = `${channelId}_${messageId}`;
+    if (this.handlers.has(key)) {
+      const updater = this.handlers.get(key);
+      updater.destroy();
+      this.handlers.delete(key);
+    }
+  }
+
+  onChannelDelete(channelId) {
+    for (const key of this.handlers.keys()) {
+      if (key.startsWith(`${channelId}_`)) {
+        const updater = this.handlers.get(key);
+        updater.destroy();
+        this.handlers.delete(key);
+      }
+    }
+  }
+}
+
+
 class DiscordService {
   constructor() {
     this.client = null;
     this.buttonCallbacks = new Map(); // Store button callbacks
+
+    this.messageUpdateManager = null; // set in init
   }
 
   async init() {
     this.client = new Client({
       intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent],
     });
+
+    this.messageUpdateManager = new DiscordThrottledMessageUpdaterManager(this.client);
 
     return new Promise((resolve, reject) => {
       this.client.once(Events.ClientReady, async () => {
@@ -224,8 +327,6 @@ class DiscordService {
 
   async updateMessage({ channelId, messageId, message: newMessage, embed = null, buttons = null }) {
     try {
-      const channel = await this.client.channels.fetch(channelId);
-      const message = await channel.messages.fetch(messageId);
 
       const updateOptions = {
         content: newMessage,
@@ -240,7 +341,7 @@ class DiscordService {
         updateOptions.components = [buttonRow];
       }
 
-      await message.edit(updateOptions);
+      this.messageUpdateManager.queueUpdate(channelId, messageId, updateOptions); // note that this is throttled and may not happen immediately!
 
       return { ok: true, data: { message } };
     } catch (error) {
@@ -259,6 +360,8 @@ class DiscordService {
     } catch (error) {
       console.error(`Failed to delete message ${messageId}:`, error);
       return { ok: false, errorCode: enumErrorCode.SERVER_ERROR };
+    } finally {
+      this.messageUpdateManager.onMessageDelete(channelId, messageId); // Clean up updater if exists
     }
   }
 
@@ -298,6 +401,8 @@ class DiscordService {
     } catch (error) {
       console.error(`Failed to delete channel ${channelId}:`, error);
       return { ok: false, errorCode: enumErrorCode.SERVER_ERROR };
+    } finally {
+      this.messageUpdateManager.onChannelDelete(channelId); // Clean up updaters if exists
     }
   }
 }
