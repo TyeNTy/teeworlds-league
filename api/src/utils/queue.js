@@ -2,8 +2,9 @@ const UserModel = require("../models/user");
 const ResultRankedModel = require("../models/resultRanked");
 const StatRankedModel = require("../models/statRanked");
 const discordService = require("../services/discordService");
+const QueueModel = require("../models/queue");
 const { discordMessageResultRankedNotReady, discordPrivateMessageNewQueue, discordMessageQueue } = require("./discordMessages");
-const {runExclusiveWithId} = require("./mutex");
+const { runExclusiveWithId } = require("./mutex");
 
 const createGameFromQueueWithoutLock = async ({ queue }) => {
   const players = queue.players;
@@ -122,11 +123,12 @@ const createGameFromQueueWithoutLock = async ({ queue }) => {
   return { ok: true, data: { newResultRanked, queue } };
 };
 
-const createGameFromQueue = async ({ queue }) => { // TODO: how long does this function need to create a game?
+const createGameFromQueue = async ({ queue }) => {
+  // TODO: how long does this function need to create a game?
   return await runExclusiveWithId(queue._id.toString(), async () => {
-    const queue = await QueueModel.findById(queue._id); // refetch the queue to be sure it's up to date
-    if (!queue) return { ok: false, message: "Queue not found" };
-    return await createGameFromQueueWithoutLock({ queue });
+    const otherQueue = await QueueModel.findById(queue._id); // refetch the queue to be sure it's up to date
+    if (!otherQueue) return { ok: false, message: "Queue not found" };
+    return await createGameFromQueueWithoutLock({ queue: otherQueue });
   });
 };
 
