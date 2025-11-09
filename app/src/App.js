@@ -1,12 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
-import {
-  BrowserRouter,
-  Routes,
-  Outlet,
-  Route,
-  Navigate,
-} from "react-router-dom";
+import { BrowserRouter, Routes, Outlet, Route, Navigate } from "react-router-dom";
 import { setUser } from "./redux/auth/actions";
 
 import api from "./services/api";
@@ -23,14 +17,14 @@ const ProtectedLayout = () => {
     try {
       const res = await api.get("/user/signin_token");
       if (!res.ok || !res.user) {
-        setLoading(false);
         dispatch(setUser(null));
         return;
       }
       if (res.token) api.setToken(res.token);
       dispatch(setUser(res.user));
     } catch (e) {
-      console.log(e);
+      console.error("Error fetching user:", e);
+      dispatch(setUser(null));
     } finally {
       setLoading(false);
     }
@@ -62,7 +56,7 @@ const App = () => {
         </Route>
 
         <Route path="/auth/*" element={<Auth />} />
-        <Route path="/*" index element={<Auth />} />
+        <Route path="/*" element={<Auth />} />
       </Routes>
     </BrowserRouter>
   );
