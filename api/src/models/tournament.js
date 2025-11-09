@@ -77,5 +77,27 @@ const Schema = new mongoose.Schema(
   },
 );
 
+Schema.methods.responseModel = function () {
+  return {
+    _id: this._id,
+    name: this.name,
+    description: this.description,
+    status: this.status,
+    startDate: this.startDate,
+    endDate: this.endDate,
+    registrationStartDate: this.registrationStartDate,
+    registrationEndDate: this.registrationEndDate,
+    numberOfServers: this.numberOfServers,
+    twitchUrls: this.twitchUrls,
+    numberOfPlayersPerTeam: this.numberOfPlayersPerTeam,
+    registeredTeams: this.registeredTeams,
+    stages: this.stages,
+    classement: this.classement,
+    winnerTeam: this.winnerTeam,
+    secondTeam: this.secondTeam,
+    thirdTeam: this.thirdTeam,
+  };
+};
+
 const OBJ = mongoose.model(MODELNAME, Schema);
 module.exports = OBJ;

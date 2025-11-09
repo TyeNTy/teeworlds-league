@@ -57,6 +57,7 @@ app.use("/resultRanked", require("./controllers/resultRanked"));
 app.use("/statRanked", require("./controllers/statRanked"));
 app.use("/mode", require("./controllers/mode"));
 app.use("/discord", require("./controllers/discord"));
+app.use("/tournament", require("./controllers/tournament"));
 
 if (ENVIRONMENT === "production") {
   var https = require("https");

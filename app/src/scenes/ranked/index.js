@@ -7,6 +7,7 @@ import Queues from "./queues";
 import ResultsRanked from "./resultsRanked";
 import StatsRanked from "./statsRanked";
 import Modes from "./modes";
+import Tournaments from "./tournaments";
 
 const Ranked = () => {
   return (
@@ -20,6 +21,7 @@ const Ranked = () => {
             <Route path="/results/*" element={<ResultsRanked />} />
             <Route path="/stats/*" element={<StatsRanked />} />
             <Route path="/modes/*" element={<Modes />} />
+            <Route path="/tournaments/*" element={<Tournaments />} />
             <Route path="" element={<Users />} />
           </Routes>
         </div>

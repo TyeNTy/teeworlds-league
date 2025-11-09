@@ -95,6 +95,11 @@ const TopBarRanked = () => {
                 Queues
               </Link>
             </div>
+            <div className="flex items-center pr-4">
+              <Link to="./tournaments" className="ml-2">
+                Tournaments
+              </Link>
+            </div>
             {user?.role === "ADMIN" && (
               <div className="flex items-center pr-4">
                 <Link to="./modes" className="ml-2">
