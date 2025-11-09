@@ -145,13 +145,13 @@ class DiscordService {
           } catch (error) {
             console.error(`Error handling button interaction ${interaction.customId}:`, error);
             if (!interaction.replied && !interaction.deferred) {
-              await interaction.reply({ content: "An error occurred while processing your request.", flags: [MessageFlags.Ephemeral] });
+              interaction.reply({ content: "An error occurred while processing your request.", flags: [MessageFlags.Ephemeral] });
             }
           }
         } else {
           console.warn(`No callback found for button: ${interaction.customId}`);
           if (!interaction.replied && !interaction.deferred) {
-            await interaction.reply({ content: "This button is not configured.", flags: [MessageFlags.Ephemeral] });
+            interaction.reply({ content: "This button is not configured.", flags: [MessageFlags.Ephemeral] });
           }
         }
       });

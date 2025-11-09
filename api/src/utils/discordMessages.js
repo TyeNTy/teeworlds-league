@@ -545,7 +545,7 @@ const joinQueueButtonCallBack = async (interaction) => {
 
     const resJoin = await join({ queue, user });
     if (!resJoin.ok) {
-      await interaction.reply({
+      interaction.reply({
         content: resJoin.message || "You are already in the queue!",
         flags: [MessageFlags.Ephemeral],
       });
@@ -554,7 +554,7 @@ const joinQueueButtonCallBack = async (interaction) => {
 
     await queue.save();
 
-    await interaction.reply({
+    interaction.reply({
       content: `You have been added to the queue!`,
       flags: [MessageFlags.Ephemeral],
     });
@@ -594,14 +594,14 @@ const leaveQueueButtonCallBack = async (interaction) => {
 
     const resLeave = await leave({ queue, user });
     if (!resLeave.ok) {
-      await interaction.reply({
+      interaction.reply({
         content: resLeave.message || "You are not in the queue!",
         flags: [MessageFlags.Ephemeral],
       });
       return;
     }
 
-    await interaction.reply({
+    interaction.reply({
       content: `You left the queue!`,
       flags: [MessageFlags.Ephemeral],
     });
@@ -628,7 +628,7 @@ const readyButtonCallBack = async (interaction) => {
     const resReady = await ready({ resultRanked, user });
     if (!resReady.ok) return { ok: false, message: "Player not in result ranked" };
 
-    await interaction.reply({ content: `You have been marked as ready!`, flags: [MessageFlags.Ephemeral] });
+    interaction.reply({ content: `You have been marked as ready!`, flags: [MessageFlags.Ephemeral] });
 
     if (arePlayersReady({ resultRanked })) {
       discordService.deleteMessage({ channelId: resultRanked.textChannelDisplayResultId, messageId: resultRanked.messageReadyId });
@@ -661,7 +661,7 @@ const cancelResultRankedButtonCallBack = async (interaction) => {
     const resVoteCancel = await voteCancel({ resultRanked, user });
     if (!resVoteCancel.ok) return { ok: false, message: "Player not in result ranked" };
 
-    await interaction.reply({ content: `You have voted to cancel the game!`, flags: [MessageFlags.Ephemeral] });
+    interaction.reply({ content: `You have voted to cancel the game!`, flags: [MessageFlags.Ephemeral] });
 
     if (arePlayersVotedCancel({ resultRanked })) {
       resultRanked.hasBeenVoted = true;
@@ -703,7 +703,7 @@ const voteRedResultRankedButtonCallBack = async (interaction) => {
     const resVoteRed = await voteRed({ resultRanked, user });
     if (!resVoteRed.ok) return { ok: false, message: "Player not in result ranked" };
 
-    await interaction.reply({ content: `You have voted for the red team!`, flags: [MessageFlags.Ephemeral] });
+    interaction.reply({ content: `You have voted for the red team!`, flags: [MessageFlags.Ephemeral] });
 
     if (arePlayersVotedRed({ resultRanked })) {
       resultRanked.hasBeenVoted = true;
@@ -755,7 +755,7 @@ const voteBlueResultRankedButtonCallBack = async (interaction) => {
     const resVoteBlue = await voteBlue({ resultRanked, user });
     if (!resVoteBlue.ok) return { ok: false, message: "Player not in result ranked" };
 
-    await interaction.reply({ content: `You have voted for the blue team!`, flags: [MessageFlags.Ephemeral] });
+    interaction.reply({ content: `You have voted for the blue team!`, flags: [MessageFlags.Ephemeral] });
 
     if (arePlayersVotedBlue({ resultRanked })) {
       resultRanked.hasBeenVoted = true;
